@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <title>Clever Little Boxes</title>
+</head>
+
+<body>
+    <div class="container mb-4">
+        <h1 class="mb-4">
+            <%= device.friendlyName %>
+        </h1>
+        <h2 class="mb-4">
+            <%= device.name %>
+        </h2>
+        <div class="card-subtitle text-muted mb-2">
+            Registered: <%= device.regDate.toLocaleDateString() %>
+                <%= device.regDate.toLocaleTimeString() %>
+        </div>
+        <div class="container">
+            
+        </div>
+
+        <form action="/devices/<%= device.name %>" method="POST">
+
+            <div class="form-group">
+                <label for="friendlyName">Friendly Name</label>
+                <input required type="text" name="friendlyName" id="friendlyName" class="form-control"
+                    value="<%= device.friendlyName %>">
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea type="text" name="description" id="description" class="form-control"><%=device.description%> </textarea>
+            </div>
+            <div class="form-group">
+                <label for="tags">Tags</label>
+                <input required type="text" name="tags" id="tags" class="form-control"
+                    value="<%= device.tags %>">
+            </div>
+            <div class="form-group">
+                <label for="bootCommands">Boot Commands</label>
+                <% let bootCommands; if(device.bootCommands !=null) bootCommands=device.bootCommands; else
+                    bootCommands="" ; %>
+                    <textarea type="text" name="bootCommands" id="bootCommands" class="form-control"><%=bootCommands%> </textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Update</button>
+        </form>
+        <form action="/devices/sendconsolecommand/<%= device.name %>"" method="POST">
+            <div class="form-group mt-4">
+                <label for="consoleCommand">Console Command</label>
+                <input required type="text" name="consoleCommand" id="consoleCommand" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Send Console Command</button>
+        </form>
+        <form action="/devices/sendjsoncommand/<%= device.name %>"" method="POST">
+            <div class="form-group mt-4">
+                <label for="jsonCommand">Command</label>
+                <input required type="text" name="jsonCommand" id="jsonCommand" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Send JSON Command</button>
+        </form>
+    </div>
+    <div class="container mb-4">
+        <a href="/" class="btn btn-success mb-4">Done</a>
+        <a href="/devices/restart/<%= device.name %>"" class="btn btn-success mb-4">Restart</a>
+        <a href="/devices/otaUpdate/<%= device.name %>"" class="btn btn-success mb-4">OTA Update</a>
+    </div>
+</body>
+
+</html>
