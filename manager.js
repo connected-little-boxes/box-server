@@ -63,7 +63,7 @@ class Manager {
                 return false;
             }
 
-            const devCommandTopic = "command/" + messageObject.name;
+            const devCommandTopic = process.env.MQTT_TOPIC_PREFIX + "/command/" + messageObject.name;
 
             await this.mqttClient.publish(devCommandTopic, '{"process":"registration","command":"register"}');
         }
@@ -91,7 +91,7 @@ class Manager {
 
             if (device.bootCommands != null) {
 
-                const devCommandTopic = "command/" + device.name;
+                const devCommandTopic = process.env.MQTT_TOPIC_PREFIX + "/command/" + device.name;
 
                 console.log("Got boot commands:");
                 let commandList = device.bootCommands.split("\n");
@@ -176,8 +176,8 @@ class Manager {
 
     async sendMessageToPrinter(message, printer) {
         let printcommand = '{"process":"printer","command":"print","text":"' + message + '"}';
-        console.log("        ", printcommand);
-        let printdest = 'command/' + printer;
+        let printdest = process.env.MQTT_TOPIC_PREFIX + "/command/" + printer;
+        console.log("        ", printcommand," to ", printdest);
         this.mqttClient.publish(printdest, printcommand);
     }
 
@@ -196,9 +196,9 @@ class Manager {
     }
 
     async sendMessageToDisplay(message, display) {
-        let displayCommand = '{"process":"max7219","command":"display","options":"scroll","text":"' + message + '"}';
-        console.log("        ", displayCommand);
-        let displaydest = 'command/' + display;
+        let displayCommand = '{"process":"max7219","command":"display","options":"scroll,sticky","text":"' + message + '"}';
+        let displaydest = process.env.MQTT_TOPIC_PREFIX + '/command/' + display;
+        console.log("        ", displayCommand," to ",displaydest);
         this.mqttClient.publish(displaydest, displayCommand);
     }
 
@@ -225,31 +225,32 @@ class Manager {
         await this.sendMessageToDisplays(message, installation);
     }
 
-
     async sendJSONCommandToDevice(deviceName, command)
     {
-        console.log('Sending:',command,"to:",deviceName);
-        
-        this.mqttClient.publish('command/'+deviceName,command);
+        let topic = process.env.MQTT_TOPIC_PREFIX + '/command/'+deviceName;
+        console.log('Sending:',command,"to:",topic);
+        this.mqttClient.publish(topic,command);
     }
 
     async sendConsoleCommandToDevice(deviceName, command)
     {
         console.log('Sending console command:', deviceName);
-        let jsonCommand = '{"process":"console","command":"remote","concom":"'+command+'"}'
+        let jsonCommand = '{"process":"console","command":"remote","commandtext":"'+command+'"}'
         this.sendJSONCommandToDevice(deviceName,jsonCommand);
     }
 
     async restartDevice(deviceName)
     {
         console.log('Restarting:', deviceName);
-        this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","concom":"restart"}');
+        this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","commandtext":"restart"}');
     }
 
     async startDeviceOTAupdate(deviceName)
     {
         console.log('Updating:', deviceName);
-        this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","concom":"otaupdate"}');
+        this.sendJSONCommandToDevice(deviceName,'{"setting":"otaupdateurl","value":"http://otadrive.com/DeviceApi/Update?"}');
+        this.sendJSONCommandToDevice(deviceName,'{"setting":"otaupdateproductkey","value":"efc8b1da-4927-48aa-95d1-c52a6cda8099"}');
+        this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","commandtext":"otaupdate"}');
     }
 
     async handleIncomingMessage(topic, message, packet) {
@@ -274,11 +275,11 @@ class Manager {
             messageObject.name = messageObject.device;
         }
 
-        if (topic === process.env.MQTT_CONNECTED_TOPIC) {
+        if (topic === process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_CONNECTED_TOPIC) {
             this.doDeviceConnected(messageObject);
         }
 
-        if (topic === process.env.MQTT_REGISTERED_TOPIC) {
+        if (topic === process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_REGISTERED_TOPIC) {
             this.doDeviceRegistration(messageObject);
         }
     }
@@ -286,12 +287,12 @@ class Manager {
     async connectServices() {
         console.log("Connecting services");
 
-        this.mqttClient.subscribe(process.env.MQTT_CONNECTED_TOPIC, { qos: 1 });
-        this.mqttClient.subscribe(process.env.MQTT_REGISTERED_TOPIC, { qos: 1 });
+        this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_CONNECTED_TOPIC, { qos: 1 });
+        this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_REGISTERED_TOPIC, { qos: 1 });
         this.mqttClient.on("message", (topic, message, packet) =>
             this.handleIncomingMessage(topic, message, packet));
 
-        this.mqttClient.publish('command/CLB-302fc7', '{"process":"max7219Messages","command":"display","text":"Server"}');
+        this.mqttClient.publish(process.env.MQTT_TOPIC_PREFIX + '/command/CLB-302fc7', '{"process":"max7219Messages","command":"display","text":"Server"}');
 
         this.addPrinter("CLB-b00808");
         this.addDisplay("CLB-3030da");

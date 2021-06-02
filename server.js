@@ -26,6 +26,7 @@ var devices = require('./routes/devices');
 var login = require('./routes/login');
 var register = require('./routes/register');
 var users = require('./routes/users');
+var terminal = require('./routes/terminal');
 
 console.log("Starting up...");
 
@@ -46,6 +47,7 @@ app.get('/', authenticateToken, async (req, res) => {
 app.use('/devices', devices);
 app.use('/users', users);
 app.use('/login', login);
-app.use('/register', register)
+app.use('/register', register);
+app.use('/terminal',terminal);
 
 app.listen(port, () => console.log("Server started"));

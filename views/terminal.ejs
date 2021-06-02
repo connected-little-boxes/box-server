@@ -1,0 +1,96 @@
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <title>Connected Little Boxes</title>
+</head>
+
+<body onload="connect();">
+    <div class="container mb-4">
+        <h1 class="mb-4">Connected Little Boxes</h1>
+        <h2 class="mb-4">Terminal</h2>
+        <ul id="messages"></ul>
+        <form id="form" action="">
+            <input id="input" autocomplete="off" /><button>Send</button>
+        </form>
+        <div class="container mb-4">
+            <pre id="messages"></pre>
+            <a href="/login" class="btn btn-primary mb-4">Login</a>
+        </div>
+    </div>
+    <script>
+        console.log("Entering terminal");
+        var messages = document.getElementById('messages');
+
+        let keepReading = true;
+        let reader;
+        let port;
+
+        async function readUntilClosed() {
+            while (port.readable && keepReading) {
+                reader = port.readable.getReader();
+                try {
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) {
+                            // reader.cancel() has been called.
+                            break;
+                        }
+                        // value is a Uint8Array.
+                        console.log(value);
+                    }
+                } catch (error) {
+                    // Handle error...
+                } finally {
+                    // Allow the serial port to be closed later.
+                    reader.releaseLock();
+                }
+            }
+
+            await port.close();
+        }
+
+        async function connect() {
+
+            if ("serial" in navigator) {
+                messages.textContent = "This browser supports serial connection";
+                return;
+            }
+            else {
+                messages.textContent = "This browser doesn't supports serial connection.\nTry Chrome or Edge";
+            }
+
+            // Prompt user to select any serial port.
+
+            port = await navigator.serial.requestPort();
+
+            await port.open({ baudRate: 115200 });
+            
+            const closedPromise = readUntilClosed();
+
+            document.querySelector('button').addEventListener('click', async () => {
+                // User clicked a button to close the serial port.
+                keepReading = false;
+                // Force reader.read() to resolve immediately and subsequently
+                // call reader.releaseLock() in the loop example above.
+                reader.cancel();
+                await closedPromise;
+            });
+        }
+
+        var form = document.getElementById('form');
+
+
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (input.value) {
+                messages.textContent += input.value + '\n';
+                //                window.scrollTo(0, document.body.scrollHeight);
+                input.value = '';
+            }
+        });
+    </script>
+</body>
