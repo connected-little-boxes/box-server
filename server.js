@@ -38,7 +38,7 @@ console.log("Services now running....");
 
 app.get('/', authenticateToken, async (req, res) => {
 
-  console.log("buidling index page");
+  console.log("building index page");
 
   userDevices = await Device.find();
   res.render('index.ejs', { name: res.user.name, devices: userDevices });
