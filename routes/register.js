@@ -3,12 +3,13 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
+const authenticateToken = require('../_helpers/authenticateToken');
 
-router.get('/', (req, res) => {
+router.get('/', authenticateToken, (req, res) => {
     res.render('register.ejs')
 });
 
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     try {
         const existingUser = await User.findOne({ email: req.body.email });
         if (existingUser != null) {
