@@ -32,22 +32,23 @@ console.log("Starting up...");
 
 const mgr = Manager.getActiveManger();
 
-mgr.startServices();
+mgr.startServices().then(() => {
 
-console.log("Services now running....");
+  console.log("Services now running....");
 
-app.get('/', authenticateToken, async (req, res) => {
+  app.get('/', authenticateToken, async (req, res) => {
 
-  console.log("building index page");
+    console.log("building index page");
 
-  userDevices = await Device.find();
-  res.render('index.ejs', { name: res.user.name, devices: userDevices });
+    userDevices = await Device.find();
+    res.render('index.ejs', { name: res.user.name, devices: userDevices });
+  });
+
+  app.use('/devices', devices);
+  app.use('/users', users);
+  app.use('/login', login);
+  app.use('/register', register);
+  app.use('/terminal', terminal);
+
+  app.listen(port, () => console.log("Server started"));
 });
-
-app.use('/devices', devices);
-app.use('/users', users);
-app.use('/login', login);
-app.use('/register', register);
-app.use('/terminal',terminal);
-
-app.listen(port, () => console.log("Server started"));
