@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const mongoose = require('mongoose')
 const mqtt = require('mqtt');
 const Device = require('./models/device');
