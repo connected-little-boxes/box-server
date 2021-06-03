@@ -13,7 +13,7 @@ const Device = require('./models/device');
 app.set('view-engine', 'ejs');
 app.use(express.urlencoded({ extended: false }));
 
-const port = 80;
+const port = process.env.PORT || 3000;
 
 const mongoose = require('mongoose');
 
@@ -44,6 +44,8 @@ mgr.startServices().then(() => {
   app.use('/login', login);
   app.use('/register', register);
   app.use('/terminal', terminal);
+
+  console.log(`Server listening on:${port}`);
 
   app.listen(port, () => console.log("Server started"));
 });
