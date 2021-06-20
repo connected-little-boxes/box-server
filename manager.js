@@ -1,9 +1,12 @@
+require('dotenv').config();
 const mongoose = require('mongoose')
 const mqtt = require('mqtt');
+const bcrypt = require('bcrypt');
 const Device = require('./models/device');
 const Process = require('./models/process');
 const Connection = require('./models/connection');
 const Installation = require('./models/installation');
+const User = require('./models/user');
 
 class Manager {
 
@@ -91,12 +94,17 @@ class Manager {
 
                 const devCommandTopic = process.env.MQTT_TOPIC_PREFIX + "/command/" + device.name;
 
-                console.log("Got boot commands:");
+                console.log("Might have boot commands:");
                 let commandList = device.bootCommands.split("\n");
 
                 for (let command of commandList) {
-                    console.log("    sending-", command);
-                    await this.mqttClient.publish(devCommandTopic, command);
+                    let commandText = command.trim()
+                    if(commandText.length == 0){
+                        console.log("  Skipping empty string");
+                        continue;
+                    }
+                    console.log("    sending-", commandText);
+                    await this.mqttClient.publish(devCommandTopic, commandText);
                 }
             }
 
@@ -282,6 +290,26 @@ class Manager {
         }
     }
 
+    async checkForAdminUser()
+    {
+        const adminUser = await User.findOne({ email: process.env.INITIAL_ADMIN_USERNAME });
+
+        if (adminUser == null) {
+            console.log(`  Admin user not registered`);
+            const hashedPassword = await bcrypt.hash(process.env.INITIAL_ADMIN_PASSWORD, 10);
+            const user = new User(
+                {
+                    name: process.env.INITIAL_ADMIN_USERNAME,
+                    password: hashedPassword,
+                    role: 'admin',
+                    email: process.env.INITIAL_ADMIN_USERNAME
+                });
+            await user.save();
+            console.log("  Admin user successfully registered");
+        }
+    }
+
+
     async connectServices() {
         console.log("Connecting services");
 
@@ -292,8 +320,9 @@ class Manager {
 
         this.mqttClient.publish(process.env.MQTT_TOPIC_PREFIX + '/command/CLB-302fc7', '{"process":"max7219Messages","command":"display","text":"Server"}');
 
-        this.addPrinter("CLB-b00808");
-        this.addDisplay("CLB-3030da");
+        await this.addPrinter("CLB-b00808");
+        await this.addDisplay("CLB-3030da");
+        await this.checkForAdminUser();
     }
 
     async startServices() {

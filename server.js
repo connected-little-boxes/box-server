@@ -22,7 +22,9 @@ const authenticateToken = require('./_helpers/authenticateToken');
 
 var devices = require('./routes/devices');
 var login = require('./routes/login');
+var logout = require('./routes/logout');
 var register = require('./routes/register');
+var registered = require('./routes/registered');
 var users = require('./routes/users');
 var terminal = require('./routes/terminal');
 
@@ -36,13 +38,15 @@ mgr.startServices().then(() => {
 
   app.get('/', authenticateToken, async (req, res) => {
     userDevices = await Device.find();
-    res.render('index.ejs', { name: res.user.name, devices: userDevices });
+    res.render('index.ejs', { name: res.user.name, role: res.user.role, devices: userDevices });
   });
 
   app.use('/devices', devices);
   app.use('/users', users);
   app.use('/login', login);
+  app.use('/logout', logout);
   app.use('/register', register);
+  app.use('/registered', registered);
   app.use('/terminal', terminal);
 
   console.log(`Server listening on:${port}`);

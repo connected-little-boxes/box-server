@@ -37,7 +37,13 @@
             <% }) %>
     </div>
     <div class="container mb-4">
-        <a href="/login" class="btn btn-success mb-4">Logout</a>
+        <%
+        var registerButton="";
+        if(role=="admin")
+            registerButton=`<a href="/register" class="btn btn-success mb-4">Register</a>`
+        %>
+        <%- registerButton %>
+        <a href="/logout" class="btn btn-success mb-4">Logout</a>
     </div>
 </body>
 
