@@ -27,6 +27,8 @@ var register = require('./routes/register');
 var registered = require('./routes/registered');
 var users = require('./routes/users');
 var terminal = require('./routes/terminal');
+var deviceSelect = require('./routes/deviceSelect');
+var lightShow = require('./routes/lightShow');
 
 console.log("Starting up...");
 
@@ -48,6 +50,8 @@ mgr.startServices().then(() => {
   app.use('/register', register);
   app.use('/registered', registered);
   app.use('/terminal', terminal);
+  app.use('/deviceSelect', deviceSelect);
+  app.use('/lightShow', lightShow);
 
   console.log(`Server listening on:${port}`);
 

@@ -181,7 +181,7 @@ class Manager {
     }
 
     async sendMessageToPrinter(message, printer) {
-        let printcommand = '{"process":"printer","command":"print","text":"' + message + '"}';
+        let printcommand = '{"process":"printer","command":"print","options":"datestamp","text":"' + message + '"}';
         let printdest = process.env.MQTT_TOPIC_PREFIX + "/command/" + printer;
         console.log("        ", printcommand," to ", printdest);
         this.mqttClient.publish(printdest, printcommand);
@@ -257,6 +257,56 @@ class Manager {
         this.sendJSONCommandToDevice(deviceName,'{"setting":"otaupdateurl","value":"http://otadrive.com/DeviceApi/Update?"}');
         this.sendJSONCommandToDevice(deviceName,'{"setting":"otaupdateproductkey","value":"efc8b1da-4927-48aa-95d1-c52a6cda8099"}');
         this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","commandtext":"otaupdate"}');
+    }
+
+    async sendCommandToDevices(devices, command)
+    {
+        console.log(`Sending command:${command}`);
+
+        devices.forEach(device=>{
+            console.log(`    to:${device.name}`);
+            this.sendJSONCommandToDevice(device.name,command);
+        });
+    }
+
+    async findTaggedDevices(tag){
+        let result = await Device.find({tags:tag} );
+        return result;
+    }
+
+    async setLightColours(tag, colour)
+    {
+        let devices = await this.findTaggedDevices(tag);
+        let command = `{"process":"pixels","command":"setnamedcolour","colourname":"${colour}"}`;
+        this.sendCommandToDevices(devices,command);
+    }
+
+    async setLightPattern(tag, pattern)
+    {
+        let devices = await this.findTaggedDevices(tag);
+        let command = `{"process":"pixels","command":"pattern","pattern":"mask","colourmask":"${pattern}"}`;
+        this.sendCommandToDevices(devices,command);
+    }
+
+    async setWalkingLightPattern(tag, pattern)
+    {
+        let devices = await this.findTaggedDevices(tag);
+        let command = `{"process":"pixels","command":"pattern","pattern":"walking","colourmask":"${pattern}"}`;
+        this.sendCommandToDevices(devices,command);
+    }
+
+    async setLightsTimedTwinkle(tag)
+    {
+        let devices = await this.findTaggedDevices(tag);
+        let command = `{"process":"pixels","command":"twinkle","options":"timed","sensor":"clock","trigger":"minute"}`;
+        this.sendCommandToDevices(devices,command);
+    }
+
+    async setLightsTimedRandom(tag)
+    {
+        let devices = await this.findTaggedDevices(tag);
+        let command = `{"process":"pixels","command":"setrandomcolour","options":"timed","sensor":"clock","trigger":"minute"}`;
+        this.sendCommandToDevices(devices,command);
     }
 
     async handleIncomingMessage(topic, message, packet) {

@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
     res.render('login.ejs')
 });
 
-const jwtExpirySeconds = 300
+const jwtExpirySeconds = 6000;
 
 router.post('/', async (req, res) => {
     console.log("Doing the login..");

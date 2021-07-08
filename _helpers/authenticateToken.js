@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-const jwtExpirySeconds = 300;
+const jwtExpirySeconds = 6000;
 const jwtRenewSeconds = 30;
 
 async function authenticateToken(req, res, next) {
