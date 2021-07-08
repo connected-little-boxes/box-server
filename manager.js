@@ -119,7 +119,34 @@ class Manager {
                 displayName = messageObject.name;
             }
 
+            await device.updateOne({
+                lastConnectedDate: Date.now()
+            });
+
             await this.showMessageToAll(displayName + " on");
+        }
+    }
+
+    getDeviceNameFromTopic(topic)
+    {
+        let elements = topic.split('/');
+        return elements[elements.length-1];
+    }
+
+    async doDeviceResponse(topic, message, messageObject)
+    {
+        let deviceName = this.getDeviceNameFromTopic(topic);
+        console.log(`Got a response: ${JSON.stringify(messageObject)} from:${deviceName}`);
+
+        var device = null;
+
+        device = await Device.findOne({ name: deviceName });
+
+        if(device != null){
+            await device.updateOne({
+                lastResponse: message,
+                lastResponseDate: Date.now()
+            });
         }
     }
 
@@ -230,12 +257,41 @@ class Manager {
         await this.sendMessageToPrinters(message, installation);
         await this.sendMessageToDisplays(message, installation);
     }
-
+ 
     async sendJSONCommandToDevice(deviceName, command)
     {
+        console.log(`Sending:${command} to: ${deviceName}`);
+
+        // validate the command JSON and add a sequence number
+        let commandObject = null;
+        try {
+            commandObject = JSON.parse(command);
+            commandObject["seq"] = this.sequenceNumber++;
+            command = JSON.stringify(commandObject);
+        }
+        catch (err) {
+            console.log('Sending:',command,"to:",topic);
+            console.log(`Invalid json command:${command} error:${err} for:${deviceName}`);
+            return;
+        }
+        
         let topic = process.env.MQTT_TOPIC_PREFIX + '/command/'+deviceName;
-        console.log('Sending:',command,"to:",topic);
+
+        console.log(`Sending:${command} to:${topic}`);
+
         this.mqttClient.publish(topic,command);
+
+        // store the command for debugging
+
+        var device = null;
+
+        device = await Device.findOne({ name: deviceName });
+
+        if(device != null){
+            await device.updateOne({
+                lastCommand: command
+            });
+        }
     }
 
     async sendConsoleCommandToDevice(deviceName, command)
@@ -332,11 +388,15 @@ class Manager {
         }
 
         if (topic === process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_CONNECTED_TOPIC) {
-            this.doDeviceConnected(messageObject);
+            await this.doDeviceConnected(messageObject);
         }
 
         if (topic === process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_REGISTERED_TOPIC) {
-            this.doDeviceRegistration(messageObject);
+            await this.doDeviceRegistration(messageObject);
+        }
+
+        if(topic.startsWith(`${process.env.MQTT_TOPIC_PREFIX}/${process.env.MQTT_DATA_TOPIC}`)) {
+            await this.doDeviceResponse(topic, message, messageObject);
         }
     }
 
@@ -359,16 +419,16 @@ class Manager {
         }
     }
 
-
     async connectServices() {
         console.log("Connecting services");
 
+        this.sequenceNumber=0;
+
         this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_CONNECTED_TOPIC, { qos: 1 });
         this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_REGISTERED_TOPIC, { qos: 1 });
+        this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_DATA_TOPIC + '/#', { qos: 1 });
         this.mqttClient.on("message", (topic, message, packet) =>
             this.handleIncomingMessage(topic, message, packet));
-
-        this.mqttClient.publish(process.env.MQTT_TOPIC_PREFIX + '/command/CLB-302fc7', '{"process":"max7219Messages","command":"display","text":"Server"}');
 
         await this.addPrinter("CLB-b00808");
         await this.addDisplay("CLB-3030da");
