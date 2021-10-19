@@ -52,7 +52,8 @@ mgr.startServices().then(() => {
   app.use('/terminal', terminal);
   app.use('/deviceSelect', deviceSelect);
   app.use('/lightShow', lightShow);
-
+  app.use('/favicon.ico', express.static('images/favicon.ico'));
+  
   console.log(`Server listening on:${port}`);
 
   app.listen(port, () => console.log("Server started"));

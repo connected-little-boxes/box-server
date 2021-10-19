@@ -62,14 +62,14 @@
             </div>
             <button type="submit" class="btn btn-primary mt-4">Update</button>
         </form>
-        <form action="/devices/sendconsolecommand/<%= device.name %>"" method=" POST">
+        <form action="/devices/sendconsolecommand/<%= device.name %>"" method="POST">
             <div class="form-group mt-4">
                 <label for="consoleCommand">Console Command</label>
                 <input required type="text" name="consoleCommand" id="consoleCommand" class="form-control">
             </div>
             <button type="submit" class="btn btn-primary mt-4">Send Console Command</button>
         </form>
-        <form action="/devices/sendjsoncommand/<%= device.name %>"" method=" POST">
+        <form action="/devices/sendjsoncommand/<%= device.name %>"" method="POST">
             <div class="form-group mt-4">
                 <label for="jsonCommand">Command</label>
                 <input required type="text" name="jsonCommand" id="jsonCommand" class="form-control">

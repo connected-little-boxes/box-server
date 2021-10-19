@@ -1,4 +1,4 @@
-require('dotenv').config();
+//require('dotenv').config();
 const mongoose = require('mongoose')
 const mqtt = require('mqtt');
 const bcrypt = require('bcrypt');
@@ -260,7 +260,9 @@ class Manager {
  
     async sendJSONCommandToDevice(deviceName, command)
     {
-        console.log(`Sending:${command} to: ${deviceName}`);
+        let topic = process.env.MQTT_TOPIC_PREFIX + '/command/'+deviceName;
+
+        console.log(`Sending:${command} to:${topic}`);
 
         // validate the command JSON and add a sequence number
         let commandObject = null;
@@ -275,10 +277,6 @@ class Manager {
             return;
         }
         
-        let topic = process.env.MQTT_TOPIC_PREFIX + '/command/'+deviceName;
-
-        console.log(`Sending:${command} to:${topic}`);
-
         this.mqttClient.publish(topic,command);
 
         // store the command for debugging
@@ -444,8 +442,7 @@ class Manager {
             process.env.DATABASE_URL,
             {
                 useNewUrlParser: true,
-                useUnifiedTopology: true,
-                useCreateIndex: true
+                useUnifiedTopology: true
             });
 
         promiseList[1] = this.startMqttPromise(

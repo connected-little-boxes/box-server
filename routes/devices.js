@@ -38,7 +38,7 @@ router.get('/', authenticateToken, async function (req, res) {
 })
 
 router.post('/sendconsolecommand/:name', authenticateToken, async (req, res) => {
-  console.log("send console command pressed");
+  console.log("send json command pressed for:",res.device.name," command:", req.body.consoleCommand);
 
   mgr = Manager.getActiveManger();
 
@@ -49,11 +49,9 @@ router.post('/sendconsolecommand/:name', authenticateToken, async (req, res) => 
 
 router.post('/sendjsoncommand/:name', authenticateToken, getDeviceByDeviceName,
   async (req, res) => {
-    console.log("send json command pressed");
+    console.log("send json command pressed for:",res.device.name," command:", req.body.jsonCommand);
     mgr = Manager.getActiveManger();
-
     await mgr.sendJSONCommandToDevice(res.device.name, req.body.jsonCommand);
-
     res.redirect('/devices/' + res.device.name);
   })
 
