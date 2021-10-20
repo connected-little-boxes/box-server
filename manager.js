@@ -1,4 +1,9 @@
-//require('dotenv').config();
+
+const port = process.env.PORT || 3000;
+
+if (port == 3000)
+    require('dotenv').config();
+
 const mongoose = require('mongoose')
 const mqtt = require('mqtt');
 const bcrypt = require('bcrypt');
