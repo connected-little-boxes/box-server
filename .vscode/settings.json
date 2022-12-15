@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/6dfb325a-a23a-4a32-9d33-b9d6cb252fba/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/CLBPortal",
+    "appService.deploySubpath": "."
+}

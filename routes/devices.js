@@ -65,6 +65,17 @@ router.get('/restart/:name', authenticateToken, getDeviceByDeviceName,
     res.redirect('/devices/' + res.device.name);
   })
 
+  router.get('/check/:name', authenticateToken, getDeviceByDeviceName,
+  async (req, res) => {
+
+    mgr = Manager.getActiveManger();
+
+    console.log("doing the check thingy");
+
+    res.redirect('/devices/' + res.device.name);
+  })
+
+
   router.get('/otaUpdate/:name', authenticateToken, getDeviceByDeviceName,
   async (req, res) => {
 

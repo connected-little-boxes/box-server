@@ -4,7 +4,8 @@
   "description": "A device manager for Connected Little Boxes",
   "main": "index.js",
   "scripts": {
-    "devStart": "nodemon server.js"
+    "devStart": "nodemon server.js",
+    "start":"node server.js"
   },
   "author": "Rob Miles",
   "license": "ISC",

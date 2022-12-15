@@ -1,5 +1,10 @@
 
+// PORT is defined in Heroku
+// Otherwise we use 3000 for localhost
+
 const port = process.env.PORT || 3000;
+
+// We also need to use dotenv to bring in the local settings
 
 if (port == 3000)
     require('dotenv').config();
@@ -329,7 +334,7 @@ class Manager {
     }
 
     async findTaggedDevices(tag){
-        let result = await Device.find({tags:tag} );
+        let result = await Device.find({tags:{ $regex: ".*"+tag+".*" }} );
         return result;
     }
 

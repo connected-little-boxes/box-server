@@ -30,7 +30,7 @@ const deviceSchema = new mongoose.Schema(
         },
         lastCommand: {
             type: String,
-            default:"",
+            default:"none",
             required: true
         },
         lastResponseDate: {
@@ -40,7 +40,7 @@ const deviceSchema = new mongoose.Schema(
         },
         lastResponse: {
             type: String,
-            default:"",
+            default:"none",
             required: true
         },
         processes: {
