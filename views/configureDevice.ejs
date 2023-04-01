@@ -16,17 +16,17 @@
       <%= name %>
     </h3>
     <h1 class="mb-4">Connected Little Boxes</h1>
-    <h2 class="mb-2">Configure device</h2>
+    <h2 class="mb-2"><%= settings.heading %></h2>
+    <p> <%= settings.helpText %> </p>
     <div class="container mb-4">
       <form onsubmit="doSubmit(event)">
+        <% let count = 0; settings.settingDetails.forEach(setting=> { %>
+          <% count = count + 1; let countString = count.toString(); %>
         <div class="form-group mt-4">
-          <label for="wifissid">WiFi SSID:</label>
-          <input type="text" id="wifissid" name="wifissid" required class="form-control">
+          <label for="<%= countString %>"> <%= setting.displayName %></label>
+          <input type="<%= setting.type %>" id="<%= countString %>" name="<%= setting.deviceName %>" required class="form-control">
         </div>
-        <div>
-          <label for="wifipwd">WiFi Password:</label>
-          <input type="password" id="wifipwd" name="wifipwd" required class="form-control">
-        </div>
+        <% }) %>
         <button onclick=doSubmit() class="btn btn-success mb-4 mt-4 btn-block">Save</button>`
       </form>
     </div>
@@ -223,7 +223,27 @@
           commander.startSerialPump(handleIncomingText);
         }
       }
-      await commander.performCommands(["pixelname=simonx", "pixelname=jim", "pixelname=rob"]).then(() => console.log("Commands complete"));
+
+      let commandList = [];
+
+      let count = 0;
+
+      while(true){
+        count = count + 1;
+        let countString = count.toString();
+        let input = document.getElementById(countString);
+        if(input == undefined){
+          break;
+        }
+        let value = input.value;
+        let name = input.name;
+        let command =name + "=" + value;
+        commandList.push(command);
+      };
+
+      commandList.push("wifiactive=yes");
+
+      await commander.performCommands(commandList).then(() => console.log("Commands complete"));
       console.log("Click");
     }
 
