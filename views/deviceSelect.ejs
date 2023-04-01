@@ -11,41 +11,35 @@
 </head>
 
 <body>
-    <h1 class="mb-4">Connected Little Boxes</h1>
-    <h2 class="mb-4">Welcome <%= name %>
-    </h2>
-    <div class="container">
-        <h3 class="mb-4">Devices</h3>
-        <% devices.forEach(device=> { %>
-            <div class="card mb-4">
-                <h4 class="card-title">
-                    <% 
-                    var name;
-                    if (device.friendlyName != "")
-                        name = device.friendlyName;
-                    else
-                        name = device.name;
-                    %>
-                    <%= name %>
-                </h4>
-                <div class="card-subtitle text-muted mb-2">
-                    Name: <%= device.name %> Registered: <%= device.regDate.toLocaleDateString() %> 
-                    <%= device.regDate.toLocaleTimeString() %>
-                    Last seen:<%= device.lastResponseDate.toLocaleDateString() %> 
-                    <%= device.lastResponseDate.toLocaleTimeString() %>
+    <div class="container mb-2 mt-2">
+        <h1 class="mb-4">Connected Little Boxes</h1>
+        <h2 class="mb-4"><%= name %>
+        </h2>
+        <div class="container">
+            <h3 class="mb-4">Devices</h3>
+            <% devices.forEach(device=> { %>
+                <div class="card mb-4">
+                    <h4 class="card-title">
+                        <% var name; if (device.friendlyName !="" ) name=device.friendlyName; else name=device.name; %>
+                            <%= name %>
+                    </h4>
+                    <div class="card-subtitle text-muted mb-2">
+                        Name: <%= device.name %> Registered: <%= device.regDate.toLocaleDateString() %>
+                                <%= device.regDate.toLocaleTimeString() %>
+                                    Last seen:<%= device.lastResponseDate.toLocaleDateString() %>
+                                        <%= device.lastResponseDate.toLocaleTimeString() %>
+                    </div>
+                    <a href="devices/<%= device.name %>" class="btn btn-primary">Manage Device</a>
                 </div>
-                <a href="devices/<%= device.name %>" class="btn btn-primary">Manage Device</a>
-            </div>
-            <% }) %>
-    </div>
-    <div class="container mb-4">
-        <%
-        var registerButton="";
-        if(role=="admin")
-            registerButton=`<a href="/register" class="btn btn-success mb-4">Register</a>`
-        %>
-        <%- registerButton %>
-        <a href="/" class="btn btn-success mb-4">Done</a>
+                <% }) %>
+        </div>
+        <div class="container mb-4">
+            <% var registerButton="" ; if(role=="admin" ) registerButton=`<a href="/register"
+                class="btn btn-success mb-4">Register</a>`
+                %>
+                <%- registerButton %>
+                    <a href="/" class="btn btn-success mb-4">Done</a>
+        </div>
     </div>
 </body>
 

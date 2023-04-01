@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html>
+<!--<![endif]-->
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="Connected Little Boxes Device Setup">
+
+  <meta name="author" content="Rob Miles">
+
+  <title>Connected Little Boxes Getting Started</title>
+
+  <!-- Mobile Specific Meta
+  ================================================== -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png" />
+
+  <!-- CSS
+  ================================================== -->
+  <!-- Themefisher Icon font -->
+  <link rel="stylesheet" href="plugins/themefisher-font/style.css">
+  <!-- bootstrap.min css -->
+  <link rel="stylesheet" href="plugins/bootstrap/css/bootstrap.min.css">
+  <!-- Lightbox.min css -->
+  <link rel="stylesheet" href="plugins/lightbox2/dist/css/lightbox.min.css">
+  <!-- animation css -->
+  <link rel="stylesheet" href="plugins/animate/animate.css">
+  <!-- Slick Carousel -->
+  <link rel="stylesheet" href="plugins/slick/slick.css">
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body id="body" onload="doCheckBrowser();">
+
+  <!--
+  Start Preloader
+  ==================================== -->
+  <div id="preloader">
+    <div class='preloader'>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <!--
+  End Preloader
+  ==================================== -->
+
+  <!--
+Fixed Navigation
+==================================== -->
+  <header class="navigation fixed-top">
+    <div class="container">
+      <!-- main nav -->
+      <nav class="navbar navbar-expand-lg navbar-light">
+        <!-- logo -->
+        <a class="navbar-brand logo" href="index.html">
+          <img class="logo-default" src="images/logo.png" alt="logo" />
+          <img class="logo-white" src="images/logo-white.png" alt="logo" />
+        </a>
+        <!-- /logo -->
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+          aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navigation">
+          <ul class="navbar-nav ml-auto text-center">
+            <li class="nav-item ">
+              <a class="nav-link" href="overview.html">Overview</a>
+            </li>
+            <li class="nav-item dropdown ">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                Documentation
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="gettingstarted.html">Getting Started</a>
+                <a class="dropdown-item" href="projects.html">Projects</a>
+                <a class="dropdown-item" href="electronics.html">Electronics</a>
+                <a class="dropdown-item" href="boxes.html">Making boxes</a>
+                <a class="dropdown-item" href="server.html">Server Software</a>
+              </div>
+            </li>
+            <li class="nav-item ">
+              <a class="nav-link" href="news.html">News</a>
+            </li>
+            <li class="nav-item ">
+              <a class="nav-link" href="lights.html">Lights in Names</a>
+            </li>
+            <li class="nav-item ">
+              <a class="nav-link" href="contact.html">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <!-- /main nav -->
+    </div>
+  </header>
+  <!--
+End Fixed Navigation
+==================================== -->
+
+  <section class="single-page-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h2>Getting Started</h2>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-shot-info section-sm">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mt-20">
+          <h2>Choose your Browser</h2>
+          <p id="browsermessage"></p>
+          <p>If you need Microsoft Edge you can find it <a href="https://www.microsoft.com/en-us/edge">here.</a>
+          </p>
+        </div>
+        <div class="col-md-6">
+          <img class="img-fluid" src="images/esptool/edge.jpg" alt="">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-shot-info section-sm bg-gray">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mt-20">
+          <h2>Get a Chip</h2>
+          <p>The next thing you will need is micro-controller. You can use the ESP8266 or the ESP32. These are
+            available on lots of different
+            boards, we suggest the WEMOS D1 mini if you want an ESP8266 or the WEMOS D1 ESP32 if you want the ESP32. You
+            can find
+            these devices from suppliers such as <a href="https://www.aliexpress.com/">Ali Express.</a>
+          <p>If you are using a Name In Lights device it will already have a processor fitted and you can just connect
+            it.
+          </p>
+        </div>
+        <div class="col-md-6">
+          <img class="img-fluid" src="images/getStarted/esp32andesp8266.jpg" alt="">
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="about-shot-info section-sm">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mt-20">
+          <h2>Plug in your Device</h2>
+          <p>You'll need a usb cable to connect your device to your computer. When you plug it the computer should
+            recognise it automatically and install the drivers.
+            If it doesn't you may have to install them by hand. </p>
+          <p>In Windows you can check in Device Manager to make sure that the device is working OK. Click
+            the Windows Start button and search for 'Device' and then select the Device Manager from the menu. If all is
+            well you should see your device appear.
+            </a>.
+            </a> </p>
+        </div>
+        <div class="col-md-6">
+          <img class="img-fluid" src="images/esptool/device manager.png" alt="">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-shot-info section-sm bg-gray">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mt-20">
+          <h2>Get connected</h2>
+          <p>Next, you need to connect your device to the browser. Press the Connect Device button below when you are
+            ready.</p>
+          <p>
+            <button class="menuButton" onclick="doConnect();">Connect Device</button>
+          </p>
+          <p>A dialog box will pop up inviting you to select a device to program.</p>
+          <p>I'm using a device connected to COM5. The number will vary, depending on which socket you plug the device
+            into.
+            If you are not using Windows 10 the ports won't have a number, instead there might be some strange names.
+            You can try each one in turn, reloading the page between attempts.
+            If the name includes the word 'Bluetooth' then I don't think it will work.</p>
+          <p>When you have selected the port you want to use, press the Connect button in the dialog to connect. Then
+            move down to the next stage. </p>
+        </div>
+        <div class="col-md-6">
+          <img class="img-fluid" src="images/esptool/Connect dialogue.png" alt="">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-shot-info section-sm">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mt-20">
+          <h2>Start the Setup</h2>
+          <p>Now that you are connected you can start the process. Press the Flash button when you are ready.</p>
+          <p>
+            <button class="menuButton" onclick="doFlash();">Flash</button>
+          </p>
+          <p>Note that this will take a while. The log window will show the progress.</p>
+          <p>If the process stops at the 'sync' part this might be because your device has not reset.
+            You can try pressing the reset button on your device, reloading this page in your browser and trying again.
+          </p>
+          <p>We've not tested the process with every possible ESP device, and some don't respond to our reset signals.
+            However, if you are using a Wemos device it should just work.
+          </p>
+        </div>
+        <div class="col-md-6">
+          <h2>Log Window</h2>
+          <textarea class="logOutput" rows="15" cols="60" id="logOutput"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-shot-info section-sm bg-gray">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mt-20">
+          <h2>Configure your device</h2>
+          <p>You can do all the configuration from this terminal. You type a command and send it to the box which then
+            acts on the command.
+            There are commands to store setting values in a box
+            and also commands to tell a box what to do in response to an event. Press Connect to connect the terminal to
+            your box.
+          </p>
+          <p>
+            <button class="menuButton" onclick="doTerminal();">Connect</button>
+          </p>
+          <h2>Setup WiFi</h2>
+          <p>To connect a box to your WiFi you need to set the name of the access point and the password for the
+            network. You do this
+            by assiging values to two settings:
+          </p>
+          <pre>
+            wifissid1=yourWiFiSSid
+            wifipwd1=yourWiFipassword
+          </pre>
+          <p>
+            These credentials will be stored securely in the box.
+          </p>
+          <h2>Setup MQTT</h2>
+          <p>If you want your box to be able to connect to other boxes you will have to enter some MQTT creditials. You
+            can use
+            the oppen HiveMQTT server by making the following setting:
+          </p>
+          <pre>
+            mqtthost=broker.hivemq.com
+          </pre>
+          <p>
+            These credentials will be stored securely in the box.
+          </p>
+          <h2>Restart the box</h2>
+          <p>Once you have entered these settings you can restart your box so that they take effect.
+          </p>
+          <pre>
+            restart
+          </pre>
+
+
+        </div>
+        <div class="col-md-6">
+          <h2>Box output</h2>
+          <textarea class="logOutput" rows="30" cols="60" id="terminalOutput"
+            onkeypress="doTerminalOutputKeypress();"></textarea>
+          <h2>Your input</h2>
+          <textarea class="logOutput" rows="1" cols="60" id="terminalInput"
+            onkeypress="doTerminalInputKeypress(event);"></textarea>
+          <p>
+            <button class="menuButton" onclick="doSend();">Send</button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-shot-info section-sm">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mt-20">
+          <h2>What to do next</h2>
+          <p>Congratulations. You now have a Connected Little Box that is connected to your network. For ideas of what
+            to do with it, take a
+            look in our projects folder <a href="projects.html">here</a>.
+          </p>
+          <p>You can find a complete user manual for all the commands you can use with your Connected Little Box
+            <a
+              href="https://github.com/connected-little-boxes/box-code/blob/main/doc/Connected%20Little%20Box%20Reference.pdf">here.</a>
+          </p>
+        </div>
+        <div class="col-md-6">
+          <a
+            href="https://github.com/connected-little-boxes/box-code/blob/main/doc/Connected%20Little%20Box%20Reference.pdf">
+            <img class="img-fluid" src="images/getStarted/Manual.png" alt=""> </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-2 section section-sm bg-gray">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mt-20">
+          <h2>Problems?</h2>
+          <h3>Strange messages about WiFi connections</h3>
+          <p>A newly created device will try to establish a WiFi connection when it starts. You might see some messages about this.</p>
+          <h3>Device not connecting</h3>
+          <p>If you get timeout messages in the Flash display your device might not be connected, or you might
+            have selected the wrong device at the 'Get Connected' step. Try again with a different device. If you are
+            not using
+            a Wemos device you might need to press the Reset button on the device (along with a 'program' button) to get
+            the
+            device into the bootloader state. Do this while the device is connected and after you have clicked the Flash
+            button.
+          </p>
+          <h3>Supported devices</h3>
+          <p>If you don't see the start messages when your newly flashed device starts up it might be that your device
+            is not compatible with the
+            binary images. These are the devices that we know work at the moment. More will 
+            be added as we test them and build images. 
+          </p>
+          <ul class="checklist">
+            <li>Wemos D1 Mini ESP8266</li>
+            <li>Wemos D1 Mini ESP32</li>
+            <li>Node mcu ESP8266 (once you get it into boot mode by pressing the buttons)</li>
+            <li>DOIT ESP32 (once you get it into boot mode)</li>
+            <li>M5 Stick ESP32 (but no access to screen or buttons - yet)</li>
+            <li>M5 Stack ESP32 (but no access to screen or buttons - yet)</li>
+            <li>M5 Atom ESP32 (but no access to screen or buttons - yet)</li>
+            <li>Heltec ESP32 (but no access to screen or buttons - yet)</li>
+          </ul>
+        </div>
+      </div>
+  </section>
+
+  <footer id=" footer" class="bg-one">
+    <div class="top-footer">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-3 col-md-3 col-lg-3">
+            <h3>about</h3>
+            <p>Connected Little Boxes are a community outreach project from Connected Humber CIC.</p>
+          </div>
+          <!-- End of .col-sm-3 -->
+          <div class="col-sm-3 col-md-3 col-lg-3">
+            <ul>
+              <li>
+                <h3>Quick Links</h3>
+              </li>
+              <li><a href="https://github.com/connected-little-boxes">Connected Little Boxes on GitHub </a></li>
+              <li><a href="https://mattermost.connectedhumber.org/default/channels/connected-little-boxes">Connected
+                  Little Boxes on MatterMost</a>
+              </li>
+              <li><a href="mailto:connectedlittleboxes@robmiles.com">email us</a>
+              </li>
+            </ul>
+          </div>
+          <!-- End of .col-sm-3 -->
+        </div>
+      </div> <!-- end container -->
+    </div>
+    <div class="footer-bottom">
+      <h5>Copyright 2021. All rights reserved.</h5>
+    </div>
+  </footer> <!-- end footer -->
+
+  <!-- end Footer Area
+    ========================================== -->
+
+
+
+  <!-- 
+    Essential Scripts
+    =====================================-->
+  <!-- Main jQuery -->
+  <script src="plugins/jquery/jquery.min.js"></script>
+
+  <!-- Form Validation -->
+  <script src="plugins/form-validation/jquery.form.js"></script>
+  <script src="plugins/form-validation/jquery.validate.min.js"></script>
+
+  <!-- Bootstrap4 -->
+  <script src="plugins/bootstrap/js/bootstrap.min.js"></script>
+  <!-- Parallax -->
+  <script src="plugins/parallax/jquery.parallax-1.1.3.js"></script>
+  <!-- lightbox -->
+  <script src="plugins/lightbox2/dist/js/lightbox.min.js"></script>
+  <!-- Owl Carousel -->
+  <script src="plugins/slick/slick.min.js"></script>
+  <!-- filter -->
+  <script src="plugins/filterizr/jquery.filterizr.min.js"></script>
+  <!-- Smooth Scroll js -->
+  <script src="plugins/smooth-scroll/smooth-scroll.min.js"></script>
+
+  <script src="js/esptool/ESPManager.js"></script>
+  <script src="js/esptool/ESPToolJS.js"></script>
+  <script src="js/esptool/ESP32.js"></script>
+  <script src="js/esptool/ESP8266.js"></script>
+  <script src="js/esptool/SerialManager.js"></script>
+  <script src="js/esptool/stubs.js"></script>
+  <script src="js/simpleterm/terminal.js"></script>
+
+
+  <!-- Custom js -->
+  <script src="js/script.js"></script>
+
+  <!-- esptool functions -->
+  <script>
+
+    var device = null;
+    var connected = false;
+    var terminal = null;
+
+    function addLineToLog(message) {
+      let output = document.getElementById('logOutput');
+      output.value = output.value + message + '\n';
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function addTextToTerminal(text) {
+      let output = document.getElementById('terminal');
+      output.value = output.value + text;
+      output.scrollTop = output.scrollHeight;
+    }
+
+    async function connect() {
+      console.log("Connecting..");
+
+      if (device === null) {
+        device = new ESPManager(addLineToLog);
+      }
+
+      let { worked, message } = await device.connect();
+
+      if (!worked) {
+        alert(message);
+        connected = false;
+        return false;
+      }
+      else {
+        connected = true;
+        return true;
+      }
+    }
+
+    function doTerminalOutputKeypress() {
+      alert("Type your input into the window below the terminal output");
+    }
+
+    async function doTerminalInputKeypress(event) {
+      if (event.keyCode == 13) {
+        await doSend();
+      }
+    }
+
+    async function doFlash() {
+
+      // Automatically connect if we have not been connected already
+
+      if (!connected) {
+        let result = await connect();
+        if (!result) {
+          return;
+        }
+      }
+
+      console.log("Flashing..");
+
+      let { worked, message } = await device.flashDevice();
+
+      console.log(message);
+
+      if (!worked) {
+        alert(message);
+      }
+      connected = false;
+    }
+
+    async function doConnect() {
+      connect();
+    }
+
+    function handleIncomingText(text) {
+      let output = document.getElementById('terminalOutput');
+      output.value = output.value + text;
+      output.scrollTop = output.scrollHeight;
+    }
+
+    async function doTerminal() {
+      if (terminal == null) {
+        terminal = new Terminal();
+      }
+      let reply = await terminal.connectToSerialPort();
+
+      if (reply != "") {
+        alert(reply);
+        return;
+      }
+      terminal.startSerialPump(handleIncomingText);
+      handleIncomingText("Terminal connected\n");
+    }
+
+    async function doSend() {
+      if (terminal == null) {
+        await doTerminal();
+      }
+      let input = document.getElementById('terminalInput');
+      let text = input.value;
+      text = text + '\n\r';
+      await terminal.sendText(text);
+      input.value = "";
+    }
+
+    async function doCheckBrowser() {
+      let para = document.getElementById("browsermessage");
+      if ("serial" in navigator) {
+        this.port = null;
+        para.textContent = "This browser supports serial connection. Connect your device using a USB cable to begin programming it.";
+      }
+      else {
+        para.textContent = "This browser does not support serial connection. You will have to download a browser based on the Chromium platform"
+        "We suggest Microsoft Edge or Google Chrome.";
+      }
+    }
+
+  </script>
+
+</body>
+
+</html>

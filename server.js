@@ -31,6 +31,8 @@ var users = require('./routes/users');
 var terminal = require('./routes/terminal');
 var deviceSelect = require('./routes/deviceSelect');
 var lightShow = require('./routes/lightShow');
+var createDevice = require('./routes/createDevice');
+var configureWiFi = require('./routes/configureWiFi');
 
 console.log("Starting up...");
 
@@ -45,6 +47,7 @@ mgr.startServices().then(() => {
     res.render('index.ejs', { name: res.user.name, role: res.user.role, devices: userDevices });
   });
 
+  app.use('/js', express.static('js'));
   app.use('/devices', devices);
   app.use('/users', users);
   app.use('/login', login);
@@ -54,6 +57,8 @@ mgr.startServices().then(() => {
   app.use('/terminal', terminal);
   app.use('/deviceSelect', deviceSelect);
   app.use('/lightShow', lightShow);
+  app.use('/createDevice', createDevice);
+  app.use('/configureWiFi', configureWiFi);
   app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));  
   console.log(`Server listening on:${port}`);
 
