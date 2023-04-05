@@ -456,7 +456,7 @@ class Manager {
             });
 
         promiseList[1] = this.startMqttPromise(
-            process.env.MQTT_HOST_URL,
+            "mqtt://" + process.env.MQTT_HOST_URL,
             {
                 clientID: process.env.MQTT_CLIENT_ID,
                 username: process.env.MQTT_USER,

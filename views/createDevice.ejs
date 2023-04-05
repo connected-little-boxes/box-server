@@ -26,6 +26,7 @@
   <script src="/js/esptool/ESP32.js"></script>
   <script src="/js/esptool/ESP8266.js"></script>
   <script src="/js/esptool/SerialManager.js"></script>
+  <script src="/js/esptool/ConsoleIO.js"></script>
   <script src="/js/esptool/stubs.js"></script>
   <script src="/js/simpleterm/terminal.js"></script>
 
@@ -34,12 +35,73 @@
     var device = null;
     var connected = false;
     var terminal = null;
+    let hostAddress = "http://localhost:3000/";
+
+    let settingsURL = hostAddress + "createDevice/networkSettings.json";
+
     var stage;
+
     const stages = {
-      ConnectUSB: "ConnectUSB",
-      ConnectToDevice: "ConnectToDevice",
-      StartFlash: "StartFlash",
-      ConnectFailed: "ConnectFailed"
+      ConnectUSB: {
+        description: ["*Plug into the usb socket",
+          `You'll need a usb cable to connect your device to your computer. When you plug it the computer should recognise it automatically and install the drivers. If it doesn't you may have to install them by hand. `,
+          `In Windows you can check in Device Manager to make sure that the device is working OK. Click the Windows Start button and search for 'Device' and then select the Device Manager from the menu. If all is well you should see your device appear.`,
+          "Press device plugged in when your device is plugged in."],
+        inputFields: [],
+        buttonText: "Device plugged in",
+        buttonDest: doConnectToDevice
+      },
+      ConnectToDevice: {
+        description: ["*Connect to device",
+          `Next we will connect your device to the browser. Press the Connect Device button below when you are ready.`,
+          `A dialog box will pop up inviting you to select a device to program.`,
+          "Press Connect to device when you are ready."],
+        inputFields: [],
+        buttonText: "Connect to device",
+        buttonDest: doAttemptConnection
+      },
+      StartFlash: {
+        description: ["*Start the flash",
+          `Now that you are connected you can start the process.`,
+          `Note that this will take a while. The log window will show the progress.`,
+          `If the process stops at the 'sync' part this might be because your device has not reset.`,
+          `You can try pressing the reset button on your device, reloading this page in your browser and trying again.`,
+          `We've not tested the process with every possible ESP device, and some don't respond to our reset signals. However, if you are using a Wemos device it should just work.`,
+          "Press Start Flash when you are ready."],
+        inputFields: [],
+        buttonText: "Start Flash",
+        buttonDest: doStartFlash
+      },
+      ConnectFailed: {
+        description: ["*Connect failed",
+          `The connection to your device seems to have failed`,
+          `Make sure that it is connected correctly.`,
+          "Press Retry Connection to try again."],
+        inputFields: [],
+        buttonText: "Retry",
+        buttonDest: doAttemptConnection
+      },
+      ConfigWiFi: {
+        description: ["*Configure Device Connections",
+          `Enter the settings that the device will use to connect to the WiFi.`,
+          `They are stored securely in the device.`,
+          `Other settings will be downloaded from the internet and used to connect your device to the server.`
+        ],
+        inputFields: [
+          { displayName: "WiFi SSID", deviceName: "wifissid1", type: "text", allowEmpty: false },
+          { displayName: "WiFi Password", deviceName: "wifipwd1", type: "password", allowEmpty: false }
+        ],
+        buttonText: "Submit",
+        buttonDest: doConfigWiFi
+      },
+      ConfigSuccess:{
+        description: ["*Configuration complete",
+          'The device has been configured as a Connected Little Box.',
+        'You will find it listed in your devices.'],
+        inputFields:[],
+        buttonText: "Done",
+        buttonDest: doGoHome
+      }
     }
 
     function displayStage(stage) {
@@ -65,6 +127,21 @@
         stageElement.appendChild(element);
       });
 
+      stage.inputFields.forEach(field => {
+        let divElement = document.createElement("div");
+        divElement.className = "form-group mt-4";
+        let labelElement = document.createElement("label");
+        labelElement.setAttribute('for', field.deviceName);
+        labelElement.textContent = field.displayName;
+        divElement.appendChild(labelElement);
+        let inputElement = document.createElement("input");
+        inputElement.setAttribute("type", field.type);
+        inputElement.setAttribute("id", field.deviceName);
+        inputElement.className = "form-control";
+        divElement.appendChild(inputElement);
+        stageElement.appendChild(divElement);
+      });
+
       let button = document.createElement("button");
       button.className = "btn btn-success mb-4 btn-block";
       button.textContent = stage.buttonText;
@@ -74,51 +151,7 @@
 
     function selectStage(newStage) {
       stage = newStage;
-      switch (stage) {
-        case stages.ConnectUSB:
-          displayStage({
-            description: ["*Plug into the usb socket",
-              `You'll need a usb cable to connect your device to your computer. When you plug it the computer should recognise it automatically and install the drivers. If it doesn't you may have to install them by hand. `,
-              `In Windows you can check in Device Manager to make sure that the device is working OK. Click the Windows Start button and search for 'Device' and then select the Device Manager from the menu. If all is well you should see your device appear.`,
-              "Press device plugged in when your device is plugged in."],
-            buttonText: "Device plugged in",
-            buttonDest: doConnectToDevice
-          });
-          break;
-        case stages.ConnectToDevice:
-          displayStage({
-            description: ["*Connect to device",
-              `Next we will connect your device to the browser. Press the Connect Device button below when you are ready.`,
-              `A dialog box will pop up inviting you to select a device to program.`,
-              "Press Connect to device when you are ready."],
-            buttonText: "Connect to device",
-            buttonDest: doAttemptConnection
-          });
-          break;
-        case stages.StartFlash:
-          displayStage({
-            description: ["*Start the flash",
-              `Now that you are connected you can start the process.`,
-              `Note that this will take a while. The log window will show the progress.`,
-              `If the process stops at the 'sync' part this might be because your device has not reset.`,
-              `You can try pressing the reset button on your device, reloading this page in your browser and trying again.`,
-              `We've not tested the process with every possible ESP device, and some don't respond to our reset signals. However, if you are using a Wemos device it should just work.`,
-              "Press Start Flash when you are ready."],
-            buttonText: "Start Flash",
-            buttonDest: doStartFlash
-          });
-          break;
-        case stages.ConnectFailed:
-          displayStage({
-            description: ["*Connect failed",
-              `The connection to your device seems to have failed`,
-              `Make sure that it is connected correctly.`,
-              "Press Retry Connection to try again."],
-            buttonText: "Retry",
-            buttonDest: doAttemptConnection
-          });
-          break;
-      }
+      displayStage(stage);
     }
 
     function doStart() {
@@ -128,6 +161,92 @@
 
     function doConnectToDevice() {
       selectStage(stages.ConnectToDevice);
+    }
+
+    let textHandlerFunction = null;
+
+    function handleIncomingText(text) {
+      console.log(`Received:${text}`)
+      if (textHandlerFunction != null) {
+        textHandlerFunction(text);
+      }
+    }
+
+    function getFromServer(url, handler) {
+      fetch(url).then(response => {
+        response.text().then(result => {
+          handler(result);
+        }).catch(error => alert("Bad text: " + error));
+      }).catch(error => alert("Bad fetch: " + error));
+    }
+
+    async function doConfigWiFi() {
+
+      let fields = stages.ConfigWiFi.inputFields;
+      let commandList = [];
+
+      for (let i = 0; i < fields.length; i++) {
+        let field = fields[i];
+        let inputElement = document.getElementById(field.deviceName);
+        let value = inputElement.value;
+        if (value == "") {
+          if (!field.allowEmpty) {
+            alert(`Please fill in ` + field.displayName);
+            return;
+          }
+        }
+        let command = field.deviceName + "=" + value;
+        commandList.push(command);
+      }
+
+      addLineToLog("Connecting to device");
+
+      let consoleIO = new ConsoleIO();
+
+      let result;
+      result = await consoleIO.connectToSerialPort();
+      if (result != "") {
+        alert("Could not continue: " + result);
+        selectStage(stages.ConnectFailed);
+        return;
+      }
+      else {
+        consoleIO.startSerialPump(handleIncomingText);
+      }
+
+      // now get the rest of the settings from the server to send to the device
+
+      addLineToLog("Getting device name");
+
+      let deviceName = await consoleIO.performCommand("mqttdevicename");
+
+      let fullURL = settingsURL + "/" + deviceName;
+
+      addLineToLog("Getting setting information from the server");
+
+      getFromServer(fullURL, async settingsJSON => {
+        let settings = JSON.parse(settingsJSON);
+        for (let i = 0; i < settings.length; i++) {
+          let setting = settings[i];
+          let command = setting.deviceName + "=" + setting.value;
+          commandList.push(command);
+        }
+
+        commandList.push("wifiactive=yes");
+        commandList.push("mqttactive=yes");
+
+        addLineToLog("Sending settings to the device");
+
+        await consoleIO.performCommands(commandList);
+        addLineToLog("Device configured");
+
+        addLineToLog("Resetting device");
+        await consoleIO.performCommand("restart");
+        addLineToLog("Device reset");
+
+        selectStage(stages.ConfigSuccess);
+
+      });
     }
 
     async function doAttemptConnection() {
@@ -142,7 +261,7 @@
 
     async function doStartFlash() {
       await doFlash();
-      window.location.href = '/configureWiFi';
+      selectStage(stages.ConfigWiFi);
     }
 
     function addLineToLog(message) {
@@ -177,16 +296,6 @@
       }
     }
 
-    function doTerminalOutputKeypress() {
-      alert("Type your input into the window below the terminal output");
-    }
-
-    async function doTerminalInputKeypress(event) {
-      if (event.keyCode == 13) {
-        await doSend();
-      }
-    }
-
     async function doFlash() {
 
       // Automatically connect if we have not been connected already
@@ -211,54 +320,8 @@
       return true;
     }
 
-    async function doConnect() {
-      let result = await connect();
-      if (result) {
-
-      }
-    }
-
-    function handleIncomingText(text) {
-      let output = document.getElementById('terminalOutput');
-      output.value = output.value + text;
-      output.scrollTop = output.scrollHeight;
-    }
-
-    async function doTerminal() {
-      if (terminal == null) {
-        terminal = new Terminal();
-      }
-      let reply = await terminal.connectToSerialPort();
-
-      if (reply != "") {
-        alert(reply);
-        return;
-      }
-      terminal.startSerialPump(handleIncomingText);
-      handleIncomingText("Terminal connected\n");
-    }
-
-    async function doSend() {
-      if (terminal == null) {
-        await doTerminal();
-      }
-      let input = document.getElementById('terminalInput');
-      let text = input.value;
-      text = text + '\n\r';
-      await terminal.sendText(text);
-      input.value = "";
-    }
-
-    async function doCheckBrowser() {
-      let para = document.getElementById("browsermessage");
-      if ("serial" in navigator) {
-        this.port = null;
-        para.textContent = "This browser supports serial connection. Connect your device using a USB cable to begin programming it.";
-      }
-      else {
-        para.textContent = "This browser does not support serial connection. You will have to download a browser based on the Chromium platform"
-        "We suggest Microsoft Edge or Google Chrome.";
-      }
+    function doGoHome(){
+      window.location.replace("/");      
     }
 
   </script>

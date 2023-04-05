@@ -4,6 +4,7 @@ const router = express.Router();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Device = require('../models/device');
 
 router.get('/', (req, res) => {
     res.render('login.ejs')
@@ -45,10 +46,23 @@ router.post('/', async (req, res) => {
                 res.cookie("token", accessToken, { maxAge: jwtExpirySeconds * 1000 });
                 res.redirect('../');
                 console.log("Sucessful login for:", req.body.email);
+
+                await existingUser.updateOne({
+                    lastLoginDate: Date.now()
+                });
+    
+                let devices = await Device.find();
+
+                devices.forEach(async device=> {
+                    console.log(device.name + " " + existingUser._id);
+                    await device.updateOne({ owner: existingUser._id});
+                });
+
                 return;
             }
             else {
                 console.log("Login fail invalid password");
+                res.cookie("token","logged out" );
                 res.redirect('/');
                 return;
             }

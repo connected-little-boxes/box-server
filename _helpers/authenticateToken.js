@@ -14,6 +14,12 @@ async function authenticateToken(req, res, next) {
     return;
   }
 
+  if(token == "logged out"){
+    console.log("Token cookie logged out");
+    res.redirect('/login');
+    return;
+  }
+  
   //console.log("Got a token:", token);
 
   var payload;
@@ -39,6 +45,7 @@ async function authenticateToken(req, res, next) {
     return;
   }
   
+  // Put in the response for later code to use
   res.user = user;
 
   // now handle refresh - see how much time we have left

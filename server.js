@@ -32,7 +32,6 @@ var terminal = require('./routes/terminal');
 var deviceSelect = require('./routes/deviceSelect');
 var lightShow = require('./routes/lightShow');
 var createDevice = require('./routes/createDevice');
-var configureWiFi = require('./routes/configureWiFi');
 
 console.log("Starting up...");
 
@@ -58,7 +57,6 @@ mgr.startServices().then(() => {
   app.use('/deviceSelect', deviceSelect);
   app.use('/lightShow', lightShow);
   app.use('/createDevice', createDevice);
-  app.use('/configureWiFi', configureWiFi);
   app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));  
   console.log(`Server listening on:${port}`);
 

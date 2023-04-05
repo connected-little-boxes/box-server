@@ -17,6 +17,11 @@ const userSchema = new mongoose.Schema(
         email: {
             type: String,
             required: true
+        },
+        lastLoginDate: {
+            type: Date,
+            default: Date.now(),
+            required: true
         }
     });
 
