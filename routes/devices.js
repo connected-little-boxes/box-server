@@ -4,27 +4,8 @@ const router = express.Router();
 const Device = require('../models/device');
 const Manager = require('../manager');
 const authenticateToken = require('../_helpers/authenticateToken');
+const getDeviceByDeviceName = require('../_helpers/getDeviceByDeviceName');
 
-async function getDeviceByDeviceName(req, res, next) {
-  let device;
-
-  try {
-
-    device = await Device.findOne({ name: req.params.name });
-
-    if (device === null) {
-      return res.status(404).json({ message: 'Cannot find device' });
-    }
-  }
-  catch (err) {
-    res.status(500).json({ message: err.message });
-    return;
-  }
-
-  response.device = device;
-
-  next();
-}
 
 // define the home page route
 router.get('/', authenticateToken, async function (req, res) {
