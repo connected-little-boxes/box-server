@@ -33,6 +33,8 @@ var deviceSelect = require('./routes/deviceSelect');
 var lightShow = require('./routes/lightShow');
 var createDevice = require('./routes/createDevice');
 
+var pixel = require('./routes/pixel');
+
 console.log("Starting up...");
 
 const mgr = Manager.getActiveManger();
@@ -57,6 +59,8 @@ mgr.startServices().then(() => {
   app.use('/deviceSelect', deviceSelect);
   app.use('/lightShow', lightShow);
   app.use('/createDevice', createDevice);
+
+  app.use('/pixel', pixel);
   app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));  
   console.log(`Server listening on:${port}`);
 

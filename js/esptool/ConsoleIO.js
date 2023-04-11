@@ -31,11 +31,31 @@ class ConsoleIO {
   handleCommand(text) {
     console.log("Got a reply:" + text + " " + text.length);
     if (this.gotCommandBack) {
+      this.gotCommandBack = false;
       this.command = "";
-      // this is the response to the command
+      // text contains the response to the command
+      if(text.startsWith("{")){
+        // might be a respose to a JSON command - check for OK
+        try{
+          let responseObject = JSON.parse(text);
+          if(responseObject.error == 0){
+            // no error - promise has been kept
+            this.kept(responseObject.message);
+          }
+          else {
+            this.broken(text);
+            return;
+          }
+        }
+        catch (e){
+          this.broken(e);
+          return;
+        }
+      }
       if (text == "done") {
         console.log("command complete");
         this.kept(text);
+        return;
       }
       else {
         let replies = text.split('=');

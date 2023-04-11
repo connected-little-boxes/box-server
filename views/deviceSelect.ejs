@@ -13,10 +13,22 @@
 <body>
     <div class="container mb-2 mt-2">
         <h1 class="mb-4">Connected Little Boxes</h1>
-        <h2 class="mb-4"><%= name %>
+        <h2 class="mb-2">
+            <%= name %>
         </h2>
+
+        <div class="form-group">
+            <form action="/deviceSelect" method="POST">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="filter" name="filter">
+                    <div class="input-group-append ml-2">
+                        <button class="btn btn-primary" type="submit">Filter</button>
+                    </div>
+                </div>
+        </div>
+
         <div class="container">
-            <h3 class="mb-4">Devices</h3>
+            <h3 class="mb-4">Device List</h3>
             <% devices.forEach(device=> { %>
                 <div class="card mb-4">
                     <h4 class="card-title">
@@ -35,7 +47,8 @@
         </div>
         <div class="container mb-4">
             <% var registerButton="" ; if(role=="admin" ) registerButton=`<a href="/register"
-                class="btn btn-success mb-4">Register</a>`
+                class="btn btn-success mb-4">
+                Register</a>`
                 %>
                 <%- registerButton %>
                     <a href="/" class="btn btn-success mb-4">Done</a>

@@ -53,15 +53,16 @@
                 <label for="tags">Tags</label>
                 <input required type="text" name="tags" id="tags" class="form-control" value="<%= device.tags %>">
             </div>
-            <div class="form-group">
-                <label for="bootCommands">Boot Commands</label>
-                <% let bootCommands; if(device.bootCommands !=null) bootCommands=device.bootCommands; else
-                    bootCommands="" ; %>
-                    <textarea type="text" name="bootCommands" id="bootCommands"
-                        class="form-control"><%=bootCommands%> </textarea>
-            </div>
             <button type="submit" class="btn btn-primary mt-4">Update</button>
         </form>
+
+        <h2 class="mb-4 mt-4">
+            Configure Processes
+        </h2>
+        <div class="container mb-4 mt-4">
+            <a href="/pixel" class="btn btn-success mb-4">Pixels</a>
+        </div>
+
         <form action="/devices/sendconsolecommand/<%= device.name %>"" method="POST">
             <div class="form-group mt-4">
                 <label for="consoleCommand">Console Command</label>
