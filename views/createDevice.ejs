@@ -10,7 +10,7 @@
   <title>Connected Little Boxes</title>
 </head>
 
-<body onload="doStart();">
+<body onload= "doStart('<%= host %>');" >
   <div class="container mb-4">
     <h3 class="mt-2 mb-2">
       <%= name %>
@@ -35,9 +35,9 @@
     var device = null;
     var connected = false;
     var terminal = null;
-    let hostAddress = "http://localhost:3000/";
+    let hostAddress ;
 
-    let settingsURL = hostAddress + "createDevice/networkSettings.json";
+    let settingsURL;
 
     var stage;
 
@@ -154,8 +154,11 @@
       displayStage(stage);
     }
 
-    function doStart() {
+    function doStart(host) {
       console.log("starting");
+      hostAddress = host;
+      settingsURL = hostAddress + "createDevice/networkSettings.json"
+
       selectStage(stages.ConnectUSB);
     }
 

@@ -30,6 +30,7 @@ class Manager {
     }
 
     startMqttPromise(hostUrl, options) {
+        console.log(`Connecting to MQTT servrer at: ${hostUrl}`);
         return new Promise((kept, broken) => {
             const mqttClient = mqtt.connect(hostUrl, options);
             mqttClient.on("connect", () => kept(mqttClient));

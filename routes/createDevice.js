@@ -6,7 +6,7 @@ const authenticateToken = require('../_helpers/authenticateToken');
 // define the home page route
 router.get('/', authenticateToken, async function (req, res) {
 
-    res.render("createDevice.ejs", { name: res.user.name });
+    res.render("createDevice.ejs", { name: res.user.name, host: process.env.HOST_ADDRESS });
 });
 
 
