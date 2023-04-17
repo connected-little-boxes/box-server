@@ -64,19 +64,17 @@
                     { displayName: "Number of Y pixels", deviceName: "noofypixels", type: "number", allowEmpty: false, loadFromDevice: true }
                 ],
                 buttons: [
-                    { buttonText: "Configure pixels", buttonDest: doTestLights }
+                    { buttonText: "Configure pixels", buttonDest: doConfigPixels }
                 ]
             },
             PixelTest: {
                 description: ["*Pixel test",
-                    `The pixels should all have turned blue. If this has not happened.`],
+                    `Wait for the device to reset. Then click the "Test pixels" button. The pixels should turn blue. If they don't click "Reconfigure pixels" and try again.`],
                 inputFields: [
-                    { displayName: "Pixel Pin", deviceName: "pixelcontrolpin", type: "number", allowEmpty: false, loadFromDevice: true },
-                    { displayName: "Number of X pixels", deviceName: "noofxpixels", type: "number", allowEmpty: false, loadFromDevice: true },
-                    { displayName: "Number of Y pixels", deviceName: "noofypixels", type: "number", allowEmpty: false, loadFromDevice: true }
                 ],
                 buttons: [
-                    { buttonText: "Recconfigure pixels", buttonDest: doAttemptConnection },
+                    { buttonText: "Test pixels", buttonDest: doTestPixels },
+                    { buttonText: "Recconfigure pixels", buttonDest: doReconfigurePixels },
                     { buttonText: "Pixels are blue", buttonDest: doTestPassed }
                 ]
             },
@@ -88,15 +86,6 @@
                 inputFields: [],
                 buttons: [
                     { buttonText: "Retry", buttonDest: doAttemptConnection }
-                ]
-            },
-            ConfigSuccess: {
-                description: ["*Configuration complete",
-                    'The device has been configured as a Connected Little Box.',
-                    'You will find it listed in your devices.'],
-                inputFields: [],
-                buttons: [
-                    { buttonText: "Done", buttonDest: doGoHome }
                 ]
             }
         }
@@ -200,7 +189,11 @@
             }).catch(error => alert("Bad fetch: " + error));
         }
 
-        async function doTestLights() {
+        async function doReconfigurePixels(){
+            await selectStage(stages.PixelConfig);
+        }
+
+        async function doTestPixels() {
             // Turn all the lights blue
             let result = await consoleIO.performCommand(`{"process":"pixels","command":"setnamedcolour","colourname":"blue"}`);
             addLineToLog("Set pixels to blue");
@@ -226,7 +219,7 @@
             await selectStage(stages.PixelConfig);
         }
 
-        async function doTestPassed(){
+        async function doTestPassed() {
             window.location.replace("/");
         }
 
@@ -234,6 +227,41 @@
             let output = document.getElementById('logOutput');
             output.value = output.value + message + '\n';
             output.scrollTop = output.scrollHeight;
+        }
+
+        async function doConfigPixels() {
+
+            let fields = stages.PixelConfig.inputFields;
+            let commandList = [];
+
+            for (let i = 0; i < fields.length; i++) {
+                let field = fields[i];
+                let inputElement = document.getElementById(field.deviceName);
+                let value = inputElement.value;
+                if (value == "") {
+                    if (!field.allowEmpty) {
+                        alert(`Please fill in ` + field.displayName);
+                        return;
+                    }
+                }
+                let command = field.deviceName + "=" + value;
+                commandList.push(command);
+            }
+
+            addLineToLog("Connecting to device");
+
+            // now get the rest of the settings from the server to send to the device
+
+            addLineToLog("Sending settings to the device");
+
+            await consoleIO.performCommands(commandList);
+            addLineToLog("Device configured");
+
+            addLineToLog("Resetting device");
+            await consoleIO.performCommand("restart");
+            addLineToLog("Device reset");
+
+            selectStage(stages.PixelTest);
         }
 
 

@@ -45,19 +45,12 @@ router.post('/', async (req, res) => {
                 
                 res.cookie("token", accessToken, { maxAge: jwtExpirySeconds * 1000 });
                 res.redirect('../');
-                console.log("Sucessful login for:", req.body.email);
+                console.log("Successful login for:", req.body.email);
 
                 await existingUser.updateOne({
                     lastLoginDate: Date.now()
                 });
     
-                let devices = await Device.find();
-
-                devices.forEach(async device=> {
-                    console.log(device.name + " " + existingUser._id);
-                    await device.updateOne({ owner: existingUser._id});
-                });
-
                 return;
             }
             else {

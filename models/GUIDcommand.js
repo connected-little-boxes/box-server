@@ -2,13 +2,9 @@ const mongoose = require('mongoose');
 
 const GUIDcommandSchema = new mongoose.Schema(
     {
-        guid: {
+        guid: { 
             type: String,
             required: true
-        },
-        friendlyName: {
-            type: String,
-            required: false
         },
         command: {
             type: String,
@@ -18,15 +14,19 @@ const GUIDcommandSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        device: {
-            type: mongoose.Schema.Types.ObjectId,
+        pageQRcode: {
+            type: String,
+            required: true
+        },
+        devices: {
+            type: [mongoose.Schema.Types.ObjectId],
             ref:'Device',
             required: true
         },
         lastPerformedDate: {
             type: Date,
             default: Date.now(),
-            required: true
+            required: false
         },
         description: {
             type: String,
@@ -36,9 +36,9 @@ const GUIDcommandSchema = new mongoose.Schema(
         owner: {
             type: mongoose.Schema.Types.ObjectId,
             ref:'Owner',
-            required: false
+            required: true
         }
     });
 
-module.exports = mongoose.model('GUIDcommandSchema', GUIDcommandSchema);
+module.exports = mongoose.model('GUIDcommand', GUIDcommandSchema);
 

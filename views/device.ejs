@@ -53,21 +53,20 @@
                 <label for="tags">Tags</label>
                 <input required type="text" name="tags" id="tags" class="form-control" value="<%= device.tags %>">
             </div>
+            <div class="form-group">
+                <label for="bootCommands">Boot Commands</label>
+                <textarea required rows=5 type="text" name="bootCommands" id="bootCommands" class="form-control"><%= device.bootCommands %></textarea>
+            </div>
             <button type="submit" class="btn btn-primary mt-4">Update</button>
         </form>
 
-        <h2 class="mb-4 mt-4">
-            Configure Processes
-        </h2>
-        <div class="container mb-4 mt-4">
-            <a href="/pixel" class="btn btn-success mb-4">Pixels</a>
+        <div class="container mt-4">
+            <a href="/pixel" class="btn btn-success mb-4">Configure Pixel Hardware</a>
         </div>
 
-        <h2 class="mb-4 mt-4">
-            Create Controls
         </h2>
-        <div class="container mb-4 mt-4">
-            <a href="/pixel/control/<%= device.name %>" class="btn btn-success mb-4">Pixels</a>
+        <div class="container mb-4">
+            <a href="/GUIDcommand/manage/<%= device._id %>" class="btn btn-success mb-4">Manage QR Codes</a>
         </div>
 
         <form action="/devices/sendconsolecommand/<%= device.name %>"" method="POST">

@@ -30,7 +30,7 @@ class Manager {
     }
 
     startMqttPromise(hostUrl, options) {
-        console.log(`Connecting to MQTT servrer at: ${hostUrl}`);
+        console.log(`Connecting to MQTT server at: ${hostUrl}`);
         return new Promise((kept, broken) => {
             const mqttClient = mqtt.connect(hostUrl, options);
             mqttClient.on("connect", () => kept(mqttClient));
@@ -85,15 +85,20 @@ class Manager {
     }
 
     async doDeviceConnected(messageObject) {
+
         console.log("Connecting a device from: ", JSON.stringify(messageObject));
 
-        // make an entry into the connected table
+        // Log the connection
 
-        const result = await this.db.collection("connectLog").insertOne(messageObject);
+        let connection = new Connection(
+            {
+                device:messageObject.name,
+                date: new Date(),
+                resetCode: messageObject.resetcode
+            }
+        );
 
-        if (result.insertedCount == 1) {
-            console.log("Device: " + messageObject.name + " connection logged.");
-        }
+        await connection.save();
 
         var device = null;
 
@@ -105,16 +110,14 @@ class Manager {
 
                 const devCommandTopic = process.env.MQTT_TOPIC_PREFIX + "/command/" + device.name;
 
-                console.log("Might have boot commands:");
                 let commandList = device.bootCommands.split("\n");
 
                 for (let command of commandList) {
                     let commandText = command.trim()
                     if(commandText.length == 0){
-                        console.log("  Skipping empty string");
                         continue;
                     }
-                    console.log("    sending-", commandText);
+                    console.log("   sending boot command:", commandText);
                     await this.mqttClient.publish(devCommandTopic, commandText);
                 }
             }
@@ -122,11 +125,9 @@ class Manager {
             let displayName;
 
             if (device.friendlyName != "") {
-                console.log("got a friendly name");
                 displayName = device.friendlyName;
             }
             else {
-                console.log("Using device name");
                 displayName = messageObject.name;
             }
 
@@ -283,9 +284,8 @@ class Manager {
             command = JSON.stringify(commandObject);
         }
         catch (err) {
-            console.log('Sending:',command,"to:",topic);
             console.log(`Invalid json command:${command} error:${err} for:${deviceName}`);
-            return;
+            throw(err);
         }
         
         this.mqttClient.publish(topic,command);
@@ -388,12 +388,6 @@ class Manager {
         catch (err) {
             console.log("Invalid incoming json: " + err);
             return;
-        }
-
-        // ugly and to be removed in time....
-        if (messageObject.hasOwnProperty('device')) {
-            console.log("got device");
-            messageObject.name = messageObject.device;
         }
 
         if (topic === process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_CONNECTED_TOPIC) {

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>Connected Little Boxes</title>
+</head>
+
+<body>
+    <div class="container mb-4">
+        <h3 class="mt-2 mb-2">
+            <%= username %>
+        </h3>
+        <h1 class="mb-4">Connected Little Boxes</h1>
+        <h2 class="mb-2">Manage Actions</h2>
+    </div>
+    <div class="container mb-4">
+        <% GUIDcommands.forEach(GUIDcommand=> { %>
+            <div class="container mt-4 mb-4">
+                <p>
+                    <img src=" <%= GUIDcommand.pageQRcode %> "></img>
+                    </p>
+                    <p>
+                    <a href="<%= GUIDcommand.pageURL %>">
+                        <%= GUIDcommand.description %>
+                    </a>
+                </p>
+                <p>
+                    <%= GUIDcommand.command %>
+                </p>
+                <a href="/GUIDcommand/delete/<%= GUIDcommand.guid %>/<%= deviceID %>" class="btn btn-primary">Delete</a>
+                <a href="/GUIDcommand/edit/<%= GUIDcommand.guid %>/<%= deviceID %>" class="btn btn-primary">Edit</a>
+            <hr/>
+            </div>
+            <% }) %>
+    </div>
+    <div class="container mb-4">
+        <a href="/GUIDcommand/new/<%= deviceID %>" class="btn btn-success mb-4">New action</a>
+        <a href="/deviceSelect" class="btn btn-success mb-4">Done</a>
+    </div>  
+    <script>
+
+    </script>
+</body>
+
+</html>

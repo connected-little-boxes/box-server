@@ -16,11 +16,11 @@
     "express": "^4.17.1",
     "express-favicon": "^2.0.1",
     "express-flash": "0.0.2",
-    "express-jwt": "^6.0.0",
+    "express-jwt": "^8.4.1",
     "express-session": "^1.17.1",
     "mongoose": "^6.0.11",
     "mqtt": "^4.2.8",
-    "passport": "^0.4.1",
+    "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "qrcode": "^1.5.1",
     "slugify": "^1.4.6"
