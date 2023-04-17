@@ -5,7 +5,7 @@ const GUIDcommand = require('../models/GUIDcommand');
 const Manager = require('../manager');
 const authenticateToken = require('../_helpers/authenticateToken');
 const qrcode = require('qrcode');
-const crypto = require('crypto');
+const Uuid = require('uuid');
 
 function generateQRCode(data) {
     return new Promise((kept, broken) => {
@@ -22,7 +22,7 @@ function generateQRCode(data) {
 
 async function saveCommand(owner_id, device_id, command) {
 
-    const uuid = crypto.randomUUID();
+    const uuid = Uuid.v4();
 
     let url = process.env.HOST_ADDRESS + "GUIDcommand/" + uuid;
 

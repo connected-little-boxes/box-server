@@ -23,7 +23,8 @@
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "qrcode": "^1.5.1",
-    "slugify": "^1.4.6"
+    "slugify": "^1.4.6",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "dotenv": "^8.2.0",
