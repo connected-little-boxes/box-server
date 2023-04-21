@@ -39,19 +39,11 @@
                                     Last seen:<%= device.lastResponseDate.toLocaleDateString() %>
                                         <%= device.lastResponseDate.toLocaleTimeString() %>
                     </div>
-                    <a href="devices/<%= device.name %>" class="btn btn-primary">Manage Device</a>
+                    <a href="devices/<%= device.name %>" class="btn btn-primary btn-block">Manage Device</a>
                 </div>
                 <% }) %>
-        </div>
-        <div class="container mb-4">
-            <% var registerButton="" ; if(role=="admin" ) registerButton=`<a href="/register"
-                class="btn btn-success mb-4">
-                Register</a>`
-                %>
-                <%- registerButton %>
-                    <a href="/" class="btn btn-success mb-4">Done</a>
-        </div>
-    </div>
+                <a href="/" class="btn btn-primary mt-2 mb-4 btn-block">Done</a>
+            </div>
 </body>
 
 </html>

@@ -20,29 +20,31 @@
         </p>
         <p>Description: <%= command.description %>
         </p>
-        <a href="/command/commandDetailsEdit/<%= commandGroupGUID %>/<%= command.guid %>"
-            class="btn btn-success mt-2 mb-4 btn-block">Details edit</a>
+        <a href="/command/commandDetailsEdit/<%= commandGroup_id %>/<%= command._id %>"
+            class="btn btn-primary mt-2 mb-4 btn-block">Details edit</a>
     </div>
     <div class="container">
         <h3>
-            messages
+            Messages
         </h3>
             <% messageDescriptions.forEach(message=> { %>
             <p>
-                <%= message.name %>
+                Name: <%= message.name %>
                 </p>
                 <p>
-                    <%= message.description %>
+                Description: <%= message.description %>
                 </p>
-                    <a href="/command/commandMessageEdit/<%= message.guid %>/<%= command.guid %>/<%= commandGroupGUID %>"
-                        class="btn btn-success mb-4">Edit</a>
-                    <a href="/command/commandMessageDeleteConfirm//<%= message.guid %><%= command.guid %>/<%= commandGroupGUID %>"
-                        class="btn btn-success mb-4">Delete</a>
+                    <a href="/command/commandMessageEdit/<%= commandGroup_id %>/<%= command._id %>/<%= message._id %>"
+                        class="btn btn-primary mb-4">Edit</a>
+                    <a href="/command/commandMessageDeleteConfirm/<%= commandGroup_id %>/<%= command._id %>/<%= message._id %>"
+                        class="btn btn-primary mb-4">Delete</a>
             </p>
             <% }) %>
-                <a href="/command/commandMessageNew/<%= command.guid %>/<%= commandGroupGUID %>" class="btn btn-success mt-2 mb-4 btn-block">New
+                <a href="/command/commandMessageNew/<%= commandGroup_id %>/<%= command._id %>" class="btn btn-primary mt-2 mb-4 btn-block">New
                     Message</a>
-    </div>
+                    <a href="/command/commandGroupEdit/<%= commandGroup_id %>" class="btn btn-primary mt-2 mb-4 btn-block">
+                        Done</a>
+        </div>
 
 </body>
 

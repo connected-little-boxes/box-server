@@ -23,35 +23,16 @@ function generateQRCode(data) {
     });
 }
 
-async function saveCommandGroup(owner_id) {
-
-    const uuid = Uuid.v4();
-
-    let url = process.env.HOST_ADDRESS + "command/" + uuid;
-
-    let qrCode = await generateQRCode(url);
-
-    let newCommandGroup = new CommandGroup({
-        guid: uuid,
-        pageURL: url,
-        pageQRcode: qrCode,
-        owner: owner_id
-    });
-
-    await newCommandGroup.save();
-    return newCommandGroup;
-}
-
 async function buildCommandDescription(commandGroup) {
     let commands = [];
 
     for (let i = 0; i < commandGroup.commands.length; i++) {
-        let commandGUID = commandGroup.commands[i];
+        let command_id = commandGroup.commands[i];
         let command = await Command.findOne(
-            { guid: commandGUID }
+            { _id: command_id }
         );
         let commandDetails = {
-            guid: command.guid,
+            _id: command._id,
             name: command.name,
             description: command.description
         };
@@ -61,25 +42,29 @@ async function buildCommandDescription(commandGroup) {
     return commands;
 }
 
+async function buildOneCommandMessageDescription(message_id) {
+    let message = await CommandDeviceMessage.findOne(
+        { _id: message_id }
+    );
+    let device = await Device.findOne(
+        { _id: message.device }
+    );
+    let messageDetails = {
+        _id: message.id,
+        name: message.name,
+        description: message.description,
+        message: message.message,
+        deviceName: device.friendlyName
+    };
+    return messageDetails;
+}
+
 async function buildCommandMessageDescription(command) {
     let messageDescriptions = [];
 
     for (let i = 0; i < command.messages.length; i++) {
-        let messageGUID = command.messages[i];
-        let message = await CommandDeviceMessage.findOne(
-            { guid: messageGUID }
-        );
-        let device = await Device.findOne(
-            { guid: message.device }
-        );
-        let messageDetails = {
-            guid: message.guid,
-            name: message.name,
-            description: message.description,
-            message: message.message,
-            deviceName: device.name,
-            deviceFriendlyName: device.friendlyName
-        };
+        let message_id = command.messages[i];
+        let messageDetails = await buildOneCommandMessageDescription(message_id);
         messageDescriptions.push(messageDetails);
     };
 
@@ -94,142 +79,6 @@ router.get('/commandGroupSelect', authenticateToken, async function (req, res) {
     res.render("commandGroupSelect.ejs", { username: res.user.name, commandGroups: commandGroups });
 });
 
-router.get('/commandGroupEdit/:commandGroupID', authenticateToken, async function (req, res) {
-
-    let commandGroupID = req.params.commandGroupID;
-
-    let commandGroup = await CommandGroup.findOne(
-        { guid: commandGroupID }
-    );
-
-    let commands = await buildCommandDescription(commandGroup);
-
-    res.render("commandGroupEdit.ejs", { commandGroup: commandGroup, commands: commands });
-});
-
-router.post('/commandGroupEdit/:commandGroupGUID', authenticateToken, async function (req, res) {
-    let owner_id = res.user._id;
-
-    let commandGroupGUID = req.params.commandGroupGUID;
-
-    await CommandGroup.updateOne(
-        { guid: commandGroupGUID },
-        {
-            description: req.body.description,
-            name: req.body.name
-        }
-    );
-
-    res.redirect("/command/commandGroupSelect/");
-});
-
-router.get('/commandGroupDeleteConfirm/:commandGroupGUID', authenticateToken, async function (req, res) {
-
-    let commandGroupGUID = req.params.commandGroupGUID;
-
-    let commandGroup = await CommandGroup.findOne(
-        { guid: commandGroupGUID }
-    );
-
-    res.render("commandGroupDeleteConfirm.ejs", { commandGroup: commandGroup, commandGroupGUID: commandGroupGUID });
-});
-
-router.get('/commandGroupDelete/:commandGroupGUID', async function (req, res) {
-
-    let GUIDcommandGroupID = req.params.commandGroupGUID;
-
-    try {
-
-        const result = await CommandGroup.deleteOne(
-            { guid: GUIDcommandGroupID }
-        );
-        if (result.deletedCount == 1) {
-            message = "Deleted OK";
-        }
-        else {
-            message = "Delete operation failed";
-        }
-    }
-    catch (error) {
-        message = "Delete failed:${error}";
-    }
-
-    messageDisplay(
-        "Command group delete",
-        message,
-        [
-            { description: "Continue", route: "/command/commandGroupSelect/" }
-        ],
-        res
-    );
-});
-
-router.get('/commandDeleteConfirm/:commandGUID/:commandGroupGUID', async function (req, res) {
-
-    let commandGUID = req.params.commandGUID;
-    let commandGroupGUID = req.params.commandGroupGUID;
-
-    let command = await Command.findOne(
-        { guid: commandGUID }
-    );
-
-    res.render("commandDeleteConfirm.ejs", { command: command, commandGroupGUID: commandGroupGUID });
-});
-
-router.get('/commandDelete/:commandGUID/:commandGroupGUID', async function (req, res) {
-
-    let commandGUID = req.params.commandGUID;
-    let commandGroupGUID = req.params.commandGroupGUID;
-
-    // remove from the commands in the command group
-
-    let commandGroup = await CommandGroup.findOne(
-        { guid: commandGroupGUID }
-    );
-
-    let index = commandGroup.commands.indexOf(commandGUID);
-
-    if (index >= 0) {
-        commandGroup.commands.splice(index, 1);
-        await commandGroup.save();
-    }
-
-    // remove from the list of commands
-    await Command.deleteOne(
-        { guid: commandGUID }
-    );
-
-    res.redirect("/command/commandGroupEdit/" + commandGroupGUID);
-});
-
-router.get('/commandGroupDetailsEdit/:commandGroupGUID', async function (req, res) {
-
-    let commandGroupGUID = req.params.commandGroupGUID;
-
-    // remove from the commands in the command group
-
-    let commandGroup = await CommandGroup.findOne(
-        { guid: commandGroupGUID }
-    );
-
-    res.render("commandGroupDetailsEdit.ejs", { commandGroup: commandGroup });
-});
-
-router.post('/commandGroupDetailsEdit/:commandGroupGUID', async function (req, res) {
-
-    let commandGroupGUID = req.params.commandGroupGUID;
-
-    await CommandGroup.updateOne(
-        { guid: commandGroupGUID },
-        {
-            name: req.body.name,
-            description: req.body.description
-        }
-    );
-
-    res.redirect("/command/commandGroupEdit/" + commandGroupGUID);
-});
-
 router.get('/commandGroupNew', authenticateToken, async function (req, res) {
     res.render("commandGroupNew.ejs");
 });
@@ -240,7 +89,7 @@ router.post('/commandGroupNew', authenticateToken, async function (req, res) {
 
     const newGuid = Uuid.v4();
 
-    let url = process.env.HOST_ADDRESS + "command/" + newGuid;
+    let url = process.env.HOST_ADDRESS + "command/perform/" + newGuid;
 
     let qrCode = await generateQRCode(url);
 
@@ -255,26 +104,177 @@ router.post('/commandGroupNew', authenticateToken, async function (req, res) {
 
     await newCommandGroup.save();
 
-    res.redirect("/command/commandGroupEdit/" + newCommandGroup.guid);
+    res.redirect("/command/commandGroupEdit/" + newCommandGroup._id);
 });
 
-router.get('/commandNew/:commandGroupGUID', authenticateToken, async function (req, res) {
+router.get('/commandGroupEdit/:commandGroup_id', authenticateToken, async function (req, res) {
 
-    let commandGroupGUID = req.params.commandGroupGUID;
+    let commandGroup_id = req.params.commandGroup_id;
 
-    res.render("commandNew.ejs", { commandGroupGUID: commandGroupGUID });
+    let commandGroup = await CommandGroup.findOne(
+        { _id: commandGroup_id }
+    );
+
+    let commands = await buildCommandDescription(commandGroup);
+
+    res.render("commandGroupEdit.ejs", { commandGroup: commandGroup, commands: commands });
 });
 
-router.post('/commandNew/:commandGroupGUID', authenticateToken, async function (req, res) {
+router.post('/commandGroupEdit/:commandGroup_id', authenticateToken, async function (req, res) {
+
+    let commandGroup_id = req.params.commandGroup_id;
+
+    await CommandGroup.updateOne(
+        { _id: commandGroup_id },
+        {
+            description: req.body.description,
+            name: req.body.name
+        }
+    );
+
+    res.redirect("/command/commandGroupSelect/");
+});
+
+router.get('/commandGroupDeleteConfirm/:commandGroup_id', authenticateToken, async function (req, res) {
+
+    let commandGroup_id = req.params.commandGroup_id;
+
+    let commandGroup = await CommandGroup.findOne(
+        { _id: commandGroup_id }
+    );
+
+    res.render("commandGroupDeleteConfirm.ejs", { commandGroup: commandGroup, commandGroup_id: commandGroup_id });
+});
+
+router.get('/commandGroupDelete/:commandGroup_id', async function (req, res) {
+
+    let commandGroup_id = req.params.commandGroup_id;
+
+    try {
+
+        const result = await CommandGroup.deleteOne(
+            { _id: commandGroup_id }
+        );
+        if (result.deletedCount == 1) {
+            message = "Deleted OK";
+        }
+        else {
+            message = "Delete operation failed";
+        }
+    }
+    catch (error) {
+        message = "Delete failed:${error}";
+    }
+
+    messageDisplay(
+        "Command group deleted",
+        message,
+        [
+            { description: "Continue", route: "/command/commandGroupSelect/" }
+        ],
+        res
+    );
+});
+
+router.get('/commandDeleteConfirm/:commandGroup_id/:command_id', async function (req, res) {
+
+    let command_id = req.params.command_id;
+    let commandGroup_id = req.params.commandGroup_id;
+
+    let command = await Command.findOne(
+        { _id: command_id }
+    );
+
+    res.render("commandDeleteConfirm.ejs", { command: command, commandGroup_id: commandGroup_id });
+});
+
+router.get('/commandDelete/:commandGroup_id/:command_id', async function (req, res) {
+
+    let command_id = req.params.command_id;
+    let commandGroup_id = req.params.commandGroup_id;
+
+    // remove from the commands in the command group
+
+    let commandGroup = await CommandGroup.findOne(
+        { _id: commandGroup_id }
+    );
+
+    let index = commandGroup.commands.indexOf(command_id);
+
+    if (index >= 0) {
+        commandGroup.commands.splice(index, 1);
+        await commandGroup.save();
+    }
+
+    try {
+
+        const result = await Command.deleteOne(
+            { _id: command_id }
+        );
+
+        if (result.deletedCount == 1) {
+            message = "Deleted OK";
+        }
+        else {
+            message = "Delete operation failed";
+        }
+    }
+    catch (error) {
+        message = "Delete failed:${error}";
+    }
+
+    messageDisplay(
+        "Command deleted",
+        message,
+        [
+            { description: "Continue", route: "/command/commandGroupEdit/" + commandGroup_id }
+        ],
+        res
+    );
+});
+
+router.get('/commandGroupDetailsEdit/:commandGroup_id', async function (req, res) {
+
+    let commandGroup_id = req.params.commandGroup_id;
+
+    // remove from the commands in the command group
+
+    let commandGroup = await CommandGroup.findOne(
+        { _id: commandGroup_id }
+    );
+
+    res.render("commandGroupDetailsEdit.ejs", { commandGroup: commandGroup });
+});
+
+router.post('/commandGroupDetailsEdit/:commandGroup_id', async function (req, res) {
+
+    let commandGroup_id = req.params.commandGroup_id;
+
+    await CommandGroup.updateOne(
+        { _id: commandGroup_id },
+        {
+            name: req.body.name,
+            description: req.body.description
+        }
+    );
+
+    res.redirect("/command/commandGroupEdit/" + commandGroup_id);
+});
+
+router.get('/commandNew/:commandGroup_id', authenticateToken, async function (req, res) {
+
+    let commandGroup_id = req.params.commandGroup_id;
+
+    res.render("commandNew.ejs", { commandGroup_id: commandGroup_id });
+});
+
+router.post('/commandNew/:commandGroup_id', authenticateToken, async function (req, res) {
 
     let owner_id = res.user._id;
 
-    let commandGroupGUID = req.params.commandGroupGUID;
-
-    const newGuid = Uuid.v4();
+    let commandGroup_id = req.params.commandGroup_id;
 
     let newCommand = new Command({
-        guid: newGuid,
         name: req.body.name,
         description: req.body.description,
         owner: owner_id
@@ -283,39 +283,39 @@ router.post('/commandNew/:commandGroupGUID', authenticateToken, async function (
     await newCommand.save();
 
     let commandGroup = await CommandGroup.findOne({
-        guid: commandGroupGUID
+        _id: commandGroup_id
     });
 
-    commandGroup.commands.push(newCommand.guid);
+    commandGroup.commands.push(newCommand._id);
 
     await commandGroup.save();
 
     let messageDescriptions = await buildCommandMessageDescription(newCommand);
 
-    res.render("commandEdit.ejs", { command: newCommand, messageDescriptions: messageDescriptions, commandGroupGUID: commandGroupGUID });
+    res.render("commandEdit.ejs", { command: newCommand, messageDescriptions: messageDescriptions, commandGroup_id: commandGroup_id });
 });
 
-router.get('/commandDetailsEdit/:commandGroupGUID/:commandGUID', async function (req, res) {
+router.get('/commandDetailsEdit/:commandGroup_id/:command_id', async function (req, res) {
 
-    let commandGroupGUID = req.params.commandGroupGUID;
-    let commandGUID = req.params.commandGUID;
+    let commandGroup_id = req.params.commandGroup_id;
+    let command_id = req.params.command_id;
 
     // remove from the commands in the command group
 
     let command = await Command.findOne(
-        { guid: commandGUID }
+        { _id: command_id }
     );
 
-    res.render("commandDetailsEdit.ejs", { commandGroupGUID: commandGroupGUID, command: command });
+    res.render("commandDetailsEdit.ejs", { commandGroup_id: commandGroup_id, command: command });
 });
 
-router.post('/commandDetailsEdit/:commandGroupGUID/:commandGUID', async function (req, res) {
+router.post('/commandDetailsEdit/:commandGroup_id/:command_id', async function (req, res) {
 
-    let commandGroupGUID = req.params.commandGroupGUID;
-    let commandGUID = req.params.commandGUID;
+    let commandGroup_id = req.params.commandGroup_id;
+    let command_id = req.params.command_id;
 
     await Command.updateOne(
-        { guid: commandGUID },
+        { _id: command_id },
         {
             name: req.body.name,
             description: req.body.description
@@ -323,36 +323,37 @@ router.post('/commandDetailsEdit/:commandGroupGUID/:commandGUID', async function
     );
 
     let command = await Command.findOne(
-        { guid: commandGUID }
+        { _id: command_id }
     );
 
     let messageDescriptions = await buildCommandMessageDescription(command);
 
-    res.render("commandEdit.ejs", { command: command, messageDescriptions: messageDescriptions, commandGroupGUID: commandGroupGUID });
+    res.render("commandEdit.ejs", { command: command, messageDescriptions: messageDescriptions, commandGroup_id: commandGroup_id });
 
 });
 
-router.get('/commandEdit/:commandGroupGUID/:commandGUID', authenticateToken, async function (req, res) {
+router.get('/commandEdit/:commandGroup_id/:command_id', authenticateToken, async function (req, res) {
 
-    let commandGUID = req.params.commandGUID;
-    let commandGroupGUID = req.params.commandGroupGUID;
+    let command_id = req.params.command_id;
+    let commandGroup_id = req.params.commandGroup_id;
 
     let command = await Command.findOne({
-        guid: commandGUID
+        _id: command_id
     });
 
     let messageDescriptions = await buildCommandMessageDescription(command);
 
-    res.render("commandEdit.ejs", { command: command, messageDescriptions: messageDescriptions, commandGroupGUID: commandGroupGUID });
+    res.render("commandEdit.ejs", { command: command, messageDescriptions: messageDescriptions, commandGroup_id: commandGroup_id });
 });
 
-router.post('/commandEdit/:commandGroupGUID/:commandGUID', authenticateToken, async function (req, res) {
 
-    let commandGroupGUID = req.params.commandGroupGUID;
-    let commandGUID = req.params.commandGUID;
+router.post('/commandEdit/:commandGroup_id/:command_id', authenticateToken, async function (req, res) {
+
+    let commandGroup_id = req.params.commandGroup_id;
+    let command_id = req.params.command_id;
 
     await Command.updateOne(
-        { guid: commandGUID },
+        { _id: command_id },
         {
             name: req.body.name,
             description: req.body.description
@@ -360,46 +361,54 @@ router.post('/commandEdit/:commandGroupGUID/:commandGUID', authenticateToken, as
     );
 
     let commandGroup = await CommandGroup.findOne(
-        { guid: commandGroupGUID }
+        { _id: commandGroup_id }
     )
 
     res.render("commandEdit.ejs", { commandGroup: commandGroup });
 });
 
-router.get('/commandMessageNew/:commandGUID/:commandGroupGUID', authenticateToken, async function (req, res) {
+router.get('/commandMessageNew/:commandGroup_id/:command_id', authenticateToken, async function (req, res) {
 
     let owner_id = res.user._id;
-    let commandGroupGUID = req.params.commandGroupGUID;
-    let commandGUID = req.params.commandGUID;
-
-    const newGuid = Uuid.v4();
+    let commandGroup_id = req.params.commandGroup_id;
+    let command_id = req.params.command_id;
 
     let newMessage = new CommandDeviceMessage({
-        guid: newGuid,
-        name: "",
-        description: "",
-        message:"",
         owner: owner_id,
-        command:commandGUID
-        });
+        command: command_id
+    });
+
+    await newMessage.save();
 
     let command = await Command.findOne({
-        guid: commandGUID
+        _id: command_id
     });
 
     command.messages.push(newMessage._id);
+    await command.save();
 
-    res.render("commandMessageEdit.ejs", { commandMessage: newMessage, commandGroupGUID: commandGroupGUID, commandGUID: commandGUID });
+    res.render("commandMessageEdit.ejs", { commandMessage: newMessage, commandGroup_id: commandGroup_id, command_id: command_id });
 });
 
-router.post('/commandMessageEdit/:commandMessageGUID/:commandGroupGUID/:commandGUID', authenticateToken, async function (req, res) {
+router.get('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id', authenticateToken, async function (req, res) {
+    let commandGroup_id = req.params.commandGroup_id;
+    let command_id = req.params.command_id;
+    let message_id = req.params.commandMessage_id;
 
-    let commandMessageGUID = req.params.commandMessageGUID;
-    let commandGroupGUID = req.params.commandGroupGUID;
-    let commandGUID = req.params.commandGUID;
+    let messageDescription = await buildOneCommandMessageDescription(message_id);
 
-    let name=req.body.name;
-    let description=req.body.description;
+    res.render("commandMessageEdit.ejs", { commandMessage: messageDescription, commandGroup_id: commandGroup_id, command_id: command_id });
+});
+
+
+router.post('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id', authenticateToken, async function (req, res) {
+
+    let commandMessage_id = req.params.commandMessage_id;
+    let commandGroup_id = req.params.commandGroup_id;
+    let command_id = req.params.command_id;
+
+    let name = req.body.name;
+    let description = req.body.description;
     let deviceName = req.body.deviceName;
     let message = req.body.message;
 
@@ -411,12 +420,12 @@ router.post('/commandMessageEdit/:commandMessageGUID/:commandGroupGUID/:commandG
             ]
     });
 
-    if(!device){
+    if (!device) {
         messageDisplay(
-            "Create new message", 
-            `Device ${deviceName} not found`, 
+            "Create new message",
+            `Device ${deviceName} not found`,
             [
-                {description:"Continue", route:"/command/commandGroupSelect/"}
+                { description: "Continue", route: "/command/commandGroupSelect/" }
             ],
             res
         );
@@ -425,46 +434,129 @@ router.post('/commandMessageEdit/:commandMessageGUID/:commandGroupGUID/:commandG
 
     // got the device - now we can update the message
     await CommandDeviceMessage.updateOne(
-        {guid:commandMessageGUID},
+        { _id: commandMessage_id },
         {
-            name:name,
-            description:description,
-            device:device._id,
-            message:message        }
+            name: name,
+            description: description,
+            device: device._id,
+            message: message
+        }
     );
 
     let command = await Command.findOne({
-        guid: commandGUID
+        _id: command_id
     });
 
     let messageDescriptions = await buildCommandMessageDescription(command);
 
-    res.render("commandEdit.ejs", { command: command, messageDescriptions: messageDescriptions, commandGroupGUID: commandGroupGUID });
+    res.render("commandEdit.ejs", { command: command, messageDescriptions: messageDescriptions, commandGroup_id: commandGroup_id });
 });
 
 
+router.get('/commandMessageDeleteConfirm/:commandGroup_id/:command_id/:message_id', async function (req, res) {
+
+    let command_id = req.params.command_id;
+    let commandGroup_id = req.params.commandGroup_id;
+    let message_id = req.params.message_id;
+
+    let message = await CommandDeviceMessage.findOne(
+        { _id: message_id }
+    );
+
+    res.render("commandMessageDeleteConfirm.ejs", { message: message, command_id: command_id, commandGroup_id: commandGroup_id });
+});
+
+router.get('/commandMessageDelete/:commandGroup_id/:command_id/:message_id', async function (req, res) {
+
+    let command_id = req.params.command_id;
+    let commandGroup_id = req.params.commandGroup_id;
+    let message_id = req.params.message_id;
+
+    // remove from the messages in the command group
+
+    let command = await Command.findOne(
+        { _id: command_id }
+    );
+
+    let index = command.messages.indexOf(message_id);
+
+    if (index >= 0) {
+        command.messages.splice(index, 1);
+        await command.save();
+    }
+
+    try {
+
+        const result = await CommandDeviceMessage.deleteOne(
+            { _id: message_id }
+        );
+
+        if (result.deletedCount == 1) {
+            message = "Deleted OK";
+        }
+        else {
+            message = "Delete operation failed";
+        }
+    }
+    catch (error) {
+        message = "Delete failed:${error}";
+    }
+
+    messageDisplay(
+        "Command deleted",
+        message,
+        [
+            { description: "Continue", route: "/command/commandEdit/" + commandGroup_id + "/" + command_id }
+        ],
+        res
+    );
+});
+
+
+
+
 // define the home page route
-router.get('perform/:guid', async function (req, res) {
+router.get('/perform/:guid', async function (req, res) {
 
     let guid = req.params.guid;
 
-    let command = await Command.findOne(
+    let commandGroup = await CommandGroup.findOne(
         { guid: guid }
     );
+
+    let commands = await buildCommandDescription(commandGroup);
+
+    res.render("commandGroupPerform.ejs", { commandGroup: commandGroup, commands: commands, guid:guid });
+});
+
+router.get('/performCommand/:guid/:command_id', async function (req, res) {
+
+    let guid = req.params.guid;
+    let command_id = req.params.command_id;
+
+    let command = await Command.findOne({
+        _id: command_id
+    });
 
     mgr = Manager.getActiveManger();
 
     let message = "Command sent OK";
 
-    for (let i = 0; i < command.devices.length; i++) {
+    for (let i = 0; i < command.messages.length; i++) {
+        
+        let message_id = command.messages[i];
 
-        let device_id = command.devices[i];
+        let message = await CommandDeviceMessage.findOne(
+            { _id: message_id }
+        );
+    
+        let device_id = message.device;
 
         let deviceObject = await Device.findOne(
             { _id: device_id }
         )
         try {
-            await mgr.sendJSONCommandToDevice(deviceObject.name, command.command);
+            await mgr.sendJSONCommandToDevice(deviceObject.name, message.message);
         }
         catch (error) {
             message = error;
@@ -472,16 +564,16 @@ router.get('perform/:guid', async function (req, res) {
         }
     };
 
-    res.render("GUIDcommandDone.ejs", { GUIDcommand: command, message: message });
+    res.redirect('/command/perform'+"/"+guid);
 });
 
 router.get('/oldmanage/:deviceID', authenticateToken, async function (req, res) {
 
-    // first find all the GUID commands for this device
+    // first find all the _id commands for this device
 
     let device_id = req.params.deviceID;
 
-    let GUIDcommands = await Command.find({
+    let _idcommands = await Command.find({
         $and:
             [
                 { owner: { $eq: res.user._id } },
@@ -493,7 +585,7 @@ router.get('/oldmanage/:deviceID', authenticateToken, async function (req, res) 
             ]
     });
 
-    res.render("GUIDmanage.ejs", { username: res.user.name, deviceID: device_id, GUIDcommands: GUIDcommands });
+    res.render("_idmanage.ejs", { username: res.user.name, deviceID: device_id, _idcommands: _idcommands });
 });
 
 

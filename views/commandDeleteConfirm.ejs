@@ -24,7 +24,8 @@
         <p>
             <%= command.description %>
         </p>
-        <a href="/command/commandDelete/<%= command.guid %>/<%= commandGroupGUID %>" class="btn btn-primary">Delete</a>
+        <a href="/command/commandDelete/<%= commandGroup_id %>/<%= command._id %>" class="btn btn-primary">Delete</a>
+        <a href="/command/commandEdit/<%= commandGroup_id %>/<%= command._id %>" class="btn btn-primary">Do not delete</a>
     </div>
 
 </body>

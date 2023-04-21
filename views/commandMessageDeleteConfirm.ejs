@@ -14,18 +14,20 @@
     <div class="container mb-4">
         <h1 class="mb-4">Connected Little Boxes</h1>
         <h2 class="mb-2">
-            Commmand Group Delete
+            Message Delete Confirm
         </h2>
     </div>
     <div class="container mb-4">
         <p>
-            <a href="<%= commandGroup.pageURL %>">
-                <%= commandGroup.description %>
-            </a>
+            <%= message.name %>
         </p>
-        <a href="/command/commandGroupDelete/<%= commandGroup_id %>" class="btn btn-primary btn-block">Confirm Delete</a>
-        <a href="/command/commandGroupSelect" class="btn btn-primary btn-block">Do not delete</a>
+        <p>
+            <%= message.description %> 
+        </p>
+        <a href="/command/commandMessageDelete/<%= commandGroup_id %>/<%= command_id %>/<%= message.id %>" class="btn btn-primary">Delete</a>
+        <a href="/command/commandEdit/<%= commandGroup_id %>/<%= command_id %>/<%= message.id %>" class="btn btn-primary">Do not delete</a>
     </div>
+
 </body>
 
 </html>

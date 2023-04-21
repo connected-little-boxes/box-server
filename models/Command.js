@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 
 const CommandSchema = new mongoose.Schema(
     {
-        guid: {
-            type: String,
-            required: true
-        },
         name: {
             type: String,
             default:""

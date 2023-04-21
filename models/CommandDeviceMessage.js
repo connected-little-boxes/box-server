@@ -7,13 +7,9 @@ const CommandDeviceMessageSchema = new mongoose.Schema(
             ref:'Owner',
             required: true
         },
-        guid: {
-            type: String,
-            required: true
-        },
         message: {
             type: String,
-            required: true
+            default:""
         },
         device: {
             type: mongoose.Schema.Types.ObjectId,
@@ -22,15 +18,16 @@ const CommandDeviceMessageSchema = new mongoose.Schema(
         },
         name: {
             type: String,
-            required: true
+            default:""
         },
         description: {
             type: String,
-            required: true
+            default:""
         },
-        commandGUID:{
-            type: String,
-            required: true
+        command:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref:'Command',
+            required: false
         }
     });
 

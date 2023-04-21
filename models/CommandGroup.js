@@ -15,8 +15,9 @@ const CommandGroupSchema = new mongoose.Schema(
             required: true
         },
         commands: {
-            type: [String],
-                required: true
+            type: [mongoose.Schema.Types.ObjectId],
+            ref:'Command',
+            default:[]
         },
         lastPerformedDate: {
             type: Date,

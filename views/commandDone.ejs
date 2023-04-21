@@ -14,17 +14,23 @@
     <div class="container mb-4">
         <h1 class="mb-4">Connected Little Boxes</h1>
         <h2 class="mb-2">
-            Commmand Group Delete
+            <%= commandGroup.name %>
         </h2>
     </div>
     <div class="container mb-4">
         <p>
+            <img src=" <%= commandGroup.pageQRcode %> "></img>
             <a href="<%= commandGroup.pageURL %>">
                 <%= commandGroup.description %>
             </a>
         </p>
-        <a href="/command/commandGroupDelete/<%= commandGroup_id %>" class="btn btn-primary btn-block">Confirm Delete</a>
-        <a href="/command/commandGroupSelect" class="btn btn-primary btn-block">Do not delete</a>
+        <% commands.forEach(command=> { %>
+            <p>
+                <a href="/command/performCommand/<%= command._id %>" class="btn btn-primary mb-4">
+                    <%= command.name %>
+                </a>
+            </p>
+        <% }) %>
     </div>
 </body>
 

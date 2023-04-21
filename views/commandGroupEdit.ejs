@@ -22,8 +22,8 @@
         </p>
         <p>Description: <%= commandGroup.description %>
         </p>
-        <a href="/command/commandGroupDetailsEdit/<%= commandGroup.guid %>"
-            class="btn btn-success mt-2 mb-4 btn-block">Details edit</a>
+        <a href="/command/commandGroupDetailsEdit/<%= commandGroup._id %>"
+            class="btn btn-primary mt-2 mb-4 btn-block">Edit Details</a>
     </div>
     <div class="container">
         <h3>
@@ -32,15 +32,17 @@
             <% commands.forEach(command=> { %>
             <p>
                 <%= command.name %>
-                    <a href="/command/commandEdit/<%= commandGroup.guid %>/<%= command.guid %>"
-                        class="btn btn-success mb-4">Edit</a>
-                    <a href="/command/commandDeleteConfirm/<%= command.guid %>/<%= commandGroup.guid %>"
-                        class="btn btn-success mb-4">Delete</a>
+                    <a href="/command/commandEdit/<%= commandGroup._id %>/<%= command._id %>"
+                        class="btn btn-primary mb-4">Edit</a>
+                    <a href="/command/commandDeleteConfirm/<%= commandGroup._id %>/<%= command._id %>"
+                        class="btn btn-primary mb-4">Delete</a>
             </p>
             <% }) %>
-                <a href="/command/commandNew/<%= commandGroup.guid %>" class="btn btn-success mt-2 mb-4 btn-block">New
-                    Command</a>
-    </div>
+                <a href="/command/commandNew/<%= commandGroup._id %>" class="btn btn-primary mt-2 mb-4 btn-block">
+                    New Command</a>
+                    <a href="/command/commandGroupSelect" class="btn btn-primary mt-2 mb-4 btn-block">
+                        Done</a>
+        </div>
 </body>
 
 </html>

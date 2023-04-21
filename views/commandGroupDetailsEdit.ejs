@@ -18,7 +18,7 @@
         </h2>
     </div>
     <div class="container mb-4">
-        <form action="/command/commandGroupDetailsEdit/<%= commandGroup.guid %>" method="POST">
+        <form action="/command/commandGroupDetailsEdit/<%= commandGroup._id %>" method="POST">
             <div class="form-group">
                 <label for="name">Name</label>
                 <input required type="text" name="name" id="name" class="form-control" value="<%= commandGroup.name %>">
