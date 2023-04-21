@@ -14,23 +14,16 @@
     <div class="container mb-4">
         <h1 class="mb-4">Connected Little Boxes</h1>
         <h2 class="mb-2">
-            QR Commmand Delete
+            Commmand Group Delete
         </h2>
     </div>
     <div class="container mb-4">
         <p>
-            <img src=" <%= GUIDcommand.pageQRcode %> "></img>
-        </p>
-        <p>
-            <a href="<%= GUIDcommand.pageURL %>">
-                <%= GUIDcommand.description %>
+            <a href="<%= commandGroup.pageURL %>">
+                <%= commandGroup.description %>
             </a>
         </p>
-    </div>
-    <div class="container mb-4">
-        <form action="/GUIDcommand/delete/<%= GUIDcommand.guid %>/<%= deviceID %>" method="POST">
-            <button type="submit" class="btn btn-primary mt-4">Confirm delete</button>
-        </form>
+        <a href="/command/commandGroupDelete/<%= commandGroupGUID %>" class="btn btn-primary btn-block">Confirm Delete</a>
     </div>
 </body>
 

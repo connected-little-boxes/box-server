@@ -64,11 +64,6 @@
             <a href="/pixel" class="btn btn-success mb-4">Configure Pixel Hardware</a>
         </div>
 
-        </h2>
-        <div class="container mb-4">
-            <a href="/GUIDcommand/manage/<%= device._id %>" class="btn btn-success mb-4">Manage QR Codes</a>
-        </div>
-
         <form action="/devices/sendconsolecommand/<%= device.name %>"" method="POST">
             <div class="form-group mt-4">
                 <label for="consoleCommand">Console Command</label>

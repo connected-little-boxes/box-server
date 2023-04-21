@@ -16,30 +16,27 @@
             <%= username %>
         </h3>
         <h1 class="mb-4">Connected Little Boxes</h1>
-        <h2 class="mb-2">Manage Actions</h2>
+        <h2 class="mb-2">Manage Command Groups</h2>
     </div>
     <div class="container mb-4">
-        <% GUIDcommands.forEach(GUIDcommand=> { %>
+        <% commandGroups.forEach(commandGroup=> { %>
             <div class="container mt-4 mb-4">
                 <p>
-                    <img src=" <%= GUIDcommand.pageQRcode %> "></img>
+                    <img src=" <%= commandGroup.pageQRcode %> "></img>
                     </p>
                     <p>
-                    <a href="<%= GUIDcommand.pageURL %>">
-                        <%= GUIDcommand.description %>
+                    <a href="<%= commandGroup.pageURL %>">
+                        <%= commandGroup.name %>
                     </a>
                 </p>
-                <p>
-                    <%= GUIDcommand.command %>
-                </p>
-                <a href="/GUIDcommand/delete/<%= GUIDcommand.guid %>/<%= deviceID %>" class="btn btn-primary">Delete</a>
-                <a href="/GUIDcommand/edit/<%= GUIDcommand.guid %>/<%= deviceID %>" class="btn btn-primary">Edit</a>
+                <a href="/command/commandGroupDeleteConfirm/<%= commandGroup.guid %>" class="btn btn-primary">Delete</a>
+                <a href="/command/commandGroupEdit/<%= commandGroup.guid %>" class="btn btn-primary">Edit</a>
             <hr/>
             </div>
             <% }) %>
     </div>
     <div class="container mb-4">
-        <a href="/GUIDcommand/new/<%= deviceID %>" class="btn btn-success mb-4">New action</a>
+        <a href="/command/commandGroupNew" class="btn btn-success mb-4">New Group</a>
         <a href="/deviceSelect" class="btn btn-success mb-4">Done</a>
     </div>  
     <script>

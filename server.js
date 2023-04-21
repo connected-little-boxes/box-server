@@ -32,7 +32,7 @@ var terminal = require('./routes/terminal');
 var deviceSelect = require('./routes/deviceSelect');
 var lightShow = require('./routes/lightShow');
 var createDevice = require('./routes/createDevice');
-var GUIDcommand = require('./routes/GUIDcommand');
+var command = require('./routes/command');
 
 var pixel = require('./routes/pixel');
 
@@ -60,7 +60,7 @@ mgr.startServices().then(() => {
   app.use('/deviceSelect', deviceSelect);
   app.use('/lightShow', lightShow);
   app.use('/createDevice', createDevice);
-  app.use('/GUIDcommand', GUIDcommand);
+  app.use('/command', command);
 
   app.use('/pixel', pixel);
   app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));  

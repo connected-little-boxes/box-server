@@ -1,12 +1,8 @@
 const mongoose = require('mongoose');
 
-const GUIDcommandSchema = new mongoose.Schema(
+const CommandGroupSchema = new mongoose.Schema(
     {
-        guid: { 
-            type: String,
-            required: true
-        },
-        command: {
+        guid: {
             type: String,
             required: true
         },
@@ -18,19 +14,23 @@ const GUIDcommandSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        devices: {
-            type: [mongoose.Schema.Types.ObjectId],
-            ref:'Device',
-            required: true
+        commands: {
+            type: [String],
+                required: true
         },
         lastPerformedDate: {
             type: Date,
             default: Date.now(),
             required: false
         },
+        name: {
+            type: String,
+            default:"",
+            required: false
+        },
         description: {
             type: String,
-            default:undefined,
+            default:"",
             required: false
         },
         owner: {
@@ -40,5 +40,5 @@ const GUIDcommandSchema = new mongoose.Schema(
         }
     });
 
-module.exports = mongoose.model('GUIDcommand', GUIDcommandSchema);
+module.exports = mongoose.model('CommandGroup', CommandGroupSchema);
 

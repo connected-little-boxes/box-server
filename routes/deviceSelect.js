@@ -12,8 +12,6 @@ router.get('/', authenticateToken, async function (req, res) {
 })
 
 router.post('/', authenticateToken, async (req, res) => {
-  console.log(`filtering on ${req.body.filter}`);
-
   const regex = new RegExp(req.body.filter, 'i');
 
   let userDevices = await Device.find({

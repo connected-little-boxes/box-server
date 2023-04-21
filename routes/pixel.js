@@ -1,5 +1,5 @@
 const Device = require('../models/device');
-const GUIDcommand = require('../models/GUIDcommand');
+const Command = require('../models/Command');
 const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../_helpers/authenticateToken');
