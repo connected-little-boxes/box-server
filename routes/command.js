@@ -46,15 +46,28 @@ async function buildOneCommandMessageDescription(message_id) {
     let message = await CommandDeviceMessage.findOne(
         { _id: message_id }
     );
+
+    if(!message){
+        return null;
+    }
+
     let device = await Device.findOne(
         { _id: message.device }
     );
+
+    let friendlyName = "";
+
+    if (device)
+    {
+        friendlyName = device.friendlyName;
+    }
+
     let messageDetails = {
         _id: message.id,
         name: message.name,
         description: message.description,
         message: message.message,
-        deviceName: device.friendlyName
+        deviceName: friendlyName
     };
     return messageDetails;
 }
@@ -65,7 +78,9 @@ async function buildCommandMessageDescription(command) {
     for (let i = 0; i < command.messages.length; i++) {
         let message_id = command.messages[i];
         let messageDetails = await buildOneCommandMessageDescription(message_id);
-        messageDescriptions.push(messageDetails);
+        if(messageDetails){
+            messageDescriptions.push(messageDetails);
+        }
     };
 
     return messageDescriptions;
@@ -396,7 +411,16 @@ router.get('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id'
     let message_id = req.params.commandMessage_id;
 
     let messageDescription = await buildOneCommandMessageDescription(message_id);
-
+    if(!messageDescription){
+        messageDisplay(
+            "Command message edit",
+            `Message not found`,
+            [
+                { description: "Continue", route: "/command/commandGroupSelect/" }
+            ],
+            res
+        );
+    }
     res.render("commandMessageEdit.ejs", { commandMessage: messageDescription, commandGroup_id: commandGroup_id, command_id: command_id });
 });
 
@@ -421,6 +445,10 @@ router.post('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id
     });
 
     if (!device) {
+        await CommandDeviceMessage.deleteOne(
+            { _id: commandMessage_id }
+        );
+    
         messageDisplay(
             "Create new message",
             `Device ${deviceName} not found`,
@@ -513,8 +541,6 @@ router.get('/commandMessageDelete/:commandGroup_id/:command_id/:message_id', asy
 });
 
 
-
-
 // define the home page route
 router.get('/perform/:guid', async function (req, res) {
 
@@ -540,7 +566,7 @@ router.get('/performCommand/:guid/:command_id', async function (req, res) {
 
     mgr = Manager.getActiveManger();
 
-    let message = "Command sent OK";
+    console.log("hello");
 
     for (let i = 0; i < command.messages.length; i++) {
         
@@ -555,6 +581,7 @@ router.get('/performCommand/:guid/:command_id', async function (req, res) {
         let deviceObject = await Device.findOne(
             { _id: device_id }
         )
+
         try {
             await mgr.sendJSONCommandToDevice(deviceObject.name, message.message);
         }
@@ -567,36 +594,9 @@ router.get('/performCommand/:guid/:command_id', async function (req, res) {
     res.redirect('/command/perform'+"/"+guid);
 });
 
-router.get('/oldmanage/:deviceID', authenticateToken, async function (req, res) {
-
-    // first find all the _id commands for this device
-
-    let device_id = req.params.deviceID;
-
-    let _idcommands = await Command.find({
-        $and:
-            [
-                { owner: { $eq: res.user._id } },
-                {
-                    devices: {
-                        $elemMatch: { $eq: device_id }
-                    }
-                }
-            ]
-    });
-
-    res.render("_idmanage.ejs", { username: res.user.name, deviceID: device_id, _idcommands: _idcommands });
-});
-
-
-
-
 
 router.post('/newcommand/:commandID', authenticateToken, async function (req, res) {
-
     res.render('/')
-
-
 });
 
 

@@ -22,14 +22,18 @@
             <form action="/command/commandGroupNew" method="POST">
                 <div class="form-group">
                     <label for="name">Name</label>
-                    <input required type="text" name="name" id="name" class="form-control"
-                        value="">
+                    <input required type="text" name="name" id="name" class="form-control" value="">
                     <label for="description">Description</label>
-                    <input required type="text" name="description" id="description" class="form-control"
-                        value="">
+                    <input required type="text" name="description" id="description" class="form-control" value="">
+                    <p class="mt-2 mb-2">The name of the command will be displayed on the button used to select it.
+                        The description provides more detail about the action that will be performed. You need to fill
+                        in both items.</p>
                     <button type="submit" class="btn btn-primary mt-4 btn-block">Save</button>
             </form>
         </div>
+        <a href="/command/commandGroupSelect" class="btn btn-primary mt-2 mb-4 btn-block">
+            Cancel</a>
+</div>
 </body>
 
 </html>

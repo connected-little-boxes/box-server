@@ -21,24 +21,30 @@
     <div class="container mb-4">
         <% commandGroups.forEach(commandGroup=> { %>
             <div class="container mt-4 mb-4">
-                <p>
-                    <img src=" <%= commandGroup.pageQRcode %> "></img>
-                    </p>
-                    <p>
-                    <a href="<%= commandGroup.pageURL %>">
-                        <%= commandGroup.name %>
-                    </a>
-                </p>
-                <a href="/command/commandGroupDeleteConfirm/<%= commandGroup._id %>" class="btn btn-primary">Delete</a>
+                <h2>
+                <a href="<%= commandGroup.pageURL %>">
+                    <%= commandGroup.name %>
+                </a>
+            </h2>
+            <p>
+                <%= commandGroup.description %>
+            </p>
+            <a href="/command/commandGroupDeleteConfirm/<%= commandGroup._id %>" class="btn btn-primary">Delete</a>
                 <a href="/command/commandGroupEdit/<%= commandGroup._id %>" class="btn btn-primary">Edit</a>
-            <hr/>
+                <hr />
             </div>
             <% }) %>
     </div>
     <div class="container mb-4">
-        <a href="/command/commandGroupNew" class="btn btn-primary mb-4 btn-block">New Command Group</a>
+        <p>A command group holds a number of commands, one of which can be selected by the user when they 
+            visit the command group link. A command can send messages to one or more devices.
+            You could make a command group to control your lights, with commands to select different
+            colours or levels of brightness.
+        </p>
+        <a href="/command/commandGroupNew" class="btn btn-primary mb-2 btn-block">New Command Group</a>
         <a href="/" class="btn btn-primary mb-4 btn-block">Done</a>
-    </div>  
+
+    </div>
     <script>
 
     </script>

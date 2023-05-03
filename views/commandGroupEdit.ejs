@@ -16,11 +16,22 @@
         <h2 class="mb-2">
             Commmand Group Edit
         </h2>
+        <h3><%= commandGroup.name %>
+        </h3>
     </div>
     <div class="container mb-4">
-        <p>Name: <%= commandGroup.name %>
+        <a href="<%= commandGroup.pageURL %>">
+            <%= commandGroup.pageURL %>
+        </a>
+        <p>The link above will send you to the web page from which you can 
+            select a comand to be performed. 
         </p>
-        <p>Description: <%= commandGroup.description %>
+        <p>
+            <img src=" <%= commandGroup.pageQRcode %> "></img>
+        </p>
+        <p>The QR code contains the URL of the web page. </p>
+
+        <p><%= commandGroup.description %>
         </p>
         <a href="/command/commandGroupDetailsEdit/<%= commandGroup._id %>"
             class="btn btn-primary mt-2 mb-4 btn-block">Edit Details</a>
@@ -31,17 +42,22 @@
         </h3>
             <% commands.forEach(command=> { %>
             <p>
-                <%= command.name %>
+                <h3><%= command.name %></h3>
+                <p><%= command.description %></p>
                     <a href="/command/commandEdit/<%= commandGroup._id %>/<%= command._id %>"
-                        class="btn btn-primary mb-4">Edit</a>
+                        class="btn btn-primary mb-2">Edit</a>
                     <a href="/command/commandDeleteConfirm/<%= commandGroup._id %>/<%= command._id %>"
-                        class="btn btn-primary mb-4">Delete</a>
+                        class="btn btn-primary mb-2">Delete</a>
+                        <hr />
             </p>
             <% }) %>
-                <a href="/command/commandNew/<%= commandGroup._id %>" class="btn btn-primary mt-2 mb-4 btn-block">
+
+            <p class="mt-3 mb-3">Each command will send one or more messages to devices when the command is selected from the command group.</p>
+                <a href="/command/commandNew/<%= commandGroup._id %>" class="btn btn-primary mt-6 mb-1 btn-block">
                     New Command</a>
                     <a href="/command/commandGroupSelect" class="btn btn-primary mt-2 mb-4 btn-block">
                         Done</a>
+        
         </div>
 </body>
 

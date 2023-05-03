@@ -17,8 +17,6 @@ app.use(express.urlencoded({ extended: false }));
 
 const port = process.env.PORT || 3000;
 
-const mongoose = require('mongoose');
-
 const Manager = require('./manager');
 const authenticateToken = require('./_helpers/authenticateToken');
 
@@ -46,7 +44,8 @@ mgr.startServices().then(() => {
 
   app.get('/', authenticateToken, async (req, res) => {
     userDevices = await Device.find();
-    res.render('index.ejs', { name: res.user.name, role: res.user.role, devices: userDevices });
+    res.render('index.ejs', { name: res.user.name, role: res.user.role, devices: userDevices, 
+      host: process.env.HOST_ADDRESS });
   });
 
   app.use('/js', express.static('js'));
