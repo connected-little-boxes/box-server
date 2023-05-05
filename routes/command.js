@@ -47,7 +47,7 @@ async function buildOneCommandMessageDescription(message_id) {
         { _id: message_id }
     );
 
-    if(!message){
+    if (!message) {
         return null;
     }
 
@@ -57,8 +57,7 @@ async function buildOneCommandMessageDescription(message_id) {
 
     let friendlyName = "";
 
-    if (device)
-    {
+    if (device) {
         friendlyName = device.friendlyName;
     }
 
@@ -67,7 +66,8 @@ async function buildOneCommandMessageDescription(message_id) {
         name: message.name,
         description: message.description,
         message: message.message,
-        deviceName: friendlyName
+        deviceName: friendlyName,
+        device_id: message.device._id
     };
     return messageDetails;
 }
@@ -78,12 +78,37 @@ async function buildCommandMessageDescription(command) {
     for (let i = 0; i < command.messages.length; i++) {
         let message_id = command.messages[i];
         let messageDetails = await buildOneCommandMessageDescription(message_id);
-        if(messageDetails){
+        if (messageDetails) {
             messageDescriptions.push(messageDetails);
         }
     };
 
     return messageDescriptions;
+}
+
+async function buildUserDeviceFriendlyNameList(user, selectedDeviceID) {
+
+    let userDevices = await Device.find({ owner: user._id });
+
+    userDevices.sort((a, b) => {
+        let textA = (a.friendlyName ? a.friendlyName : a.name).toUpperCase();
+        let textB = (b.friendlyName ? b.friendlyName : b.name).toUpperCase();
+        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+    });
+
+    let nameList = [];
+
+    for (let i = 0; i < userDevices.length; i++) {
+        let device = userDevices[i];
+        let name = (device.friendlyName ? device.friendlyName : device.name);
+        if (device._id.equals(selectedDeviceID)) {
+            nameList.unshift(name); 
+        }
+        else {
+            nameList.push(name);
+        }
+    };
+    return nameList;
 }
 
 router.get('/commandGroupSelect', authenticateToken, async function (req, res) {
@@ -384,7 +409,8 @@ router.post('/commandEdit/:commandGroup_id/:command_id', authenticateToken, asyn
 
 router.get('/commandMessageNew/:commandGroup_id/:command_id', authenticateToken, async function (req, res) {
 
-    let owner_id = res.user._id;
+    let user = res.user;
+    let owner_id = user._id;
     let commandGroup_id = req.params.commandGroup_id;
     let command_id = req.params.command_id;
 
@@ -402,16 +428,23 @@ router.get('/commandMessageNew/:commandGroup_id/:command_id', authenticateToken,
     command.messages.push(newMessage._id);
     await command.save();
 
-    res.render("commandMessageEdit.ejs", { commandMessage: newMessage, commandGroup_id: commandGroup_id, command_id: command_id });
+    let deviceFriendlyNameList = await buildUserDeviceFriendlyNameList(user);
+
+    res.render("commandMessageEdit.ejs", {
+        commandMessage: newMessage, commandGroup_id: commandGroup_id,
+        command_id: command_id, deviceFriendlyNameList: deviceFriendlyNameList
+    });
 });
 
 router.get('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id', authenticateToken, async function (req, res) {
+    let user = res.user;
     let commandGroup_id = req.params.commandGroup_id;
     let command_id = req.params.command_id;
     let message_id = req.params.commandMessage_id;
 
     let messageDescription = await buildOneCommandMessageDescription(message_id);
-    if(!messageDescription){
+
+    if (!messageDescription) {
         messageDisplay(
             "Command message edit",
             `Message not found`,
@@ -421,7 +454,13 @@ router.get('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id'
             res
         );
     }
-    res.render("commandMessageEdit.ejs", { commandMessage: messageDescription, commandGroup_id: commandGroup_id, command_id: command_id });
+
+    let deviceFriendlyNameList = await buildUserDeviceFriendlyNameList(user,messageDescription.device_id);
+
+    res.render("commandMessageEdit.ejs", {
+        commandMessage: messageDescription, commandGroup_id: commandGroup_id,
+        command_id: command_id, deviceFriendlyNameList: deviceFriendlyNameList
+    });
 });
 
 
@@ -445,19 +484,31 @@ router.post('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id
     });
 
     if (!device) {
-        await CommandDeviceMessage.deleteOne(
-            { _id: commandMessage_id }
-        );
-    
-        messageDisplay(
-            "Create new message",
-            `Device ${deviceName} not found`,
-            [
-                { description: "Continue", route: "/command/commandGroupSelect/" }
-            ],
-            res
-        );
-        return;
+
+        device = await Device.findOne({
+            $and:
+                [
+                    { owner: { $eq: res.user._id } },
+                    { name: { $eq: deviceName } }
+                ]
+        });
+
+        if (!device) {
+
+            await CommandDeviceMessage.deleteOne(
+                { _id: commandMessage_id }
+            );
+
+            messageDisplay(
+                "Create new message",
+                `Device ${deviceName} not found`,
+                [
+                    { description: "Continue", route: "/command/commandGroupSelect/" }
+                ],
+                res
+            );
+            return;
+        }
     }
 
     // got the device - now we can update the message
@@ -552,7 +603,7 @@ router.get('/perform/:guid', async function (req, res) {
 
     let commands = await buildCommandDescription(commandGroup);
 
-    res.render("commandGroupPerform.ejs", { commandGroup: commandGroup, commands: commands, guid:guid });
+    res.render("commandGroupPerform.ejs", { commandGroup: commandGroup, commands: commands, guid: guid });
 });
 
 router.get('/performCommand/:guid/:command_id', async function (req, res) {
@@ -566,16 +617,14 @@ router.get('/performCommand/:guid/:command_id', async function (req, res) {
 
     mgr = Manager.getActiveManger();
 
-    console.log("hello");
-
     for (let i = 0; i < command.messages.length; i++) {
-        
+
         let message_id = command.messages[i];
 
         let message = await CommandDeviceMessage.findOne(
             { _id: message_id }
         );
-    
+
         let device_id = message.device;
 
         let deviceObject = await Device.findOne(
@@ -591,7 +640,7 @@ router.get('/performCommand/:guid/:command_id', async function (req, res) {
         }
     };
 
-    res.redirect('/command/perform'+"/"+guid);
+    res.redirect('/command/perform' + "/" + guid);
 });
 
 

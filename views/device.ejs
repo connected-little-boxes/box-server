@@ -51,11 +51,11 @@
             </div>
             <div class="form-group">
                 <label for="tags">Tags</label>
-                <input required type="text" name="tags" id="tags" class="form-control" value="<%= device.tags %>">
+                <input type="text" name="tags" id="tags" class="form-control" value="<%= device.tags %>">
             </div>
             <div class="form-group">
                 <label for="bootCommands">Boot Commands</label>
-                <textarea required rows=5 type="text" name="bootCommands" id="bootCommands" class="form-control"><%= device.bootCommands %></textarea>
+                <textarea rows=5 type="text" name="bootCommands" id="bootCommands" class="form-control"><%= device.bootCommands %></textarea>
             </div>
             <button type="submit" class="btn btn-primary mt-4">Update</button>
         </form>

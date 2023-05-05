@@ -24,26 +24,28 @@
                 method="POST">
                 <div class="form-group">
                     <label for="name">Name</label>
-                    <input required type="text" name="name" id="name" class="form-control"
-                        value="<%= commandMessage.name %>">
+                    <input type="text" required name="name" id="name" class="form-control" value="<%= commandMessage.name %>">
                     <label for="description">Description</label>
-                    <input required type="text" name="description" id="description" class="form-control"
+                    <input type="text" name="description" id="description" class="form-control"
                         value="<%= commandMessage.description %>">
                     <label for="deviceName">Device</label>
-                    <input required type="text" name="deviceName" id="deviceName" class="form-control"
-                        value="<%= commandMessage.deviceName %>">
+                    <select class="form-control" name="deviceName" id="deviceName">
+                        <% deviceFriendlyNameList.forEach(name => { %>
+                        <option value="<%=name %>"><%=name %></option>
+                        <% }) %>
+                      </select>                    
                     <label for="deviceName">Message</label>
                     <input required type="text" name="message" id="message" class="form-control"
                         value="<%= commandMessage.message %>">
-                        <p class="mt-3 mb-3"> The message will be sent to the specified device, which is identified by its friendly name.</p>
-                        <p>You can find a command description <a href="https://github.com/connected-little-boxes/box-doc/blob/main/Connected%20Little%20Box%20Reference.pdf">here</a>.</p>
-                                <button type="submit" class="btn btn-primary mt-4 btn-block">Save</button>
+                    <p class="mt-3 mb-3"> The message will be sent to the specified device, which is identified by its
+                        friendly name. You can add a name and a
+                        description of the message, but these are not compulsory.
+                    </p>
+                    <p>You can find a command description <a
+                            href="https://github.com/connected-little-boxes/box-doc/blob/main/Connected%20Little%20Box%20Reference.pdf">here</a>.
+                    </p>
+                    <button type="submit" class="btn btn-primary mt-4 btn-block">Save</button>
             </form>
-
-
-
-
         </div>
 </body>
-
 </html>

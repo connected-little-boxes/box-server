@@ -20,18 +20,23 @@
     <div class="container mb-4">
         <p>
             <img src=" <%= commandGroup.pageQRcode %> "></img>
-            <a href="<%= commandGroup.pageURL %>">
-                <%= commandGroup.description %>
-            </a>
+        </p>
+        <p>
+            <%= commandGroup.description %>
         </p>
         <% commands.forEach(command=> { %>
             <p>
-                <a href="/command/performCommand/<%= guid %>/<%= command._id %>" 
+                <a href="/command/performCommand/<%= guid %>/<%= command._id %>"
                     class="btn btn-primary mb-1  btn-block">
                     <%= command.name %>
                 </a>
             </p>
-        <% }) %>
+            <% }) %>
+                <p>
+                    <a href="<%= commandGroup.pageURL %>"> <%=commandGroup.pageURL %> 
+                    </a>
+                </p>
+
     </div>
 </body>
 

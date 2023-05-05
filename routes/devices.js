@@ -19,7 +19,7 @@ router.get('/', authenticateToken, async function (req, res) {
 })
 
 router.post('/sendconsolecommand/:name', authenticateToken, async (req, res) => {
-  console.log("send json command pressed for:",res.device.name," command:", req.body.consoleCommand);
+  console.log("send json command pressed for:", res.device.name, " command:", req.body.consoleCommand);
 
   mgr = Manager.getActiveManger();
 
@@ -30,7 +30,7 @@ router.post('/sendconsolecommand/:name', authenticateToken, async (req, res) => 
 
 router.post('/sendjsoncommand/:name', authenticateToken, getDeviceByDeviceName,
   async (req, res) => {
-    console.log("send json command pressed for:",res.device.name," command:", req.body.jsonCommand);
+    console.log("send json command pressed for:", res.device.name, " command:", req.body.jsonCommand);
     mgr = Manager.getActiveManger();
     await mgr.sendJSONCommandToDevice(res.device.name, req.body.jsonCommand);
     res.redirect('/devices/' + res.device.name);
@@ -46,18 +46,16 @@ router.get('/restart/:name', authenticateToken, getDeviceByDeviceName,
     res.redirect('/devices/' + res.device.name);
   })
 
-  router.get('/check/:name', authenticateToken, getDeviceByDeviceName,
+router.get('/check/:name', authenticateToken, getDeviceByDeviceName,
   async (req, res) => {
 
     mgr = Manager.getActiveManger();
-
-    console.log("doing the check thingy");
 
     res.redirect('/devices/' + res.device.name);
   })
 
 
-  router.get('/otaUpdate/:name', authenticateToken, getDeviceByDeviceName,
+router.get('/otaUpdate/:name', authenticateToken, getDeviceByDeviceName,
   async (req, res) => {
 
     mgr = Manager.getActiveManger();
@@ -74,10 +72,39 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
 })
 
 router.post('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) => {
-  console.log("updating the device");
+
+  // this is the friendly name that we would like to use - need to make sure it has 
+  // not already been entered - if it has we will add a unique number on the end
+
+  let friendlyName = req.body.friendlyName;
+
+  let proposedFriendlyName = friendlyName;
+  let friendlyNameIndex = 1;
+
+  while (true) {
+
+    // search for a device with the friendly name
+
+    let device = await Device.findOne({
+      $and:
+        [
+          { owner: { $eq: res.user._id } },
+          { friendlyName: { $eq: proposedFriendlyName } }
+        ]
+    });
+
+    if (device) {
+      proposedFriendlyName = `${friendlyName}(${friendlyNameIndex})`;
+      friendlyNameIndex++;
+    }
+    else {
+      break;
+    }
+  }
+
   await res.device.updateOne(
     {
-      friendlyName: req.body.friendlyName,
+      friendlyName: proposedFriendlyName,
       bootCommands: req.body.bootCommands,
       description: req.body.description,
       tags: req.body.tags

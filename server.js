@@ -31,6 +31,7 @@ var deviceSelect = require('./routes/deviceSelect');
 var lightShow = require('./routes/lightShow');
 var createDevice = require('./routes/createDevice');
 var command = require('./routes/command');
+var changePassword = require('./routes/changePassword');
 
 var pixel = require('./routes/pixel');
 
@@ -60,6 +61,7 @@ mgr.startServices().then(() => {
   app.use('/lightShow', lightShow);
   app.use('/createDevice', createDevice);
   app.use('/command', command);
+  app.use('/changePassword',changePassword);
 
   app.use('/pixel', pixel);
   app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));  
