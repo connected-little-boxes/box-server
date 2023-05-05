@@ -116,6 +116,13 @@ router.get('/commandGroupSelect', authenticateToken, async function (req, res) {
     // find all the groups owned by this user
     let commandGroups = await CommandGroup.find({ owner: res.user._id });
 
+    commandGroups.sort((a, b) => {
+        let textA = (a.name).toUpperCase();
+        let textB = (b.name).toUpperCase();
+        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+      });
+    
+
     res.render("commandGroupSelect.ejs", { username: res.user.name, commandGroups: commandGroups });
 });
 
@@ -603,7 +610,10 @@ router.get('/perform/:guid', async function (req, res) {
 
     let commands = await buildCommandDescription(commandGroup);
 
-    res.render("commandGroupPerform.ejs", { commandGroup: commandGroup, commands: commands, guid: guid });
+    let url = process.env.HOST_ADDRESS;
+
+    res.render("commandGroupPerform.ejs", { commandGroup: commandGroup, 
+        commands: commands, guid: guid, url:url });
 });
 
 router.get('/performCommand/:guid/:command_id', async function (req, res) {
