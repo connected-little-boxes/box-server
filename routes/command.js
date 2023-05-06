@@ -42,53 +42,9 @@ async function buildCommandDescription(commandGroup) {
     return commands;
 }
 
-async function buildOneCommandMessageDescription(message_id) {
-    let message = await CommandDeviceMessage.findOne(
-        { _id: message_id }
-    );
+async function buildUserDeviceFriendlyNameList(owner_id, selectedDeviceID) {
 
-    if (!message) {
-        return null;
-    }
-
-    let device = await Device.findOne(
-        { _id: message.device }
-    );
-
-    let friendlyName = "";
-
-    if (device) {
-        friendlyName = device.friendlyName;
-    }
-
-    let messageDetails = {
-        _id: message.id,
-        name: message.name,
-        description: message.description,
-        message: message.message,
-        deviceName: friendlyName,
-        device_id: message.device._id
-    };
-    return messageDetails;
-}
-
-async function buildCommandMessageDescription(command) {
-    let messageDescriptions = [];
-
-    for (let i = 0; i < command.messages.length; i++) {
-        let message_id = command.messages[i];
-        let messageDetails = await buildOneCommandMessageDescription(message_id);
-        if (messageDetails) {
-            messageDescriptions.push(messageDetails);
-        }
-    };
-
-    return messageDescriptions;
-}
-
-async function buildUserDeviceFriendlyNameList(user, selectedDeviceID) {
-
-    let userDevices = await Device.find({ owner: user._id });
+    let userDevices = await Device.find({ owner: owner_id });
 
     userDevices.sort((a, b) => {
         let textA = (a.friendlyName ? a.friendlyName : a.name).toUpperCase();
@@ -102,13 +58,54 @@ async function buildUserDeviceFriendlyNameList(user, selectedDeviceID) {
         let device = userDevices[i];
         let name = (device.friendlyName ? device.friendlyName : device.name);
         if (device._id.equals(selectedDeviceID)) {
-            nameList.unshift(name); 
+            nameList.unshift(name);
         }
         else {
             nameList.push(name);
         }
     };
     return nameList;
+}
+
+
+async function buildOneCommandMessageDescription(owner_id, message_id) {
+
+    // find the message we are describing
+    let message = await CommandDeviceMessage.findOne(
+        { _id: message_id }
+    );
+
+    if (!message) {
+        return null;
+    }
+
+    let selectedDeviceID = message.device;
+
+    let deviceNames = await buildUserDeviceFriendlyNameList(owner_id, selectedDeviceID);
+
+    let messageDetails = {
+        _id: message.id,
+        name: message.name,
+        description: message.description,
+        message: message.message,
+        deviceNames: deviceNames
+    };
+
+    return messageDetails;
+}
+
+async function buildCommandMessageDescriptions(owner_id, messages) {
+    let messageDescriptions = [];
+
+    for (let i = 0; i < messages.length; i++) {
+        let message_id = messages[i];
+        let messageDetails = await buildOneCommandMessageDescription(owner_id, message_id);
+        if (messageDetails) {
+            messageDescriptions.push(messageDetails);
+        }
+    };
+
+    return messageDescriptions;
 }
 
 router.get('/commandGroupSelect', authenticateToken, async function (req, res) {
@@ -120,8 +117,7 @@ router.get('/commandGroupSelect', authenticateToken, async function (req, res) {
         let textA = (a.name).toUpperCase();
         let textB = (b.name).toUpperCase();
         return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
-      });
-    
+    });
 
     res.render("commandGroupSelect.ejs", { username: res.user.name, commandGroups: commandGroups });
 });
@@ -317,7 +313,8 @@ router.get('/commandNew/:commandGroup_id', authenticateToken, async function (re
 
 router.post('/commandNew/:commandGroup_id', authenticateToken, async function (req, res) {
 
-    let owner_id = res.user._id;
+    let user = res.user;
+    let owner_id = user._id;
 
     let commandGroup_id = req.params.commandGroup_id;
 
@@ -337,7 +334,7 @@ router.post('/commandNew/:commandGroup_id', authenticateToken, async function (r
 
     await commandGroup.save();
 
-    let messageDescriptions = await buildCommandMessageDescription(newCommand);
+    let messageDescriptions = await buildCommandMessageDescriptions(user, newCommand);
 
     res.render("commandEdit.ejs", { command: newCommand, messageDescriptions: messageDescriptions, commandGroup_id: commandGroup_id });
 });
@@ -358,6 +355,9 @@ router.get('/commandDetailsEdit/:commandGroup_id/:command_id', async function (r
 
 router.post('/commandDetailsEdit/:commandGroup_id/:command_id', async function (req, res) {
 
+    let user = res.user;
+    let owner_id = user._id;
+
     let commandGroup_id = req.params.commandGroup_id;
     let command_id = req.params.command_id;
 
@@ -373,13 +373,15 @@ router.post('/commandDetailsEdit/:commandGroup_id/:command_id', async function (
         { _id: command_id }
     );
 
-    let messageDescriptions = await buildCommandMessageDescription(command);
+    let messageDescriptions = await buildCommandMessageDescriptions(owner_id, command.messages);
 
     res.render("commandEdit.ejs", { command: command, messageDescriptions: messageDescriptions, commandGroup_id: commandGroup_id });
-
 });
 
 router.get('/commandEdit/:commandGroup_id/:command_id', authenticateToken, async function (req, res) {
+
+    let user = res.user;
+    let owner_id = user._id;
 
     let command_id = req.params.command_id;
     let commandGroup_id = req.params.commandGroup_id;
@@ -388,16 +390,16 @@ router.get('/commandEdit/:commandGroup_id/:command_id', authenticateToken, async
         _id: command_id
     });
 
-    let messageDescriptions = await buildCommandMessageDescription(command);
+    let messageDescriptions = await buildCommandMessageDescriptions(owner_id, command.messages);
 
     res.render("commandEdit.ejs", { command: command, messageDescriptions: messageDescriptions, commandGroup_id: commandGroup_id });
 });
 
-
 router.post('/commandEdit/:commandGroup_id/:command_id', authenticateToken, async function (req, res) {
 
-    let commandGroup_id = req.params.commandGroup_id;
     let command_id = req.params.command_id;
+
+    let commandGroup_id = req.params.commandGroup_id;
 
     await Command.updateOne(
         { _id: command_id },
@@ -407,11 +409,44 @@ router.post('/commandEdit/:commandGroup_id/:command_id', authenticateToken, asyn
         }
     );
 
-    let commandGroup = await CommandGroup.findOne(
-        { _id: commandGroup_id }
-    )
+    for (let key in req.body) {
+        if(key.startsWith('message_') && key.endsWith('_messageName') ){
+            let body = req.body[key];
+            console.log(`Processing: ${body}`);
+            // have a message value to update
+            let content = key.split('_');
+            let id = content[1];
+            message = await CommandDeviceMessage.findOne({_id:id});
+            
+            if(message){
+                // got a message to update
+                let name = req.body[`message_${id}_messageName`];
+                let description = req.body[`message_${id}_description`];
+                let deviceName = req.body[`message_${id}_deviceName`];
+                let messageText = req.body[`message_${id}_messageText`];
 
-    res.render("commandEdit.ejs", { commandGroup: commandGroup });
+                let device = await Device.findOne({
+                    $and:
+                        [
+                            { owner: { $eq: res.user._id } },
+                            { friendlyName: { $eq: deviceName } }
+                        ]
+                });
+        
+                await CommandDeviceMessage.updateOne(
+                    { _id: id },
+                    {
+                        name: name,
+                        description: description,
+                        device: device._id,
+                        message: messageText
+                    }
+                );
+            }
+        }
+    }
+
+    res.redirect(`/command/commandGroupEdit/${commandGroup_id}`);
 });
 
 router.get('/commandMessageNew/:commandGroup_id/:command_id', authenticateToken, async function (req, res) {
@@ -435,7 +470,7 @@ router.get('/commandMessageNew/:commandGroup_id/:command_id', authenticateToken,
     command.messages.push(newMessage._id);
     await command.save();
 
-    let deviceFriendlyNameList = await buildUserDeviceFriendlyNameList(user);
+    let deviceFriendlyNameList = await buildUserDeviceFriendlyNameList(owner_id, null);
 
     res.render("commandMessageEdit.ejs", {
         commandMessage: newMessage, commandGroup_id: commandGroup_id,
@@ -445,11 +480,12 @@ router.get('/commandMessageNew/:commandGroup_id/:command_id', authenticateToken,
 
 router.get('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id', authenticateToken, async function (req, res) {
     let user = res.user;
+    let owner_id = user._id;
     let commandGroup_id = req.params.commandGroup_id;
     let command_id = req.params.command_id;
     let message_id = req.params.commandMessage_id;
 
-    let messageDescription = await buildOneCommandMessageDescription(message_id);
+    let messageDescription = await buildOneCommandMessageDescription(user, message_id);
 
     if (!messageDescription) {
         messageDisplay(
@@ -462,7 +498,7 @@ router.get('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id'
         );
     }
 
-    let deviceFriendlyNameList = await buildUserDeviceFriendlyNameList(user,messageDescription.device_id);
+    let deviceFriendlyNameList = await buildUserDeviceFriendlyNameList(owner_id, messageDescription.device_id);
 
     res.render("commandMessageEdit.ejs", {
         commandMessage: messageDescription, commandGroup_id: commandGroup_id,
@@ -472,6 +508,9 @@ router.get('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id'
 
 
 router.post('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id', authenticateToken, async function (req, res) {
+
+    let user = res.user;
+    let owner_id = user._id;
 
     let commandMessage_id = req.params.commandMessage_id;
     let commandGroup_id = req.params.commandGroup_id;
@@ -533,7 +572,7 @@ router.post('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id
         _id: command_id
     });
 
-    let messageDescriptions = await buildCommandMessageDescription(command);
+    let messageDescriptions = await buildCommandMessageDescriptions(owner_id, command.messages);
 
     res.render("commandEdit.ejs", { command: command, messageDescriptions: messageDescriptions, commandGroup_id: commandGroup_id });
 });
@@ -612,8 +651,10 @@ router.get('/perform/:guid', async function (req, res) {
 
     let url = process.env.HOST_ADDRESS;
 
-    res.render("commandGroupPerform.ejs", { commandGroup: commandGroup, 
-        commands: commands, guid: guid, url:url });
+    res.render("commandGroupPerform.ejs", {
+        commandGroup: commandGroup,
+        commands: commands, guid: guid, url: url
+    });
 });
 
 router.get('/performCommand/:guid/:command_id', async function (req, res) {

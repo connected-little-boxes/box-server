@@ -10,47 +10,64 @@
     <title>Connected Little Boxes</title>
 </head>
 
-<body>
+
+<body onload="doStart();">
+
     <div class="container mb-4">
         <h1 class="mb-4">Connected Little Boxes</h1>
         <h2 class="mb-2">
             Command Edit
         </h2>
-        <p>Name: <%= command.name %>
-        </p>
-        <p>Description: <%= command.description %>
-        </p>
-        <a href="/command/commandDetailsEdit/<%= commandGroup_id %>/<%= command._id %>"
-            class="btn btn-primary mt-2 mb-4 btn-block">Details edit</a>
-    </div>
-    <div class="container">
-        <h2>
-            Messages
-        </h2>
-        <% messageDescriptions.forEach(message=> { %>
-            <p>
-            <h3>
-                <%= message.name %>
-            </h3>
-            </p>
-            <p>
-                <%= message.description %>
-            </p>
-            <a href="/command/commandMessageEdit/<%= commandGroup_id %>/<%= command._id %>/<%= message._id %>"
-                class="btn btn-primary mb-2">Edit</a>
-            <a href="/command/commandMessageDeleteConfirm/<%= commandGroup_id %>/<%= command._id %>/<%= message._id %>"
-                class="btn btn-primary mb-2">Delete</a>
-                <hr />
-            <% }) %>
+        <div class="form-group">
+            <form id="CommandEditForm" action="/command/commandEdit/<%= commandGroup_id %>/<%= command.id %>"
+                method="POST">
+                <label for="name">Name</label>
+                <input required type="text" name="name" id="name" class="form-control" value="<%= command.name %>">
+                <label for="description">Description</label>
+                <input required type="text" name="description" id="description" class="form-control"
+                    value="<%= command.description %>">
+                <h3>Messages</h3>
+                <div class="ml-5" id="messages">
+                    <% messageDescriptions.forEach(messageDescription=> { %>
+                        <div class="mb-2 mt-2" id="<%= messageDescription._id %>">
+                            <% let _id="message_" + messageDescription._id; %>
+                                <h3><label name="message_<%= _id %>_messageName">
+                                        <%= messageDescription.name %>
+                                    </label></h3>
+                                <input required type="text" name="<%= _id %>_messageName" id="<%= _id %>_messageName"
+                                    class="form-control" value="<%= messageDescription.name %>">
+                                <label for="<%= _id %>description">Description</label>
+                                <input type="text" name="<%= _id %>_description" id="<%= _id %>_description"
+                                    class="form-control" value="<%= messageDescription.description %>">
+                                <label for="<%= _id %>deviceName">Device</label>
+                                <select class="form-control" name="<%= _id %>_deviceName" id="<%= _id %>_deviceName">
+                                    <% messageDescription.deviceNames.forEach(friendlyName=> { %>
+                                        <option value="<%=friendlyName %>">
+                                            <%=friendlyName %>
+                                        </option>
+                                        <% }) %>
+                                </select>
+                                <label for="<%= _id %>messageText">Message</label>
+                                <input required type="text" name="<%= _id %>_messageText" id="<%= _id %>_messageText"
+                                    class="form-control" value="<%= messageDescription.message %>">
+                                <a href="/command/commandMessageDeleteConfirm/<%= commandGroup_id %>/<%= command._id %>/<%= _id %>"
+                                    class="btn btn-primary mb-2 mt-2">Delete</a>
+                        </div>
+                        <% }) %>
+                </div>
 
-            <p class="mt-3 mb-3">Each message will send a HullOS command to the specified device.   </p>
                 <a href="/command/commandMessageNew/<%= commandGroup_id %>/<%= command._id %>"
-                    class="btn btn-primary mt-2 mb-2 btn-block">New
-                    Message</a>
-                <a href="/command/commandGroupEdit/<%= commandGroup_id %>" class="btn btn-primary mt-2 mb-2 btn-block">
-                    Done</a>
-    </div>
+                    class="btn btn-primary mb-2 mt-2">New Message</a>
 
+                <button type="submit" class="btn btn-primary mt-4 btn-block">Save</button>
+            </form>
+        </div>
+
+
+        <p class="mt-3 mb-3">Each message will send a HullOS command to the specified device. </p>
+        <a href="/command/commandGroupEdit/<%= commandGroup_id %>" class="btn btn-primary mt-2 mb-2 btn-block">
+            Done</a>
+    </div>
 </body>
 
 </html>
