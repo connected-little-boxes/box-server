@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <title>Connected Little Boxes</title>
+</head>
+
+<body>
+    <div class="container mb-2 mt-2">
+        <h1 class="mb-4">Connected Little Boxes</h1>
+        <h2 class="mb-2">
+            <%= name %>
+        </h2>
+
+        <div class="form-group">
+            <form action="/deviceSelect" method="POST">
+                <div class="d-flex justify-content-between">
+                    <input type="text" class="form-control" id="filter" name="filter">
+                    <button class="btn btn-primary" type="submit">Filter</button>
+                </div>
+        </div>
+
+        <div class="container">
+            <h3 class="mb-4">Device List</h3>
+            <% devices.forEach(device=> { %>
+                <div class="card mb-4">
+                    <h4 class="card-title">
+                        <% var name; if (device.friendlyName !="" ) name=device.friendlyName; else name=device.name; %>
+                            <%= name %>
+                    </h4>
+                    <div class="card-subtitle text-muted mb-2">
+                        Name: <%= device.name %> Registered: <%= device.regDate.toLocaleDateString() %>
+                                <%= device.regDate.toLocaleTimeString() %>
+                                    Last seen:<%= device.lastResponseDate.toLocaleDateString() %>
+                                        <%= device.lastResponseDate.toLocaleTimeString() %>
+                    </div>
+                    <a href="devices/<%= device.name %>" class="btn btn-primary btn-block">Manage Device</a>
+                </div>
+                <% }) %>
+                <a href="/" class="btn btn-primary mt-2 mb-4 btn-block">Done</a>
+            </div>
+</body>
+
+</html>

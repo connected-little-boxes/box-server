@@ -25,7 +25,23 @@ const deviceSchema = new mongoose.Schema(
         },
         lastConnectedDate: {
             type: Date,
-            required: false
+            default: Date.now(),
+            required: true
+        },
+        lastCommand: {
+            type: String,
+            default:"none",
+            required: true
+        },
+        lastResponseDate: {
+            type: Date,
+            default: Date.now(),
+            required: true
+        },
+        lastResponse: {
+            type: String,
+            default:"none",
+            required: true
         },
         processes: {
             type: [String],

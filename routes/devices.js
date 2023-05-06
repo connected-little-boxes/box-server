@@ -4,27 +4,8 @@ const router = express.Router();
 const Device = require('../models/device');
 const Manager = require('../manager');
 const authenticateToken = require('../_helpers/authenticateToken');
+const getDeviceByDeviceName = require('../_helpers/getDeviceByDeviceName');
 
-async function getDeviceByDeviceName(req, res, next) {
-  let device;
-
-  try {
-
-    device = await Device.findOne({ name: req.params.name });
-
-    if (device === null) {
-      return res.status(404).json({ message: 'Cannot find device' });
-    }
-  }
-  catch (err) {
-    res.status(500).json({ message: err.message });
-    return;
-  }
-
-  response.device = device;
-
-  next();
-}
 
 // define the home page route
 router.get('/', authenticateToken, async function (req, res) {
@@ -38,7 +19,7 @@ router.get('/', authenticateToken, async function (req, res) {
 })
 
 router.post('/sendconsolecommand/:name', authenticateToken, async (req, res) => {
-  console.log("send console command pressed");
+  console.log("send json command pressed for:", res.device.name, " command:", req.body.consoleCommand);
 
   mgr = Manager.getActiveManger();
 
@@ -49,11 +30,9 @@ router.post('/sendconsolecommand/:name', authenticateToken, async (req, res) => 
 
 router.post('/sendjsoncommand/:name', authenticateToken, getDeviceByDeviceName,
   async (req, res) => {
-    console.log("send json command pressed");
+    console.log("send json command pressed for:", res.device.name, " command:", req.body.jsonCommand);
     mgr = Manager.getActiveManger();
-
     await mgr.sendJSONCommandToDevice(res.device.name, req.body.jsonCommand);
-
     res.redirect('/devices/' + res.device.name);
   })
 
@@ -67,7 +46,16 @@ router.get('/restart/:name', authenticateToken, getDeviceByDeviceName,
     res.redirect('/devices/' + res.device.name);
   })
 
-  router.get('/otaUpdate/:name', authenticateToken, getDeviceByDeviceName,
+router.get('/check/:name', authenticateToken, getDeviceByDeviceName,
+  async (req, res) => {
+
+    mgr = Manager.getActiveManger();
+
+    res.redirect('/devices/' + res.device.name);
+  })
+
+
+router.get('/otaUpdate/:name', authenticateToken, getDeviceByDeviceName,
   async (req, res) => {
 
     mgr = Manager.getActiveManger();
@@ -84,10 +72,39 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
 })
 
 router.post('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) => {
-  console.log("updating the device");
+
+  // this is the friendly name that we would like to use - need to make sure it has 
+  // not already been entered - if it has we will add a unique number on the end
+
+  let friendlyName = req.body.friendlyName;
+
+  let proposedFriendlyName = friendlyName;
+  let friendlyNameIndex = 1;
+
+  while (true) {
+
+    // search for a device with the friendly name
+
+    let device = await Device.findOne({
+      $and:
+        [
+          { owner: { $eq: res.user._id } },
+          { friendlyName: { $eq: proposedFriendlyName } }
+        ]
+    });
+
+    if (device) {
+      proposedFriendlyName = `${friendlyName}(${friendlyNameIndex})`;
+      friendlyNameIndex++;
+    }
+    else {
+      break;
+    }
+  }
+
   await res.device.updateOne(
     {
-      friendlyName: req.body.friendlyName,
+      friendlyName: proposedFriendlyName,
       bootCommands: req.body.bootCommands,
       description: req.body.description,
       tags: req.body.tags
