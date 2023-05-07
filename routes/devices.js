@@ -5,7 +5,7 @@ const Device = require('../models/device');
 const Manager = require('../manager');
 const authenticateToken = require('../_helpers/authenticateToken');
 const getDeviceByDeviceName = require('../_helpers/getDeviceByDeviceName');
-
+const ProcessManager = require('../models/ProcessManager');
 
 // define the home page route
 router.get('/', authenticateToken, async function (req, res) {
@@ -67,9 +67,37 @@ router.get('/otaUpdate/:name', authenticateToken, getDeviceByDeviceName,
 
 
 router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) => {
+  // need to build a description of the processes which can be associated with this device
+  // at the moment we just have pixels
 
-  res.render('device.ejs', { device: res.device });
-})
+  let device = res.device;
+  let deviceProcessManagers = device.processManagers;
+  let managers=[];
+
+  // We are going to display something for each process manager that
+  // will allow the user to select which processes are active in the remote 
+  // device. The ProcessManager table contains a list of all the process managers
+  // get a list of all the ProcessManager objects
+  //
+  let systemProcessManagers = await ProcessManager.find({});
+
+  systemProcessManagers.forEach(systemProcessManager=>{
+
+    const processActive = deviceProcessManagers.some(id => id.equals(systemProcessManager));
+    // want to see if the device processManagers array contains a reference to this manager
+
+    let processDescription = {
+      _id:systemProcessManager._id,
+      name:systemProcessManager.name,
+      description:systemProcessManager.description,
+      active:processActive
+    }
+
+    managers.push(processDescription);
+  });
+
+  res.render('device.ejs', { device: res.device, managers:managers});
+});
 
 router.post('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) => {
 

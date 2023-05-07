@@ -6,13 +6,14 @@ const authenticateToken = require('../_helpers/authenticateToken');
 // define the home page route
 router.get('/', authenticateToken, async function (req, res) {
 
-    res.render("createDevice.ejs", { name: res.user.name, host: process.env.HOST_ADDRESS });
+    res.render("configureDeviceHardware.ejs", { name: res.user.name, host: process.env.HOST_ADDRESS, 
+        configScript:"/js/configscripts/device.js", title:"Create device" });
 });
 
-
-router.get('/networkSettings.json/:name', authenticateToken, async function (req, res) {
+router.get('/networkSettings.json/:name/:friendlyName', authenticateToken, async function (req, res) {
 
     let deviceName = req.params.name;
+    let friendlyName = req.params.friendlyName;
 
     console.log("Device: " + deviceName + " registering");
 
@@ -22,7 +23,7 @@ router.get('/networkSettings.json/:name', authenticateToken, async function (req
         // Create a new device record
         device = new Device({
             name: deviceName,
-            friendlyName: deviceName,
+            friendlyName: friendlyName,
             owner: res.user._id,
             processor: "unknown",
             version: "unknown",
@@ -34,7 +35,8 @@ router.get('/networkSettings.json/:name', authenticateToken, async function (req
     }
     else {
         await device.updateOne({
-            owner: res.user._id
+            owner: res.user._id,
+            friendlyName: friendlyName
         });
         console.log("Device Updated");
     }

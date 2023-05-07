@@ -13,9 +13,9 @@ const mongoose = require('mongoose')
 const mqtt = require('mqtt');
 const bcrypt = require('bcrypt');
 const Device = require('./models/device');
-const Process = require('./models/process');
 const Connection = require('./models/connection');
 const Installation = require('./models/installation');
+const ProcessManager = require('./models/ProcessManager');
 const User = require('./models/user');
 
 class Manager {
@@ -202,6 +202,48 @@ class Manager {
         installation.printerDestinations.push(printerDestination);
 
         await installation.save();
+    }
+
+    async addPixelsProcessManager() {
+        
+        console.log("Adding a pixels process manager");
+
+        let pixelsManager = await ProcessManager.findOne({ name:"pixels" });
+
+        if(pixelsManager){
+            console.log("  Pixels manager already present");
+        }
+        else{
+            console.log("  Creating new Pixels manager");
+            let newManager = new ProcessManager(
+                {
+                    name:'pixels',
+                    description:'Configure pixels connected to the device',
+                    configJS:'/js/configscripts/pixels.js'
+                });
+            await newManager.save();
+        }
+    }
+
+    async addMax7219MessagesProcessManager() {
+        
+        console.log("Adding a Max7219 process manager");
+
+        let pixelsManager = await ProcessManager.findOne({ name:"Max7219" });
+
+        if(pixelsManager){
+            console.log("  Max7219 manager already present");
+        }
+        else{
+            console.log("  Creating new Max7219 manager");
+            let newManager = new ProcessManager(
+                {
+                    name:'Max7219',
+                    description:'Configure Max7219 connected to the device',
+                    configJS:'/js/configscripts/Max7219.js'
+                });
+            await newManager.save();
+        }
     }
 
     async addDisplay(displayDestination) {
@@ -435,6 +477,8 @@ class Manager {
 
         await this.addPrinter("CLB-b00808");
         await this.addDisplay("CLB-3030da");
+        await this.addPixelsProcessManager();
+        await this.addMax7219MessagesProcessManager();
         await this.checkForAdminUser();
     }
 

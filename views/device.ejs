@@ -60,9 +60,18 @@
             <button type="submit" class="btn btn-primary mt-4">Update</button>
         </form>
 
-        <div class="container mt-4">
-            <a href="/pixel" class="btn btn-success mb-4">Configure Pixel Hardware</a>
-        </div>
+        <h3>Devices</h3>
+
+        <% managers.forEach(manager=>{ %>
+
+            <% if(manager.active){ %>
+
+                    <a href="/processManager/manage/<%=manager._id%>/<%=device._id%>" class="btn btn-success mt-1 mb-1"> Manage <%=manager.name%></a>
+        <% } else {  %>
+                <a href="/processManager/activate/<%=manager._id%>/<%=device._id%>" class="btn btn-primary mt-1 mb-1"> Activate <%=manager.name%></a>
+        <% } %>
+       
+        <% }); %>
 
         <form action="/devices/sendconsolecommand/<%= device.name %>"" method="POST">
             <div class="form-group mt-4">
