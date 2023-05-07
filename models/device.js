@@ -43,11 +43,11 @@ const deviceSchema = new mongoose.Schema(
             default:"none",
             required: true
         },
-        processes: {
-            type: [String],
-            default:undefined,
-            required: true
-        },
+        processManagers: {
+            type: [mongoose.Schema.Types.ObjectId],
+            ref:'ProcessManager',
+            default:[]
+        },  
         bootCommands: {
             type: String,
             default:undefined,

@@ -28,6 +28,11 @@ class ConsoleIO {
     return "";
   }
 
+  async disconnectFromSerialPort(){
+    await this.port.close();
+    this.reader = null;
+  }
+
   handleCommand(text) {
     console.log("Got a reply:" + text + " " + text.length);
     if (this.gotCommandBack) {
