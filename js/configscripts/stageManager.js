@@ -42,13 +42,18 @@ async function displayStage(stage) {
                 case "localValue":
                     break;
                 case "fromDevice":
-                    try {
-                        deviceValue = await consoleIO.performCommand(field.deviceName);
+                    if (field.type == "password") {
+                        deviceValue="";
                     }
-                    catch (e) {
-                        alert(e);
-                        selectStage(stages.ConnectFailed);
-                        return;
+                    else {
+                        try {
+                            deviceValue = await consoleIO.performCommand(field.deviceName);
+                        }
+                        catch (e) {
+                            alert(e);
+                            selectStage(stages.ConnectFailed);
+                            return;
+                        }
                     }
                     break;
             }

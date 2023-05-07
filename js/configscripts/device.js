@@ -65,7 +65,7 @@ const stages = {
     inputFields: [
       { displayName: "Device Name", deviceName: "friendlyName", type: "text", allowEmpty: false, loadType: "localValue" },
       { displayName: "WiFi SSID", deviceName: "wifissid1", type: "text", allowEmpty: false, loadType: "fromDevice" },
-      { displayName: "WiFi Password", deviceName: "wifipwd1", type: "password", allowEmpty: false, loadType: "fromDevice" }
+      { displayName: "WiFi Password", deviceName: "wifipwd1", type: "password", allowEmpty: true, loadType: "fromDevice" }
     ],
     buttons: [
       { buttonText: "Submit", buttonDest: doConfigWiFi }
@@ -117,8 +117,11 @@ async function doConfigWiFi() {
           userEnteredFriendlyName = value;
           break;
         case "fromDevice":
-          let command = field.deviceName + "=" + value;
-          commandList.push(command);
+          if ((field.type != "password") ||
+            (field.type == "password" && value != "")) {
+            let command = field.deviceName + "=" + value;
+            commandList.push(command);
+          }
           break;
       }
     }
