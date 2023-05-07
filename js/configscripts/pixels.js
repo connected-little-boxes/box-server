@@ -6,6 +6,7 @@ let hostAddress;
 let settingsURL;
 
 var stage;
+var consoleIO;
 
 const stages = {
     ConnectUSB: {
@@ -25,16 +26,16 @@ const stages = {
             "Press Connect to device when you are ready."],
         inputFields: [],
         buttons: [
-            { buttonText: "Connect to device", buttonDest: doAttemptESPmanagerConnection }
+            { buttonText: "Connect to device", buttonDest: doAttemptConnection }
         ]
     },
     PixelConfig: {
         description: ["*Configure the pixels",
             `You need to specify the pin you have used to connect the pixels and the number of pixels that you have connected. If you have connected a grid of pixels you will specify the width (x) and the height (y) of the grid. If you have connected a string or a ring of pixels you put the length into x and set the value of y to 1.`],
         inputFields: [
-            { displayName: "Pixel Pin", deviceName: "pixelcontrolpin", type: "number", allowEmpty: false, loadFromDevice: true },
-            { displayName: "Number of X pixels", deviceName: "noofxpixels", type: "number", allowEmpty: false, loadFromDevice: true },
-            { displayName: "Number of Y pixels", deviceName: "noofypixels", type: "number", allowEmpty: false, loadFromDevice: true }
+            { displayName: "Pixel Pin", deviceName: "pixelcontrolpin", type: "number", allowEmpty: false, loadType: "fromDevice" },
+            { displayName: "Number of X pixels", deviceName: "noofxpixels", type: "number", allowEmpty: false, loadType: "fromDevice" },
+            { displayName: "Number of Y pixels", deviceName: "noofypixels", type: "number", allowEmpty: false, loadType: "fromDevice" }
         ],
         buttons: [
             { buttonText: "Configure pixels", buttonDest: doConfigPixels }
@@ -58,7 +59,7 @@ const stages = {
             "Press Retry Connection to try again."],
         inputFields: [],
         buttons: [
-            { buttonText: "Retry", buttonDest: doAttemptESPmanagerConnection }
+            { buttonText: "Retry", buttonDest: doAttemptConnection }
         ]
     }
 }
@@ -85,23 +86,8 @@ async function doTestPixels() {
     await selectStage(stages.PixelTest);
 }
 
-async function doAttemptESPmanagerConnection() {
-    if (consoleIO == null) {
-        consoleIO = new ConsoleIO();
-        let result;
-        result = await consoleIO.connectToSerialPort();
-        if (result != "") {
-            alert("Could not continue: " + result);
-            consoleIO = null;
-            await selectStage(stages.ConnectFailed);
-            return;
-        }
-        else {
-            consoleIO.startSerialPump(handleIncomingText);
-            addLineToLog("Connected to device");
-        }
-    }
-    await selectStage(stages.PixelConfig);
+async function doAttemptConnection() {
+    connectConIOandSelectStage(stages.PixelConfig);
 }
 
 async function doConfigPixels() {

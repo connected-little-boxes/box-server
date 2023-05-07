@@ -47,6 +47,7 @@ async function displayStage(stage) {
                     }
                     else {
                         try {
+                            console.log(`   Getting ${field.deviceName}`);
                             deviceValue = await consoleIO.performCommand(field.deviceName);
                         }
                         catch (e) {
@@ -115,3 +116,24 @@ function getFromServer(url, handler) {
     }).catch(error => alert("Bad fetch: " + error));
 }
 
+async function connectConIOandSelectStage(stage) {
+  if (consoleIO == null) {
+
+    consoleIO = new ConsoleIO();
+
+    let result;
+
+    result = await consoleIO.connectToSerialPort();
+
+    if (result != "") {
+      alert("Could not continue: " + result);
+      selectStage(stages.ConnectFailed);
+      return false;
+    }
+    else {
+        console.log("console opened for business");
+      consoleIO.startSerialPump(handleIncomingText);
+    }
+  }
+  selectStage(stage);
+}

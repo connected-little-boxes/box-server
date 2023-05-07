@@ -164,27 +164,6 @@ async function doConfigWiFi() {
   });
 }
 
-async function connectConIOandSelectStage(stage) {
-  if (consoleIO == null) {
-
-    consoleIO = new ConsoleIO();
-
-    let result;
-
-    result = await consoleIO.connectToSerialPort();
-
-    if (result != "") {
-      alert("Could not continue: " + result);
-      selectStage(stages.ConnectFailed);
-      return false;
-    }
-    else {
-      consoleIO.startSerialPump(handleIncomingText);
-    }
-  }
-  selectStage(stage);
-}
-
 async function doSkipToWiFi() {
   connectConIOandSelectStage(stages.ConfigWiFi);
 }
