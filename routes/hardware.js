@@ -4,11 +4,19 @@ const router = express.Router();
 const authenticateToken = require('../_helpers/authenticateToken');
 
 // define the flash page route
-router.get('/flash', authenticateToken, async function (req, res) {
+router.get('/oldflash', authenticateToken, async function (req, res) {
 
     res.render("configureDeviceHardware.ejs", { name: res.user.name, host: process.env.HOST_ADDRESS, 
         configScript:"/js/configscripts/flashDevice.js", title:"Flash device" });
 });
+
+
+// define the flash page route
+router.get('/flash', authenticateToken, async function (req, res) {
+
+    res.render("espToolsFlash.ejs");
+});
+
 
 router.get('/setupDevice', authenticateToken, async function (req, res) {
 
