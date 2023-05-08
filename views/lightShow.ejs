@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <title>Connected Little Boxes</title>
+</head>
+
+<body>
+    <h1 class="mb-4">Connected Little Boxes</h1>
+    <h2 class="mb-4">
+        <%= name %>
+    </h2>
+    <div class="container">
+        <form action="/lightShow/setLightColour" method="POST">
+            <div class="card form-group mb-4">
+                <h3 class="mb-4"> Set Light Colour
+                </h3>
+                <label for="colourCommand">Light Colour Name</label>
+                <input required type="text" name="colourCommand" id="colourCommand" class="form-control">
+                <label for="deviceTag">Tag for target devices</label>
+                <input required type="text" name="deviceTag" id="deviceTag" class="form-control" value="light">
+                <button type="submit" class="btn btn-primary mb-4">Set light colour</button>
+            </div>
+        </form>
+        <form action="/lightShow/setRandomLightColour" method="POST">
+            <div class="card form-group mb-4">
+                <h3 class="mb-4"> Set Random Light Colour
+                </h3>
+                <label for="deviceTag">Tag for target devices</label>
+                <input required type="text" name="deviceTag" id="deviceTag" class="form-control" value="light">
+                <button type="submit" class="btn btn-primary mb-4">Set random colour</button>
+            </div>
+        </form>
+        <form action="/lightShow/setLightPattern" method="POST">
+            <div class="card form-group mb-4">
+                <h3 class="mb-4"> Set Light Pattern
+                </h3>
+                <label for="colourPattern">Light Colour Pattern</label>
+                <input required type="text" name="colourPattern" id="colourPattern" class="form-control">
+                <label for="deviceTag">Tag for target devices</label>
+                <input required type="text" name="deviceTag" id="deviceTag" class="form-control" value="light">
+                <button type="submit" class="btn btn-primary mb-4">Set light pattern</button>
+            </div>
+        </form>
+        <form action="/lightShow/setWalkingLightPattern" method="POST">
+            <div class="card form-group mb-4">
+                <h3 class="mb-4"> Set Walking Light Pattern
+                </h3>
+                <label for="colourPattern">Walking Light Colour Pattern</label>
+                <input required type="text" name="colourPattern" id="colourPattern" class="form-control">
+                <label for="deviceTag">Tag for target devices</label>
+                <input required type="text" name="deviceTag" id="deviceTag" class="form-control" value="light">
+                <button type="submit" class="btn btn-primary mb-4">Set walking light pattern</button>
+            </div>
+        </form>
+        <form action="/lightShow/setTimedTwinkle" method="POST">
+            <div class="card form-group mb-4">
+                <h3 class="mb-4"> Set Timed Twinkle
+                </h3>
+                <label for="deviceTag">Tag for target devices</label>
+                <input required type="text" name="deviceTag" id="deviceTag" class="form-control" value="light">
+                <button type="submit" class="btn btn-primary mb-4">Set timed twinkle</button>
+            </div>
+        </form>
+    </div>
+    <div class="container mb-4">
+        <a href="/" class="btn btn-success mb-4">Done</a>
+    </div>
+</body>
+
+</html>

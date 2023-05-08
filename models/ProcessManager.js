@@ -23,20 +23,28 @@ const commandSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        desc: {
+        description: {
             type: String,
-            required: true
+            default: ""
         },
         items:
         {
             type: [commandItemSchema],
-            required: true
+            default:[]
         }
     });
 
-const processSchema = new mongoose.Schema(
+const processManagerSchema = new mongoose.Schema(
     {
         name: {
+            type: String,
+            required: true
+        },
+        description: {
+            type: String,
+            default: ""
+        },
+        configJS : {
             type: String,
             required: true
         },
@@ -47,4 +55,4 @@ const processSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model('Process', processSchema);
+module.exports = mongoose.model('ProcessManager', processManagerSchema);

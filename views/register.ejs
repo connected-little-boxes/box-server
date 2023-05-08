@@ -27,7 +27,15 @@
                     <label for="password">Password:</label>
                     <input type="password" id="password" name="password" required class="form-control" >
                 </div>
-                <button type="submit" class="btn btn-primary mt-4">Register</button>
+                <%
+                var registerButton="";
+                if(role=="admin")
+                    registerButton=`<button type="submit" class="btn btn-primary mt-4">Register</button>`;
+                else
+                    registerButton="Only admin users can register users";
+                %>
+                <%- registerButton %> <a href="/" class="btn btn-success mt-4">Home</a>
+                        
             </form>
         </div>
     </div>

@@ -1,11 +1,22 @@
-require('dotenv').config();
+
+// PORT is defined in Heroku
+// Otherwise we use 3000 for localhost
+
+const port = process.env.PORT || 3000;
+
+// We also need to use dotenv to bring in the local settings
+
+if (port == 3000)
+    require('dotenv').config();
 
 const mongoose = require('mongoose')
 const mqtt = require('mqtt');
+const bcrypt = require('bcrypt');
 const Device = require('./models/device');
-const Process = require('./models/process');
 const Connection = require('./models/connection');
 const Installation = require('./models/installation');
+const ProcessManager = require('./models/ProcessManager');
+const User = require('./models/user');
 
 class Manager {
 
@@ -19,6 +30,7 @@ class Manager {
     }
 
     startMqttPromise(hostUrl, options) {
+        console.log(`Connecting to MQTT server at: ${hostUrl}`);
         return new Promise((kept, broken) => {
             const mqttClient = mqtt.connect(hostUrl, options);
             mqttClient.on("connect", () => kept(mqttClient));
@@ -73,15 +85,20 @@ class Manager {
     }
 
     async doDeviceConnected(messageObject) {
+
         console.log("Connecting a device from: ", JSON.stringify(messageObject));
 
-        // make an entry into the connected table
+        // Log the connection
 
-        const result = await this.db.collection("connectLog").insertOne(messageObject);
+        let connection = new Connection(
+            {
+                device:messageObject.name,
+                date: new Date(),
+                resetCode: messageObject.resetcode
+            }
+        );
 
-        if (result.insertedCount == 1) {
-            console.log("Device: " + messageObject.name + " connection logged.");
-        }
+        await connection.save();
 
         var device = null;
 
@@ -93,27 +110,55 @@ class Manager {
 
                 const devCommandTopic = process.env.MQTT_TOPIC_PREFIX + "/command/" + device.name;
 
-                console.log("Got boot commands:");
                 let commandList = device.bootCommands.split("\n");
 
                 for (let command of commandList) {
-                    console.log("    sending-", command);
-                    await this.mqttClient.publish(devCommandTopic, command);
+                    let commandText = command.trim()
+                    if(commandText.length == 0){
+                        continue;
+                    }
+                    console.log("   sending boot command:", commandText);
+                    await this.mqttClient.publish(devCommandTopic, commandText);
                 }
             }
 
             let displayName;
 
             if (device.friendlyName != "") {
-                console.log("got a friendly name");
                 displayName = device.friendlyName;
             }
             else {
-                console.log("Using device name");
                 displayName = messageObject.name;
             }
 
+            await device.updateOne({
+                lastConnectedDate: Date.now()
+            });
+
             await this.showMessageToAll(displayName + " on");
+        }
+    }
+
+    getDeviceNameFromTopic(topic)
+    {
+        let elements = topic.split('/');
+        return elements[elements.length-1];
+    }
+
+    async doDeviceResponse(topic, message, messageObject)
+    {
+        let deviceName = this.getDeviceNameFromTopic(topic);
+        console.log(`Got a response: ${JSON.stringify(messageObject)} from:${deviceName}`);
+
+        var device = null;
+
+        device = await Device.findOne({ name: deviceName });
+
+        if(device != null){
+            await device.updateOne({
+                lastResponse: message,
+                lastResponseDate: Date.now()
+            });
         }
     }
 
@@ -159,6 +204,48 @@ class Manager {
         await installation.save();
     }
 
+    async addPixelsProcessManager() {
+        
+        console.log("Adding a pixels process manager");
+
+        let pixelsManager = await ProcessManager.findOne({ name:"pixels" });
+
+        if(pixelsManager){
+            console.log("  Pixels manager already present");
+        }
+        else{
+            console.log("  Creating new Pixels manager");
+            let newManager = new ProcessManager(
+                {
+                    name:'pixels',
+                    description:'Configure pixels connected to the device',
+                    configJS:'/js/configscripts/pixels.js'
+                });
+            await newManager.save();
+        }
+    }
+
+    async addMax7219MessagesProcessManager() {
+        
+        console.log("Adding a Max7219 process manager");
+
+        let pixelsManager = await ProcessManager.findOne({ name:"Max7219" });
+
+        if(pixelsManager){
+            console.log("  Max7219 manager already present");
+        }
+        else{
+            console.log("  Creating new Max7219 manager");
+            let newManager = new ProcessManager(
+                {
+                    name:'Max7219',
+                    description:'Configure Max7219 connected to the device',
+                    configJS:'/js/configscripts/Max7219.js'
+                });
+            await newManager.save();
+        }
+    }
+
     async addDisplay(displayDestination) {
         console.log("Adding a display destination:", displayDestination);
 
@@ -175,7 +262,7 @@ class Manager {
     }
 
     async sendMessageToPrinter(message, printer) {
-        let printcommand = '{"process":"printer","command":"print","text":"' + message + '"}';
+        let printcommand = '{"process":"printer","command":"print","options":"datestamp","text":"' + message + '"}';
         let printdest = process.env.MQTT_TOPIC_PREFIX + "/command/" + printer;
         console.log("        ", printcommand," to ", printdest);
         this.mqttClient.publish(printdest, printcommand);
@@ -224,12 +311,38 @@ class Manager {
         await this.sendMessageToPrinters(message, installation);
         await this.sendMessageToDisplays(message, installation);
     }
-
+ 
     async sendJSONCommandToDevice(deviceName, command)
     {
         let topic = process.env.MQTT_TOPIC_PREFIX + '/command/'+deviceName;
-        console.log('Sending:',command,"to:",topic);
+
+        console.log(`Sending:${command} to:${topic}`);
+
+        // validate the command JSON and add a sequence number
+        let commandObject = null;
+        try {
+            commandObject = JSON.parse(command);
+            commandObject["seq"] = this.sequenceNumber++;
+            command = JSON.stringify(commandObject);
+        }
+        catch (err) {
+            console.log(`Invalid json command:${command} error:${err} for:${deviceName}`);
+            throw(err);
+        }
+        
         this.mqttClient.publish(topic,command);
+
+        // store the command for debugging
+
+        var device = null;
+
+        device = await Device.findOne({ name: deviceName });
+
+        if(device != null){
+            await device.updateOne({
+                lastCommand: command
+            });
+        }
     }
 
     async sendConsoleCommandToDevice(deviceName, command)
@@ -253,6 +366,56 @@ class Manager {
         this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","commandtext":"otaupdate"}');
     }
 
+    async sendCommandToDevices(devices, command)
+    {
+        console.log(`Sending command:${command}`);
+
+        devices.forEach(device=>{
+            console.log(`    to:${device.name}`);
+            this.sendJSONCommandToDevice(device.name,command);
+        });
+    }
+
+    async findTaggedDevices(tag){
+        let result = await Device.find({tags:{ $regex: ".*"+tag+".*" }} );
+        return result;
+    }
+
+    async setLightColours(tag, colour)
+    {
+        let devices = await this.findTaggedDevices(tag);
+        let command = `{"process":"pixels","command":"setnamedcolour","colourname":"${colour}"}`;
+        this.sendCommandToDevices(devices,command);
+    }
+
+    async setLightPattern(tag, pattern)
+    {
+        let devices = await this.findTaggedDevices(tag);
+        let command = `{"process":"pixels","command":"pattern","pattern":"mask","colourmask":"${pattern}"}`;
+        this.sendCommandToDevices(devices,command);
+    }
+
+    async setWalkingLightPattern(tag, pattern)
+    {
+        let devices = await this.findTaggedDevices(tag);
+        let command = `{"process":"pixels","command":"pattern","pattern":"walking","colourmask":"${pattern}"}`;
+        this.sendCommandToDevices(devices,command);
+    }
+
+    async setLightsTimedTwinkle(tag)
+    {
+        let devices = await this.findTaggedDevices(tag);
+        let command = `{"process":"pixels","command":"twinkle","options":"timed","sensor":"clock","trigger":"minute"}`;
+        this.sendCommandToDevices(devices,command);
+    }
+
+    async setLightsTimedRandom(tag)
+    {
+        let devices = await this.findTaggedDevices(tag);
+        let command = `{"process":"pixels","command":"setrandomcolour","options":"timed","sensor":"clock","trigger":"minute"}`;
+        this.sendCommandToDevices(devices,command);
+    }
+
     async handleIncomingMessage(topic, message, packet) {
 
         let messageString = String.fromCharCode(...message);
@@ -269,33 +432,54 @@ class Manager {
             return;
         }
 
-        // ugly and to be removed in time....
-        if (messageObject.hasOwnProperty('device')) {
-            console.log("got device");
-            messageObject.name = messageObject.device;
-        }
-
         if (topic === process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_CONNECTED_TOPIC) {
-            this.doDeviceConnected(messageObject);
+            await this.doDeviceConnected(messageObject);
         }
 
         if (topic === process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_REGISTERED_TOPIC) {
-            this.doDeviceRegistration(messageObject);
+            await this.doDeviceRegistration(messageObject);
+        }
+
+        if(topic.startsWith(`${process.env.MQTT_TOPIC_PREFIX}/${process.env.MQTT_DATA_TOPIC}`)) {
+            await this.doDeviceResponse(topic, message, messageObject);
+        }
+    }
+
+    async checkForAdminUser()
+    {
+        const adminUser = await User.findOne({ email: process.env.INITIAL_ADMIN_USERNAME });
+
+        if (adminUser == null) {
+            console.log(`  Admin user not registered`);
+            const hashedPassword = await bcrypt.hash(process.env.INITIAL_ADMIN_PASSWORD, 10);
+            const user = new User(
+                {
+                    name: process.env.INITIAL_ADMIN_USERNAME,
+                    password: hashedPassword,
+                    role: 'admin',
+                    email: process.env.INITIAL_ADMIN_USERNAME
+                });
+            await user.save();
+            console.log("  Admin user successfully registered");
         }
     }
 
     async connectServices() {
         console.log("Connecting services");
 
+        this.sequenceNumber=0;
+
         this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_CONNECTED_TOPIC, { qos: 1 });
         this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_REGISTERED_TOPIC, { qos: 1 });
+        this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_DATA_TOPIC + '/#', { qos: 1 });
         this.mqttClient.on("message", (topic, message, packet) =>
             this.handleIncomingMessage(topic, message, packet));
 
-        this.mqttClient.publish(process.env.MQTT_TOPIC_PREFIX + '/command/CLB-302fc7', '{"process":"max7219Messages","command":"display","text":"Server"}');
-
-        this.addPrinter("CLB-b00808");
-        this.addDisplay("CLB-3030da");
+        await this.addPrinter("CLB-b00808");
+        await this.addDisplay("CLB-3030da");
+        await this.addPixelsProcessManager();
+        await this.addMax7219MessagesProcessManager();
+        await this.checkForAdminUser();
     }
 
     async startServices() {
@@ -307,12 +491,11 @@ class Manager {
             process.env.DATABASE_URL,
             {
                 useNewUrlParser: true,
-                useUnifiedTopology: true,
-                useCreateIndex: true
+                useUnifiedTopology: true
             });
 
         promiseList[1] = this.startMqttPromise(
-            process.env.MQTT_HOST_URL,
+            "mqtt://" + process.env.MQTT_HOST_URL,
             {
                 clientID: process.env.MQTT_CLIENT_ID,
                 username: process.env.MQTT_USER,

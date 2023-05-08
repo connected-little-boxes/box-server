@@ -4,12 +4,13 @@ const router = express.Router();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Device = require('../models/device');
 
 router.get('/', (req, res) => {
     res.render('login.ejs')
 });
 
-const jwtExpirySeconds = 600
+const jwtExpirySeconds = 6000;
 
 router.post('/', async (req, res) => {
     console.log("Doing the login..");
@@ -28,18 +29,33 @@ router.post('/', async (req, res) => {
             if (validPassword) {
                 console.log("Got a valid password");
                 // now make the jwt token to send back to the browser
-                console.log("user:", existingUser.id, existingUser._id);
+                console.log("user:", existingUser.id, existingUser._id, existingUser.role);
                 userDetails = {
                     id: existingUser.id
                 }
-                const accessToken = jwt.sign(userDetails, process.env.ACTIVE_TOKEN_SECRET);
+                const accessToken = jwt.sign(
+                    userDetails, 
+                    process.env.ACTIVE_TOKEN_SECRET,
+                    {
+                        algorithm: "HS256",
+                        expiresIn: jwtExpirySeconds,
+                    });
+
+                //console.log(`Made a token:${accessToken}`);
+                
                 res.cookie("token", accessToken, { maxAge: jwtExpirySeconds * 1000 });
                 res.redirect('../');
-                console.log("Sucessful login for:", req.body.email);
+                console.log("Successful login for:", req.body.email);
+
+                await existingUser.updateOne({
+                    lastLoginDate: Date.now()
+                });
+    
                 return;
             }
             else {
                 console.log("Login fail invalid password");
+                res.cookie("token","logged out" );
                 res.redirect('/');
                 return;
             }

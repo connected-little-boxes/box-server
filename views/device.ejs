@@ -19,11 +19,22 @@
             <%= device.name %>
         </h2>
         <div class="card-subtitle text-muted mb-2">
-            Registered: <%= device.regDate.toLocaleDateString() %>
-                <%= device.regDate.toLocaleTimeString() %>
+            <p>
+                Registered: <%= device.regDate.toLocaleDateString() %>
+                    <%= device.regDate.toLocaleTimeString() %>
+                        Last connected: <%= device.lastConnectedDate.toLocaleDateString() %>
+                            <%= device.lastConnectedDate.toLocaleTimeString() %>
+                                <br>
+                                Last commmand:<%= device.lastCommand %>
+                                <br>
+                                Last response:<%= device.lastResponse %>
+                                <br>
+                                Last responded: <%= device.lastResponseDate.toLocaleDateString() %>
+                                <%= device.lastResponseDate.toLocaleTimeString() %>
+                </p>
         </div>
         <div class="container">
-            
+
         </div>
 
         <form action="/devices/<%= device.name %>" method="POST">
@@ -35,21 +46,33 @@
             </div>
             <div class="form-group">
                 <label for="description">Description</label>
-                <textarea type="text" name="description" id="description" class="form-control"><%=device.description%> </textarea>
+                <textarea type="text" name="description" id="description"
+                    class="form-control"><%=device.description%> </textarea>
             </div>
             <div class="form-group">
                 <label for="tags">Tags</label>
-                <input required type="text" name="tags" id="tags" class="form-control"
-                    value="<%= device.tags %>">
+                <input type="text" name="tags" id="tags" class="form-control" value="<%= device.tags %>">
             </div>
             <div class="form-group">
                 <label for="bootCommands">Boot Commands</label>
-                <% let bootCommands; if(device.bootCommands !=null) bootCommands=device.bootCommands; else
-                    bootCommands="" ; %>
-                    <textarea type="text" name="bootCommands" id="bootCommands" class="form-control"><%=bootCommands%> </textarea>
+                <textarea rows=5 type="text" name="bootCommands" id="bootCommands" class="form-control"><%= device.bootCommands %></textarea>
             </div>
             <button type="submit" class="btn btn-primary mt-4">Update</button>
         </form>
+
+        <h3>Devices</h3>
+
+        <% managers.forEach(manager=>{ %>
+
+            <% if(manager.active){ %>
+
+                    <a href="/processManager/manage/<%=manager._id%>/<%=device._id%>" class="btn btn-success mt-1 mb-1"> Manage <%=manager.name%></a>
+        <% } else {  %>
+                <a href="/processManager/activate/<%=manager._id%>/<%=device._id%>" class="btn btn-primary mt-1 mb-1"> Activate <%=manager.name%></a>
+        <% } %>
+       
+        <% }); %>
+
         <form action="/devices/sendconsolecommand/<%= device.name %>"" method="POST">
             <div class="form-group mt-4">
                 <label for="consoleCommand">Console Command</label>
@@ -66,9 +89,9 @@
         </form>
     </div>
     <div class="container mb-4">
-        <a href="/" class="btn btn-success mb-4">Done</a>
-        <a href="/devices/restart/<%= device.name %>"" class="btn btn-success mb-4">Restart</a>
-        <a href="/devices/otaUpdate/<%= device.name %>"" class="btn btn-success mb-4">OTA Update</a>
+        <a href="/deviceSelect" class="btn btn-success mb-4">Done</a>
+        <a href="/devices/restart/<%= device.name %>"" class=" btn btn-success mb-4">Restart</a>
+        <a href="/devices/otaUpdate/<%= device.name %>"" class=" btn btn-success mb-4">OTA Update</a>
     </div>
 </body>
 

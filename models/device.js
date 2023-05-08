@@ -25,13 +25,29 @@ const deviceSchema = new mongoose.Schema(
         },
         lastConnectedDate: {
             type: Date,
-            required: false
-        },
-        processes: {
-            type: [String],
-            default:undefined,
+            default: Date.now(),
             required: true
         },
+        lastCommand: {
+            type: String,
+            default:"none",
+            required: true
+        },
+        lastResponseDate: {
+            type: Date,
+            default: Date.now(),
+            required: true
+        },
+        lastResponse: {
+            type: String,
+            default:"none",
+            required: true
+        },
+        processManagers: {
+            type: [mongoose.Schema.Types.ObjectId],
+            ref:'ProcessManager',
+            default:[]
+        },  
         bootCommands: {
             type: String,
             default:undefined,

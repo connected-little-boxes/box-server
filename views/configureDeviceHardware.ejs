@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <title>Connected Little Boxes</title>
+</head>
+
+<body onload= "doStart('<%= host %>');" >
+  <div class="container mb-4">
+    <h3 class="mt-2 mb-2">
+      <%= name %>
+    </h3>
+    <h1 class="mb-4">Connected Little Boxes</h1>
+    <h2 class="mb-2"><%=title%></h2>
+    <p id="stageDescription"></p>
+    <textarea class="logOutput" rows="15" cols="60" id="logOutput"></textarea>
+  </div>
+
+  <script src="/js/esptool/ESPManager.js"></script>
+  <script src="/js/esptool/ESPToolJS.js"></script>
+  <script src="/js/esptool/ESP32.js"></script>
+  <script src="/js/esptool/ESP8266.js"></script>
+  <script src="/js/esptool/SerialManager.js"></script>
+  <script src="/js/esptool/ConsoleIO.js"></script>
+  <script src="/js/esptool/stubs.js"></script>
+  <script src="/js/simpleterm/terminal.js"></script>
+  <script src="/js/configscripts/stageManager.js"></script>
+  <script src="<%=configScript%>"></script>
+  
+</body>
+
+</html>

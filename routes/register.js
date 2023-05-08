@@ -6,10 +6,16 @@ const bcrypt = require('bcrypt');
 const authenticateToken = require('../_helpers/authenticateToken');
 
 router.get('/', authenticateToken, (req, res) => {
-    res.render('register.ejs')
+    res.render('register.ejs', { role: res.user.role });
 });
 
 router.post('/', authenticateToken, async (req, res) => {
+
+    if(res.user.role != "admin"){
+        res.redirect('/register');
+        return;
+    }
+
     try {
         const existingUser = await User.findOne({ email: req.body.email });
         if (existingUser != null) {
@@ -35,7 +41,7 @@ router.post('/', authenticateToken, async (req, res) => {
             });
         await user.save();
         console.log("User successfully registered:", req.body.email);
-        res.redirect('/login');
+        res.redirect('/registered');
     } catch (err) {
         console.log("err:", err.message);
         res.redirect('/register');
