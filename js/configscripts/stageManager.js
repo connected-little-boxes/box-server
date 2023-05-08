@@ -43,7 +43,7 @@ async function displayStage(stage) {
                     break;
                 case "fromDevice":
                     if (field.type == "password") {
-                        deviceValue="";
+                        deviceValue = "";
                     }
                     else {
                         try {
@@ -91,14 +91,6 @@ function addLineToLog(message) {
     output.scrollTop = output.scrollHeight;
 }
 
-function getFromServer(url, handler) {
-    fetch(url).then(response => {
-        response.text().then(result => {
-            handler(result);
-        }).catch(error => alert("Bad text: " + error));
-    }).catch(error => alert("Bad fetch: " + error));
-}
-
 let textHandlerFunction = null;
 
 function handleIncomingText(text) {
@@ -108,32 +100,39 @@ function handleIncomingText(text) {
     }
 }
 
-function getFromServer(url, handler) {
-    fetch(url).then(response => {
-        response.text().then(result => {
-            handler(result);
-        }).catch(error => alert("Bad text: " + error));
-    }).catch(error => alert("Bad fetch: " + error));
+async function getFromServer(url) {
+
+    try {
+        let result = await fetch(url, {
+            credentials: "include",
+        });
+        let data = await result.json();
+        return data;
+    }
+    catch (error) {
+        alert(`Bad fetch: ${error}`);
+        return null;
+    }
 }
 
 async function connectConIOandSelectStage(stage) {
-  if (consoleIO == null) {
+    if (consoleIO == null) {
 
-    consoleIO = new ConsoleIO();
+        consoleIO = new ConsoleIO();
 
-    let result;
+        let result;
 
-    result = await consoleIO.connectToSerialPort();
+        result = await consoleIO.connectToSerialPort();
 
-    if (result != "") {
-      alert("Could not continue: " + result);
-      selectStage(stages.ConnectFailed);
-      return false;
+        if (result != "") {
+            alert(`Could not continue: ${result}`);
+            selectStage(stages.ConnectFailed);
+            return false;
+        }
+        else {
+            console.log("console opened for business");
+            consoleIO.startSerialPump(handleIncomingText);
+        }
     }
-    else {
-        console.log("console opened for business");
-      consoleIO.startSerialPump(handleIncomingText);
-    }
-  }
-  selectStage(stage);
+    selectStage(stage);
 }

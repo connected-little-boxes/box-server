@@ -3,8 +3,6 @@ var flashConnected = false;
 var terminal = null;
 var hostAddress;
 
-var settingsURL;
-
 var stage;
 var consoleIO;
 
@@ -13,37 +11,22 @@ const stages = {
     description: ["*Plug into the usb socket",
       `You'll need a usb cable to connect your device to your computer. When you plug it the computer should recognise it automatically and install the drivers. If it doesn't you may have to install them by hand. `,
       `In Windows you can check in Device Manager to make sure that the device is working OK. Click the Windows Start button and search for 'Device' and then select the Device Manager from the menu. If all is well you should see your device appear.`,
-      "Press device plugged in when your device is plugged in.",
-      `If you have already flashed the firmware and just want to configure a device you can press Skip`
+      "Press device plugged in when your device is plugged in."
     ],
     inputFields: [],
     buttons: [
-      { buttonText: "Device plugged in", buttonDest: doConnectToDevice },
-      { buttonText: "Skip", buttonDest: doSkipToWiFi }
+      { buttonText: "Device plugged in", buttonDest: doConnectToDevice }
     ]
   },
   ConnectToDevice: {
-    description: ["*Connect to device for flashing",
+    description: ["*Connect to device for setup",
       `Next we will connect your device to the browser. Press the Connect Device button below when you are ready.`,
-      `A dialog box will pop up inviting you to select a device to program.`,
+      `A dialog box will pop up inviting you to select a device to setup.`,
       "Press Connect to device when you are ready."
     ],
     inputFields: [],
     buttons: [
-      { buttonText: "Connect to device", buttonDest: doAttemptESPmanagerConnection }
-    ]
-  },
-  StartFlash: {
-    description: ["*Start the flash",
-      `Now that you are connected you can start the process.`,
-      `Note that this will take a while. The log window will show the progress.`,
-      `If the process stops at the 'sync' part this might be because your device has not reset.`,
-      `You can try pressing the reset button on your device, reloading this page in your browser and trying again.`,
-      `We've not tested the process with every possible ESP device, and some don't respond to our reset signals. However, if you are using a Wemos device it should just work.`,
-      "Press Start Flash when you are ready."],
-    inputFields: [],
-    buttons: [
-      { buttonText: "Start Flash", buttonDest: doStartFlash }
+      { buttonText: "Connect to device", buttonDest: doConnectToDevice }
     ]
   },
   ConnectFailed: {
@@ -53,7 +36,7 @@ const stages = {
       "Press Retry Connection to try again."],
     inputFields: [],
     buttons: [
-      { buttonText: "Retry", buttonDest: doAttemptESPmanagerConnection }
+      { buttonText: "Retry", buttonDest: doConnectToDevice }
     ]
   },
   ConfigWiFi: {
@@ -85,13 +68,11 @@ const stages = {
 async function doStart(host) {
   console.log("starting");
   hostAddress = host;
-  settingsURL = hostAddress + "createDevice/networkSettings.json"
-
   await selectStage(stages.ConnectUSB);
 }
 
 async function doConnectToDevice() {
-  await selectStage(stages.ConnectToDevice);
+  await connectConIOandSelectStage(stages.ConfigWiFi);
 }
 
 async function doConfigWiFi() {
@@ -135,59 +116,36 @@ async function doConfigWiFi() {
 
   let deviceName = await consoleIO.performCommand("mqttdevicename");
 
-  let fullURL = `${settingsURL}/${deviceName}/${userEnteredFriendlyName}`;
+  let fullURL = `${hostAddress}hardware/networkSettings.json/${deviceName}/${userEnteredFriendlyName}`;
 
   addLineToLog("Getting setting information from the server");
 
-  getFromServer(fullURL, async settingsJSON => {
-    let settings = JSON.parse(settingsJSON);
-    for (let i = 0; i < settings.length; i++) {
-      let setting = settings[i];
-      let command = setting.deviceName + "=" + setting.value;
-      commandList.push(command);
-    }
+  let settings = await getFromServer(fullURL);
 
-    commandList.push("wifiactive=yes");
-    commandList.push("mqttactive=yes");
-
-    addLineToLog("Sending settings to the device");
-
-    await consoleIO.performCommands(commandList);
-    addLineToLog("Device configured");
-
-    addLineToLog("Resetting device");
-    await consoleIO.performCommand("restart");
-    addLineToLog("Device reset");
-
-    selectStage(stages.ConfigSuccess);
-
-  });
-}
-
-async function doSkipToWiFi() {
-  connectConIOandSelectStage(stages.ConfigWiFi);
-}
-
-async function doAttemptESPmanagerConnection() {
-
-  let worked = await connectESPManager();
-  if (worked) {
-    selectStage(stages.StartFlash);
+  if (!settings) {
+    window.location.replace(`${hostAddress}hardware/setupDevice`);
   }
-  else {
-    selectStage(stages.ConnectFailed);
+
+  for (let i = 0; i < settings.length; i++) {
+    let setting = settings[i];
+    let command = setting.deviceName + "=" + setting.value;
+    commandList.push(command);
   }
-}
 
-async function doStartFlash() {
-  // Do the flash - this releases the serial port when it has finished
+  commandList.push("wifiactive=yes");
+  commandList.push("mqttactive=yes");
 
-  await doFlash();
+  addLineToLog("Sending settings to the device");
 
-  // need to connect a ConsoleIO to the serial port for 
-  // subsequent commands
+  await consoleIO.performCommands(commandList);
+  addLineToLog("Device configured");
 
-  await connectConIOandSelectStage(stages.ConfigWiFi);
+  addLineToLog("Resetting device");
+  await consoleIO.performCommand("restart");
+  addLineToLog("Device reset");
+
+  selectStage(stages.ConfigSuccess);
+
 }
 
 function addLineToLog(message) {
@@ -202,51 +160,7 @@ function addTextToTerminal(text) {
   output.scrollTop = output.scrollHeight;
 }
 
-async function connectESPManager() {
-  console.log("Connecting..");
-
-  if (device === null) {
-    device = new ESPManager(addLineToLog);
-  }
-
-  let { worked, message } = await device.connect();
-
-  if (!worked) {
-    alert(message);
-    flashConnected = false;
-    return false;
-  }
-  else {
-    flashConnected = true;
-    return true;
-  }
-}
-
-async function doFlash() {
-
-  // Automatically connect if we have not been connected already
-
-  if (!flashConnected) {
-    let result = await connectESPManager();
-    if (!result) {
-      return false;
-    }
-  }
-
-  console.log("Flashing..");
-
-  let { worked, message } = await device.flashDevice();
-
-  console.log(message);
-
-  if (!worked) {
-    alert(message);
-  }
-
-  flashConnected = false;
-  return true;
-}
-
 function doGoHome() {
   window.location.replace("/");
 }
+

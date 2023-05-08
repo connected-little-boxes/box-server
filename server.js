@@ -29,7 +29,7 @@ var users = require('./routes/users');
 var terminal = require('./routes/terminal');
 var deviceSelect = require('./routes/deviceSelect');
 var lightShow = require('./routes/lightShow');
-var createDevice = require('./routes/createDevice');
+var hardware = require('./routes/hardware');
 var command = require('./routes/command');
 var changePassword = require('./routes/changePassword');
 var processManager = require('./routes/processManager');
@@ -58,7 +58,7 @@ mgr.startServices().then(() => {
   app.use('/terminal', terminal);
   app.use('/deviceSelect', deviceSelect);
   app.use('/lightShow', lightShow);
-  app.use('/createDevice', createDevice);
+  app.use('/hardware', hardware);
   app.use('/command', command);
   app.use('/processManager', processManager);
   app.use('/changePassword',changePassword);

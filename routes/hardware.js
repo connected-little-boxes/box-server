@@ -3,11 +3,17 @@ const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../_helpers/authenticateToken');
 
-// define the home page route
-router.get('/', authenticateToken, async function (req, res) {
+// define the flash page route
+router.get('/flash', authenticateToken, async function (req, res) {
 
     res.render("configureDeviceHardware.ejs", { name: res.user.name, host: process.env.HOST_ADDRESS, 
-        configScript:"/js/configscripts/device.js", title:"Create device" });
+        configScript:"/js/configscripts/flashDevice.js", title:"Flash device" });
+});
+
+router.get('/setupDevice', authenticateToken, async function (req, res) {
+
+    res.render("configureDeviceHardware.ejs", { name: res.user.name, host: process.env.HOST_ADDRESS, 
+        configScript:"/js/configscripts/setupDevice.js", title:"Setup device" });
 });
 
 router.get('/networkSettings.json/:name/:friendlyName', authenticateToken, async function (req, res) {
