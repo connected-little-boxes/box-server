@@ -49,6 +49,7 @@ mgr.startServices().then(() => {
   });
 
   app.use('/js', express.static('js'));
+  app.use('/firmware', express.static('firmware'));
   app.use('/devices', devices);
   app.use('/users', users);
   app.use('/login', login);

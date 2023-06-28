@@ -18,8 +18,8 @@ router.get('/', authenticateToken, async function (req, res) {
   }
 })
 
-router.post('/sendconsolecommand/:name', authenticateToken, async (req, res) => {
-  console.log("send json command pressed for:", res.device.name, " command:", req.body.consoleCommand);
+router.post('/sendconsolecommand/:name', authenticateToken, getDeviceByDeviceName, async (req, res) => {
+  console.log("send console command pressed for:", res.device.name, " command:", req.body.consoleCommand);
 
   mgr = Manager.getActiveManger();
 
@@ -72,7 +72,7 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
 
   let device = res.device;
   let deviceProcessManagers = device.processManagers;
-  let managers=[];
+  let managers = [];
 
   // We are going to display something for each process manager that
   // will allow the user to select which processes are active in the remote 
@@ -81,52 +81,66 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
   //
   let systemProcessManagers = await ProcessManager.find({});
 
-  systemProcessManagers.forEach(systemProcessManager=>{
+  systemProcessManagers.forEach(systemProcessManager => {
 
     const processActive = deviceProcessManagers.some(id => id.equals(systemProcessManager));
     // want to see if the device processManagers array contains a reference to this manager
 
     let processDescription = {
-      _id:systemProcessManager._id,
-      name:systemProcessManager.name,
-      description:systemProcessManager.description,
-      active:processActive
+      _id: systemProcessManager._id,
+      name: systemProcessManager.name,
+      description: systemProcessManager.description,
+      active: processActive
     }
 
     managers.push(processDescription);
   });
 
-  res.render('device.ejs', { device: res.device, managers:managers});
+  res.render('device.ejs', { device: res.device, managers: managers });
 });
 
-router.post('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) => {
+router.post('/:name/:friendlyName', authenticateToken, getDeviceByDeviceName, async (req, res) => {
 
   // this is the friendly name that we would like to use - need to make sure it has 
   // not already been entered - if it has we will add a unique number on the end
 
-  let friendlyName = req.body.friendlyName;
+  let orignalFriendlyName = req.params.friendlyName;
 
-  let proposedFriendlyName = friendlyName;
-  let friendlyNameIndex = 1;
+  let editedFriendlyName = req.body.friendlyName;
 
-  while (true) {
+  let proposedFriendlyName;
 
-    // search for a device with the friendly name
+  if (editedFriendlyName == orignalFriendlyName) {
+    // If the friendly name hasn't been edited we just write it back again
+    proposedFriendlyName = orignalFriendlyName;
+  }
+  else{
+    // Check to make sure that the user hasn't entered a name that
+    // clashes with an existing one
 
-    let device = await Device.findOne({
-      $and:
-        [
-          { owner: { $eq: res.user._id } },
-          { friendlyName: { $eq: proposedFriendlyName } }
-        ]
-    });
+    proposedFriendlyName = editedFriendlyName;
 
-    if (device) {
-      proposedFriendlyName = `${friendlyName}(${friendlyNameIndex})`;
-      friendlyNameIndex++;
-    }
-    else {
-      break;
+    let friendlyNameIndex = 1;
+
+    while (true) {
+
+      // search for a device with the friendly name
+
+      let device = await Device.findOne({
+        $and:
+          [
+            { owner: { $eq: res.user._id } },
+            { friendlyName: { $eq: proposedFriendlyName } }
+          ]
+      });
+
+      if (device) {
+        proposedFriendlyName = `${editedFriendlyName}(${friendlyNameIndex})`;
+        friendlyNameIndex++;
+      }
+      else {
+        break;
+      }
     }
   }
 

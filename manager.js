@@ -148,7 +148,11 @@ class Manager {
     async doDeviceResponse(topic, message, messageObject)
     {
         let deviceName = this.getDeviceNameFromTopic(topic);
-        console.log(`Got a response: ${JSON.stringify(messageObject)} from:${deviceName}`);
+        const date = new Date();
+        const hours = date.getHours();
+        const mins = date.getMinutes();
+
+        console.log(`${hours}:${mins} Got a response: ${JSON.stringify(messageObject)} from:${deviceName}`);
 
         var device = null;
 
@@ -348,7 +352,7 @@ class Manager {
     async sendConsoleCommandToDevice(deviceName, command)
     {
         console.log('Sending console command:', deviceName);
-        let jsonCommand = '{"process":"console","command":"remote","commandtext":"'+command+'"}'
+        let jsonCommand = '{"process":"console","command":"remote","cmd":"'+command+'"}';
         this.sendJSONCommandToDevice(deviceName,jsonCommand);
     }
 
@@ -420,7 +424,11 @@ class Manager {
 
         let messageString = String.fromCharCode(...message);
 
-        console.log("Received a packet:", messageString, "on topic", topic);
+        const date = new Date();
+        const hours = date.getHours();
+        const mins = date.getMinutes();
+
+        console.log( `${hours}:${mins} Received a packet:{messageString} on topic {topic}`);
 
         let messageObject = null;
 

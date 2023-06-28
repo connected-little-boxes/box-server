@@ -20,24 +20,25 @@
         </h2>
         <div class="card-subtitle text-muted mb-2">
             <p>
+                Version: <%= device.version %>
                 Registered: <%= device.regDate.toLocaleDateString() %>
                     <%= device.regDate.toLocaleTimeString() %>
                         Last connected: <%= device.lastConnectedDate.toLocaleDateString() %>
                             <%= device.lastConnectedDate.toLocaleTimeString() %>
                                 <br>
                                 Last commmand:<%= device.lastCommand %>
-                                <br>
-                                Last response:<%= device.lastResponse %>
-                                <br>
-                                Last responded: <%= device.lastResponseDate.toLocaleDateString() %>
-                                <%= device.lastResponseDate.toLocaleTimeString() %>
-                </p>
+                                    <br>
+                                    Last response:<%= device.lastResponse %>
+                                        <br>
+                                        Last responded: <%= device.lastResponseDate.toLocaleDateString() %>
+                                            <%= device.lastResponseDate.toLocaleTimeString() %>
+            </p>
         </div>
         <div class="container">
 
         </div>
 
-        <form action="/devices/<%= device.name %>" method="POST">
+        <form action="/devices/<%= device.name %>/<%= device.friendlyName %>" method="POST">
 
             <div class="form-group">
                 <label for="friendlyName">Friendly Name</label>
@@ -55,7 +56,8 @@
             </div>
             <div class="form-group">
                 <label for="bootCommands">Boot Commands</label>
-                <textarea rows=5 type="text" name="bootCommands" id="bootCommands" class="form-control"><%= device.bootCommands %></textarea>
+                <textarea rows=5 type="text" name="bootCommands" id="bootCommands"
+                    class="form-control"><%= device.bootCommands %></textarea>
             </div>
             <button type="submit" class="btn btn-primary mt-4">Update</button>
         </form>
@@ -66,27 +68,31 @@
 
             <% if(manager.active){ %>
 
-                    <a href="/processManager/manage/<%=manager._id%>/<%=device._id%>" class="btn btn-success mt-1 mb-1"> Manage <%=manager.name%></a>
-        <% } else {  %>
-                <a href="/processManager/activate/<%=manager._id%>/<%=device._id%>" class="btn btn-primary mt-1 mb-1"> Activate <%=manager.name%></a>
-        <% } %>
-       
-        <% }); %>
+                <a href="/processManager/manage/<%=manager._id%>/<%=device._id%>" class="btn btn-success mt-1 mb-1">
+                    Manage <%=manager.name%></a>
+                <% } else { %>
+                    <a href="/processManager/activate/<%=manager._id%>/<%=device._id%>"
+                        class="btn btn-primary mt-1 mb-1"> Activate <%=manager.name%></a>
+                    <% } %>
 
-        <form action="/devices/sendconsolecommand/<%= device.name %>"" method="POST">
-            <div class="form-group mt-4">
-                <label for="consoleCommand">Console Command</label>
-                <input required type="text" name="consoleCommand" id="consoleCommand" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-primary mt-4">Send Console Command</button>
-        </form>
-        <form action="/devices/sendjsoncommand/<%= device.name %>"" method="POST">
-            <div class="form-group mt-4">
-                <label for="jsonCommand">Command</label>
-                <input required type="text" name="jsonCommand" id="jsonCommand" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-primary mt-4">Send JSON Command</button>
-        </form>
+                        <% }); %>
+
+                            <form action="/devices/sendconsolecommand/<%= device.name %>"" method=" POST">
+                                <div class="form-group mt-4">
+                                    <label for="consoleCommand">Console Command</label>
+                                    <input required type="text" name="consoleCommand" id="consoleCommand"
+                                        class="form-control">
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-4">Send Console Command</button>
+                            </form>
+                            <form action="/devices/sendjsoncommand/<%= device.name %>"" method=" POST">
+                                <div class="form-group mt-4">
+                                    <label for="jsonCommand">Command</label>
+                                    <input required type="text" name="jsonCommand" id="jsonCommand"
+                                        class="form-control">
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-4">Send JSON Command</button>
+                            </form>
     </div>
     <div class="container mb-4">
         <a href="/deviceSelect" class="btn btn-success mb-4">Done</a>

@@ -1,3 +1,26 @@
+import * as esptooljs from "/js/esptools/bundle.js";
+const ESPLoader = esptooljs.ESPLoader;
+const Transport = esptooljs.Transport;
+
+class configManager {
+  constructor(host)
+  {
+    this.host = host;
+  }
+
+  startConfig(){
+    console.log("here we go....");
+  }
+}
+
+console.log("here we are in the config script....");
+
+function startConfig(host){
+  console.log("hello from start config");
+  doFlash();
+}
+
+/* 
 var device = null;
 var flashConnected = false;
 var terminal = null;
@@ -155,3 +178,4 @@ async function doFlash() {
 function doGoHome() {
   window.location.replace("/");
 }
+ */

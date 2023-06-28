@@ -9,7 +9,7 @@ async function getDeviceByDeviceName(req, res, next) {
       device = await Device.findOne({ name: req.params.name });
   
       if (device === null) {
-        return res.status(404).json({ message: 'Cannot find device' });
+        return res.status(404).json({ message: `Cannot find device ${req.params.name}` });
       }
     }
     catch (err) {
