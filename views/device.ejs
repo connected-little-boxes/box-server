@@ -28,10 +28,6 @@
                                 <br>
                                 Last commmand:<%= device.lastCommand %>
                                     <br>
-                                    Last response:<%= device.lastResponse %>
-                                        <br>
-                                        Last responded: <%= device.lastResponseDate.toLocaleDateString() %>
-                                            <%= device.lastResponseDate.toLocaleTimeString() %>
             </p>
         </div>
         <div class="container">
@@ -59,10 +55,10 @@
                 <textarea rows=5 type="text" name="bootCommands" id="bootCommands"
                     class="form-control"><%= device.bootCommands %></textarea>
             </div>
-            <button type="submit" class="btn btn-primary mt-4">Update</button>
+            <button type="submit" class="btn btn-primary mt-4">Update Details</button>
         </form>
 
-        <h3>Devices</h3>
+        <h2>Components</h2>
 
         <% managers.forEach(manager=>{ %>
 
@@ -77,7 +73,7 @@
 
                         <% }); %>
 
-                            <form action="/devices/sendconsolecommand/<%= device.name %>"" method=" POST">
+                            <form action="/devices/sendconsolecommand/<%= device.name %>" method="POST">
                                 <div class="form-group mt-4">
                                     <label for="consoleCommand">Console Command</label>
                                     <input required type="text" name="consoleCommand" id="consoleCommand"
@@ -85,7 +81,7 @@
                                 </div>
                                 <button type="submit" class="btn btn-primary mt-4">Send Console Command</button>
                             </form>
-                            <form action="/devices/sendjsoncommand/<%= device.name %>"" method=" POST">
+                            <form action="/devices/sendjsoncommand/<%= device.name %>" method="POST">
                                 <div class="form-group mt-4">
                                     <label for="jsonCommand">Command</label>
                                     <input required type="text" name="jsonCommand" id="jsonCommand"

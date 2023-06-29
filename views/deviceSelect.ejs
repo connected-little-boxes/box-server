@@ -13,22 +13,18 @@
 <body>
     <div class="container mb-2 mt-2">
         <h1 class="mb-4">Connected Little Boxes</h1>
-        <h2 class="mb-2">
-            <%= name %>
-        </h2>
-
+        <h2 class="mb-4">Devices</h2>                
         <div class="form-group">
             <form action="/deviceSelect" method="POST">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between mt-2 mb-4">
                     <input type="text" class="form-control" id="filter" name="filter">
                     <button class="btn btn-primary" type="submit">Filter</button>
                 </div>
         </div>
 
         <div class="container">
-            <h3 class="mb-4">Device List</h3>
             <% devices.forEach(device=> { %>
-                <div class="card mb-4">
+                <div class="card mb-2 mt-2">
                     <h4 class="card-title">
                         <% var name; if (device.friendlyName !="" ) name=device.friendlyName; else name=device.name; %>
                             <%= name %>

@@ -359,15 +359,13 @@ class Manager {
     async restartDevice(deviceName)
     {
         console.log('Restarting:', deviceName);
-        this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","commandtext":"restart"}');
+        this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","cmd":"restart"}');
     }
 
     async startDeviceOTAupdate(deviceName)
     {
         console.log('Updating:', deviceName);
-        this.sendJSONCommandToDevice(deviceName,'{"setting":"otaupdateurl","value":"http://otadrive.com/DeviceApi/Update?"}');
-        this.sendJSONCommandToDevice(deviceName,'{"setting":"otaupdateproductkey","value":"efc8b1da-4927-48aa-95d1-c52a6cda8099"}');
-        this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","commandtext":"otaupdate"}');
+        this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","cmd":"otaupdate"}');
     }
 
     async sendCommandToDevices(devices, command)
