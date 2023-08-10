@@ -33,6 +33,7 @@ var hardware = require('./routes/hardware');
 var command = require('./routes/command');
 var changePassword = require('./routes/changePassword');
 var processManager = require('./routes/processManager');
+var connectNewDevice = require('./routes/connectNewDevice');
 
 console.log("Starting up...");
 
@@ -48,6 +49,7 @@ mgr.startServices().then(() => {
       host: process.env.HOST_ADDRESS });
   });
 
+  app.use('/public', express.static('public'));
   app.use('/js', express.static('js'));
   app.use('/firmware', express.static('firmware'));
   app.use('/devices', devices);
@@ -63,6 +65,7 @@ mgr.startServices().then(() => {
   app.use('/command', command);
   app.use('/processManager', processManager);
   app.use('/changePassword',changePassword);
+  app.use('/connect',connectNewDevice);
 
   app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));  
   console.log(`Server listening on:${port}`);

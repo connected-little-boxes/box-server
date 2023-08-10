@@ -1,3 +1,4 @@
+
 async function displayStage(stage) {
 
     // clear away the old stage help
@@ -8,17 +9,74 @@ async function displayStage(stage) {
     }
 
     // draw the new stage
+    let orderedList = null;
+
     stage.description.forEach(message => {
         let element;
+
+        if (message.startsWith("IMAGE:")) {
+            console.log("doing the image thing");
+            message = message.slice(6);
+            image = document.createElement("img");
+            image.style.margin = `20px`;
+            image.style.border = "2px solid black";
+            image.src = message;
+            stageElement.appendChild(image);
+            return;
+        }
+
+
+        if (message.startsWith("QR:")) {
+            message = message.slice(3);
+            qrCode = document.createElement("p");
+            new QRCode(qrCode,
+            {
+                text: message,
+                width: 128,
+                height: 128,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H  
+            });          
+            stageElement.appendChild(qrCode);
+            return;
+        }
+
+        if (message.startsWith("#")) {
+            message = message.slice(1);
+            element = document.createElement("p");
+            element.style.fontFamily = "'Courier New', monospace";
+            element.style.fontSize = "20";
+            element.style.whiteSpace = "pre";            
+            element.textContent = message;
+            stageElement.appendChild(element);
+            return;
+        }
+
         if (message.startsWith("*")) {
             message = message.slice(1);
             element = document.createElement("h3");
+            element.textContent = message;
+            stageElement.appendChild(element);
         }
         else {
-            element = document.createElement("p");
+            if (message.startsWith("1.")) {
+                message = message.slice(2);
+                if (!orderedList) {
+                    orderedList = document.createElement("ol");
+                    stageElement.appendChild(orderedList);
+                }
+                element = document.createElement("li");
+                element.textContent = message;
+                orderedList.appendChild(element)
+            }
+            else {
+                orderedList = null;
+                element = document.createElement("p");
+                element.textContent = message;
+                stageElement.appendChild(element);
+            }
         }
-        element.innerText = message;
-        stageElement.appendChild(element);
     });
 
     // this needs to be a for loop with a counter because we need to wait for 
@@ -69,16 +127,40 @@ async function displayStage(stage) {
     for (let i = 0; i < stage.buttons.length; i++) {
         let button = stage.buttons[i];
         let buttonElement = document.createElement("button");
-        buttonElement.className = "btn btn-success mb-4 btn-block";
+
+        buttonElement.className = "btn btn-primary w-100";
         buttonElement.textContent = button.buttonText;
+        buttonElement.setAttribute("id", button.buttonText);
+        buttonElement.setAttribute("type", "button");
         buttonElement.addEventListener("click", button.buttonDest);
-        stageElement.appendChild(buttonElement);
+
+        let parElement = document.createElement("p");
+        parElement.appendChild(buttonElement);
+        stageElement.appendChild(parElement);
     }
 }
 
 async function selectStage(newStage) {
     stage = newStage;
     await displayStage(stage);
+}
+
+async function printPage(){
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach(element => {
+        if (element.tagName === 'BUTTON') {
+            element.classList.add('no-print');
+        }
+    });
+
+    window.print();
+
+    // After printing, restore the display of hidden buttons
+    allElements.forEach(element => {
+        if (element.tagName === 'BUTTON') {
+            element.classList.remove('no-print');
+        }
+    });    
 }
 
 async function doTestPassed() {
@@ -136,3 +218,4 @@ async function connectConIOandSelectStage(stage) {
     }
     selectStage(stage);
 }
+

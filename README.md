@@ -20,5 +20,10 @@ MQTT_REGISTERED_TOPIC=topic for registration messages (must match that in client
 ACTIVE_TOKEN_SECRET=Key for JWT authentication
 REFRESH_TOKEN_SECRET=Key for JWT authentication
 
+CONFIG_ACCESS_POINT=CLB_SETUP
+CONFIG_HOST_ADDRESS=http://clb.local
+
 ```
+The final two settings are used in the configuration instruction pages and must must match the ones in your embedded device. 
+
 have fun
