@@ -58,7 +58,7 @@
             <button type="submit" class="btn btn-primary mt-4">Update Details</button>
         </form>
 
-        <h2>Components</h2>
+        <h2>Features</h2>
 
         <% managers.forEach(manager=>{ %>
 
@@ -68,7 +68,7 @@
                     Manage <%=manager.name%></a>
                 <% } else { %>
                     <a href="/processManager/activate/<%=manager._id%>/<%=device._id%>"
-                        class="btn btn-primary mt-1 mb-1"> Activate <%=manager.name%></a>
+                        class="btn btn-primary mt-1 mb-1"> Configure <%=manager.name%> hardware</a>
                     <% } %>
 
                         <% }); %>

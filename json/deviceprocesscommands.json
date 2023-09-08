@@ -1,0 +1,594 @@
+{
+    "processes": [
+        {
+            "name": "pixels",
+            "desc": "Control the pixels on the device",
+            "commands": [
+                {
+                    "name": "setcolour",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the colour of the pixels",
+                    "items": [
+                        {
+                            "name": "red",
+                            "optional": 0,
+                            "desc": "amount of red (0-1)",
+                            "type": "float"
+                        },
+                        {
+                            "name": "blue",
+                            "optional": 0,
+                            "desc": "amount of blue (0-1)",
+                            "type": "float"
+                        },
+                        {
+                            "name": "green",
+                            "optional": 0,
+                            "desc": "amount of green (0-1)",
+                            "type": "float"
+                        },
+                        {
+                            "name": "steps",
+                            "optional": 1,
+                            "desc": "no of 50Hz steps to complete the change",
+                            "type": "int"
+                        },
+                        {
+                            "name": "timeout",
+                            "optional": 1,
+                            "desc": "command timeout (0-300 minutes)",
+                            "type": "int"
+                        }
+                    ]
+                },
+                {
+                    "name": "setbackground",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the colour of the background",
+                    "items": [
+                        {
+                            "name": "red",
+                            "optional": 0,
+                            "desc": "amount of red (0-1)",
+                            "type": "float"
+                        },
+                        {
+                            "name": "blue",
+                            "optional": 0,
+                            "desc": "amount of blue (0-1)",
+                            "type": "float"
+                        },
+                        {
+                            "name": "green",
+                            "optional": 0,
+                            "desc": "amount of green (0-1)",
+                            "type": "float"
+                        },
+                        {
+                            "name": "steps",
+                            "optional": 1,
+                            "desc": "no of 50Hz steps to complete the change",
+                            "type": "int"
+                        }
+                    ]
+                },
+                {
+                    "name": "setnamedcolour",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the pixels to a named colour",
+                    "items": [
+                        {
+                            "name": "colourname",
+                            "optional": 0,
+                            "desc": "name of the colour to set",
+                            "type": "text"
+                        },
+                        {
+                            "name": "steps",
+                            "optional": 1,
+                            "desc": "no of 50Hz steps to complete the change",
+                            "type": "int"
+                        },
+                        {
+                            "name": "timeout",
+                            "optional": 1,
+                            "desc": "command timeout (0-300 minutes)",
+                            "type": "int"
+                        }
+                    ]
+                },
+                {
+                    "name": "setnamedbackground",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the background to a named colour",
+                    "items": [
+                        {
+                            "name": "colourname",
+                            "optional": 0,
+                            "desc": "name of the colour to set",
+                            "type": "text"
+                        },
+                        {
+                            "name": "steps",
+                            "optional": 1,
+                            "desc": "no of 50Hz steps to complete the change",
+                            "type": "int"
+                        }
+                    ]
+                },
+                {
+                    "name": "setrandomcolour",
+                    "version": "3.0.0.0",
+                    "desc": "Sets all the pixels to a random colour",
+                    "items": [
+                        {
+                            "name": "steps",
+                            "optional": 1,
+                            "desc": "no of 50Hz steps to complete the change",
+                            "type": "int"
+                        },
+                        {
+                            "name": "options",
+                            "optional": 1,
+                            "desc": "options for the colour command(timed)",
+                            "type": "text"
+                        }
+                    ]
+                },
+                {
+                    "name": "twinkle",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the pixels to twinkle random colours",
+                    "items": [
+                        {
+                            "name": "steps",
+                            "optional": 1,
+                            "desc": "no of 50Hz steps to complete the change",
+                            "type": "int"
+                        },
+                        {
+                            "name": "options",
+                            "optional": 1,
+                            "desc": "options for the colour command(timed)",
+                            "type": "text"
+                        }
+                    ]
+                },
+                {
+                    "name": "brightness",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the pixel brightness",
+                    "items": [
+                        {
+                            "name": "value",
+                            "optional": 0,
+                            "desc": "value (0-1)",
+                            "type": "float"
+                        },
+                        {
+                            "name": "steps",
+                            "optional": 1,
+                            "desc": "no of 50Hz steps to complete the change",
+                            "type": "int"
+                        }
+                    ]
+                },
+                {
+                    "name": "pattern",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the pixel pattern",
+                    "items": [
+                        {
+                            "name": "pattern",
+                            "optional": 0,
+                            "desc": "chosen pattern (walking,mask)",
+                            "type": "text"
+                        },
+                        {
+                            "name": "steps",
+                            "optional": 1,
+                            "desc": "no of 50Hz steps to complete the change",
+                            "type": "int"
+                        },
+                        {
+                            "name": "colourmask",
+                            "optional": 0,
+                            "desc": "mask of colour characters",
+                            "type": "text"
+                        }
+                    ]
+                },
+                {
+                    "name": "map",
+                    "version": "3.0.0.0",
+                    "desc": "Maps a value into a colour map",
+                    "items": [
+                        {
+                            "name": "value",
+                            "optional": 0,
+                            "desc": "value (0-1)",
+                            "type": "float"
+                        },
+                        {
+                            "name": "options",
+                            "optional": 1,
+                            "desc": "options for the colour command(timed)",
+                            "type": "text"
+                        },
+                        {
+                            "name": "steps",
+                            "optional": 1,
+                            "desc": "no of 50Hz steps to complete the change",
+                            "type": "int"
+                        },
+                        {
+                            "name": "colourmask",
+                            "optional": 0,
+                            "desc": "mask of colour characters",
+                            "type": "text"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "console",
+            "desc": "Perform console commands on a remote device",
+            "commands": [
+                {
+                    "name": "reporttext",
+                    "version": "3.0.0.0",
+                    "desc": "Reports a text message",
+                    "items": [
+                        {
+                            "name": "text",
+                            "optional": 0,
+                            "desc": "console message text",
+                            "type": "text"
+                        },
+                        {
+                            "name": "pre",
+                            "optional": 1,
+                            "desc": "console pre text",
+                            "type": "text"
+                        },
+                        {
+                            "name": "post",
+                            "optional": 1,
+                            "desc": "console post text",
+                            "type": "text"
+                        }
+                    ]
+                },
+                {
+                    "name": "reportjson",
+                    "version": "3.0.0.0",
+                    "desc": "report a message as a JSON object",
+                    "items": [
+                        {
+                            "name": "text",
+                            "optional": 0,
+                            "desc": "console message text",
+                            "type": "text"
+                        },
+                        {
+                            "name": "attr",
+                            "optional": 0,
+                            "desc": "json attribute for value",
+                            "type": "text"
+                        }
+                    ]
+                },
+                {
+                    "name": "remote",
+                    "version": "3.0.0.0",
+                    "desc": "Perform a remote console command",
+                    "items": [
+                        {
+                            "name": "cmd",
+                            "optional": 0,
+                            "desc": "console command text",
+                            "type": "text"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "controller",
+            "desc": "Perform commands on the device",
+            "commands": [
+                {
+                    "name": "perform",
+                    "version": "3.0.0.0",
+                    "desc": "Performs the commands in a command store",
+                    "items": [
+                        {
+                            "name": "store",
+                            "optional": 0,
+                            "desc": "store containing the commands to be performed",
+                            "type": "text"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "servo",
+            "desc": "Control the servo",
+            "commands": [
+                {
+                    "name": "setservopos",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the position of the servo",
+                    "items": [
+                        {
+                            "name": "value",
+                            "optional": 0,
+                            "desc": "position of servo (0-1)",
+                            "type": "float"
+                        }
+                    ]
+                },
+                {
+                    "name": "pulseservopos",
+                    "version": "3.0.0.0",
+                    "desc": "Pulses the position of the servo",
+                    "items": [
+                        {
+                            "name": "value",
+                            "optional": 0,
+                            "desc": "position of servo (0-1)",
+                            "type": "float"
+                        },
+                        {
+                            "name": "pulselen",
+                            "optional": 0,
+                            "desc": "length of the pulse in secs",
+                            "type": "float"
+                        }
+                    ]
+                },
+                {
+                    "name": "setinitservopos",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the initial position of the servo",
+                    "items": [
+                        {
+                            "name": "value",
+                            "optional": 0,
+                            "desc": "position of servo (0-1)",
+                            "type": "float"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "registration",
+            "desc": "Perform Registration commands on a remote device",
+            "commands": [
+                {
+                    "name": "register",
+                    "version": "3.0.0.0",
+                    "desc": "Perform a remote Registration command",
+                    "items": []
+                },
+                {
+                    "name": "getsetup",
+                    "version": "3.0.0.0",
+                    "desc": "Get the device setup",
+                    "items": []
+                },
+                {
+                    "name": "getsettings",
+                    "version": "3.0.0.0",
+                    "desc": "Get the settings for a process or sensor",
+                    "items": [
+                        {
+                            "name": "name",
+                            "optional": 0,
+                            "desc": "name of item",
+                            "type": "text"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "max7219",
+            "desc": "Control MAX7219 display",
+            "commands": [
+                {
+                    "name": "display",
+                    "version": "3.0.0.0",
+                    "desc": "Displays a message",
+                    "items": [
+                        {
+                            "name": "text",
+                            "optional": 0,
+                            "desc": "max7219 message text",
+                            "type": "text"
+                        },
+                        {
+                            "name": "options",
+                            "optional": 1,
+                            "desc": "max7219 message options (small,scroll,sticky, datestamp)",
+                            "type": "text"
+                        },
+                        {
+                            "name": "pre",
+                            "optional": 1,
+                            "desc": "max7219 pre text",
+                            "type": "text"
+                        },
+                        {
+                            "name": "post",
+                            "optional": 1,
+                            "desc": "max7219 post text",
+                            "type": "text"
+                        }
+                    ]
+                },
+                {
+                    "name": "default",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the message displayed at power on",
+                    "items": [
+                        {
+                            "name": "text",
+                            "optional": 0,
+                            "desc": "max7219 message text",
+                            "type": "text"
+                        }
+                    ]
+                },
+                {
+                    "name": "scrollspeed",
+                    "version": "3.0.0.0",
+                    "desc": "Scroll speed (0-1)",
+                    "items": [
+                        {
+                            "name": "value",
+                            "optional": 0,
+                            "desc": "value",
+                            "type": "float"
+                        }
+                    ]
+                },
+                {
+                    "name": "brightness",
+                    "version": "3.0.0.0",
+                    "desc": "Brightness (0-1)",
+                    "items": [
+                        {
+                            "name": "value",
+                            "optional": 0,
+                            "desc": "value",
+                            "type": "float"
+                        }
+                    ]
+                },
+                {
+                    "name": "showvalue",
+                    "version": "3.0.0.0",
+                    "desc": "show a value",
+                    "items": [
+                        {
+                            "name": "value",
+                            "optional": 0,
+                            "desc": "value",
+                            "type": "float"
+                        },
+                        {
+                            "name": "options",
+                            "optional": 1,
+                            "desc": "max7219 message options (small,scroll,sticky, datestamp)",
+                            "type": "text"
+                        },
+                        {
+                            "name": "pre",
+                            "optional": 1,
+                            "desc": "max7219 pre text",
+                            "type": "text"
+                        },
+                        {
+                            "name": "post",
+                            "optional": 1,
+                            "desc": "max7219 post text",
+                            "type": "text"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "printer",
+            "desc": "Control printer",
+            "commands": [
+                {
+                    "name": "print",
+                    "version": "3.0.0.0",
+                    "desc": "Prints text",
+                    "items": [
+                        {
+                            "name": "text",
+                            "optional": 0,
+                            "desc": "printer message text",
+                            "type": "text"
+                        },
+                        {
+                            "name": "options",
+                            "optional": 1,
+                            "desc": "printer options(sameline,datestamp)",
+                            "type": "text"
+                        },
+                        {
+                            "name": "pre",
+                            "optional": 1,
+                            "desc": "printer pre text",
+                            "type": "text"
+                        },
+                        {
+                            "name": "post",
+                            "optional": 1,
+                            "desc": "printer post text",
+                            "type": "text"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "outpin",
+            "desc": "Control the outpin",
+            "commands": [
+                {
+                    "name": "setoutpinstate",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the state of the outpin",
+                    "items": [
+                        {
+                            "name": "value",
+                            "optional": 0,
+                            "desc": "state of outpin (0-1) >=0.5 is on",
+                            "type": "float"
+                        }
+                    ]
+                },
+                {
+                    "name": "pulseoutpinstate",
+                    "version": "3.0.0.0",
+                    "desc": "Pulse the outpin",
+                    "items": [
+                        {
+                            "name": "value",
+                            "optional": 0,
+                            "desc": "state of outpin (0-1) >=0.5 is on",
+                            "type": "float"
+                        },
+                        {
+                            "name": "pulselen",
+                            "optional": 1,
+                            "desc": "length of the pulse in secs",
+                            "type": "float"
+                        }
+                    ]
+                },
+                {
+                    "name": "setinitoutpinstate",
+                    "version": "3.0.0.0",
+                    "desc": "Sets the initial state of the outpin",
+                    "items": [
+                        {
+                            "name": "initialoutpinstate",
+                            "optional": 1,
+                            "desc": "initial state of outpin (0-1)",
+                            "type": "float"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -9,14 +9,17 @@ const port = process.env.PORT || 3000;
 if (port == 3000)
     require('dotenv').config();
 
+const fs = require('fs');
+const path = require('path');
 const mongoose = require('mongoose')
 const mqtt = require('mqtt');
 const bcrypt = require('bcrypt');
 const Device = require('./models/device');
 const Connection = require('./models/connection');
 const Installation = require('./models/installation');
-const ProcessManager = require('./models/ProcessManager');
+const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessageItems, ProcessManagerMessages, ProcessManagers } = require('./models/ProcessManager');
 const User = require('./models/user');
+const { Console } = require('console');
 
 class Manager {
 
@@ -92,7 +95,7 @@ class Manager {
 
         let connection = new Connection(
             {
-                device:messageObject.name,
+                device: messageObject.name,
                 date: new Date(),
                 resetCode: messageObject.resetcode
             }
@@ -114,7 +117,7 @@ class Manager {
 
                 for (let command of commandList) {
                     let commandText = command.trim()
-                    if(commandText.length == 0){
+                    if (commandText.length == 0) {
                         continue;
                     }
                     console.log("   sending boot command:", commandText);
@@ -139,14 +142,12 @@ class Manager {
         }
     }
 
-    getDeviceNameFromTopic(topic)
-    {
+    getDeviceNameFromTopic(topic) {
         let elements = topic.split('/');
-        return elements[elements.length-1];
+        return elements[elements.length - 1];
     }
 
-    async doDeviceResponse(topic, message, messageObject)
-    {
+    async doDeviceResponse(topic, message, messageObject) {
         let deviceName = this.getDeviceNameFromTopic(topic);
         const date = new Date();
         const hours = date.getHours();
@@ -158,7 +159,7 @@ class Manager {
 
         device = await Device.findOne({ name: deviceName });
 
-        if(device != null){
+        if (device != null) {
             await device.updateOne({
                 lastResponse: message,
                 lastResponseDate: Date.now()
@@ -208,45 +209,102 @@ class Manager {
         await installation.save();
     }
 
-    async addPixelsProcessManager() {
-        
-        console.log("Adding a pixels process manager");
+    async updateProcessManagers() {
 
-        let pixelsManager = await ProcessManager.findOne({ name:"pixels" });
+        console.log("Updating process manager from JSON");
 
-        if(pixelsManager){
-            console.log("  Pixels manager already present");
+        let filePath = "./JSON/deviceprocesscommands.json";
+        let jsonData = null;
+
+        try {
+            const data = fs.readFileSync(filePath, 'utf8');
+            jsonData = JSON.parse(data);
+        } catch (err) {
+            console.error('Error reading or parsing file:', err);
+            return false;
         }
-        else{
-            console.log("  Creating new Pixels manager");
-            let newManager = new ProcessManager(
-                {
-                    name:'pixels',
-                    description:'Configure pixels connected to the device',
-                    configJS:'/js/configscripts/pixels.js'
-                });
-            await newManager.save();
-        }
-    }
 
-    async addMax7219MessagesProcessManager() {
-        
-        console.log("Adding a Max7219 process manager");
+        let processes = jsonData.processes;
 
-        let pixelsManager = await ProcessManager.findOne({ name:"Max7219" });
+        console.log(`  ..file loaded`);
 
-        if(pixelsManager){
-            console.log("  Max7219 manager already present");
-        }
-        else{
-            console.log("  Creating new Max7219 manager");
-            let newManager = new ProcessManager(
-                {
-                    name:'Max7219',
-                    description:'Configure Max7219 connected to the device',
-                    configJS:'/js/configscripts/Max7219.js'
-                });
-            await newManager.save();
+        try {
+            for (let procIndex = 0; procIndex < processes.length; procIndex++) {
+                let process = processes[procIndex];
+
+                console.log(`  ..working on ${process.name}`);
+
+                let storedProcess = await ProcessManagers.findOne({ name: process.name });
+
+                if (storedProcess) {
+                    console.log(`  ..updating process manager for ${process.name}`);
+                }
+                else {
+                    console.log(`  ..creating a process manager for ${process.name}`);
+                    storedProcess = ProcessManagers({
+                        name: process.name,
+                        desc: process.desc
+                    });
+                    await storedProcess.save();
+                }
+
+                let commands = process.commands;
+
+                for (let commandIndex = 0; commandIndex < commands.length; commandIndex++) {
+                    let command = commands[commandIndex];
+                    console.log(`     ..command ${command.name}`);
+                    let storedCommand = await ProcessManagerCommands.findOne({ name: command.name });
+                    if (storedCommand) {
+                        console.log(`    ..updating the command`);
+                    }
+                    else {
+                        console.log(`    ..creating new command`);
+                        storedCommand = ProcessManagerCommands(
+                            {
+                                name: command.name,
+                                desc: command.desc,
+                                version: command.version,
+                                processManager: storedProcess._id
+                            });
+                        await storedCommand.save();
+                    }
+
+                    for (let itemsIndex = 0; itemsIndex < command.items.length; itemsIndex++) {
+                        let item = command.items[itemsIndex];
+                        let name = command.name;
+                        console.log(`        ..item ${name}`);
+
+                        let storedItem = await ProcessManagerCommandItems.findOne({
+                            $and:
+                                [
+                                    { processCommand: { $eq: storedCommand._id } },
+                                    { name: { $eq: name } }
+                                ]
+                        });
+
+                        if (storedItem) {
+                            console.log(`        ..updating the item`);
+                        }
+                        else {
+                            console.log(`        ..creating new item`);
+                            storedItem = ProcessManagerCommandItems(
+                                {
+                                    name: name,
+                                    desc: item.desc,
+                                    optional: item.optional,
+                                    version: command.version,
+                                    type: item.type,
+                                    processCommand: storedCommand._id
+                                }
+                            );
+                            await storedItem.save();
+                        }
+                    }
+                }
+            };
+        } catch (err) {
+            console.error('Error building the data:', err);
+            return false;
         }
     }
 
@@ -268,7 +326,7 @@ class Manager {
     async sendMessageToPrinter(message, printer) {
         let printcommand = '{"process":"printer","command":"print","options":"datestamp","text":"' + message + '"}';
         let printdest = process.env.MQTT_TOPIC_PREFIX + "/command/" + printer;
-        console.log("        ", printcommand," to ", printdest);
+        console.log("        ", printcommand, " to ", printdest);
         this.mqttClient.publish(printdest, printcommand);
     }
 
@@ -289,7 +347,7 @@ class Manager {
     async sendMessageToDisplay(message, display) {
         let displayCommand = '{"process":"max7219","command":"display","options":"scroll,sticky","text":"' + message + '"}';
         let displaydest = process.env.MQTT_TOPIC_PREFIX + '/command/' + display;
-        console.log("        ", displayCommand," to ",displaydest);
+        console.log("        ", displayCommand, " to ", displaydest);
         this.mqttClient.publish(displaydest, displayCommand);
     }
 
@@ -315,10 +373,9 @@ class Manager {
         await this.sendMessageToPrinters(message, installation);
         await this.sendMessageToDisplays(message, installation);
     }
- 
-    async sendJSONCommandToDevice(deviceName, command)
-    {
-        let topic = process.env.MQTT_TOPIC_PREFIX + '/command/'+deviceName;
+
+    async sendJSONCommandToDevice(deviceName, command) {
+        let topic = process.env.MQTT_TOPIC_PREFIX + '/command/' + deviceName;
 
         console.log(`Sending:${command} to:${topic}`);
 
@@ -331,10 +388,10 @@ class Manager {
         }
         catch (err) {
             console.log(`Invalid json command:${command} error:${err} for:${deviceName}`);
-            throw(err);
+            throw (err);
         }
-        
-        this.mqttClient.publish(topic,command);
+
+        this.mqttClient.publish(topic, command);
 
         // store the command for debugging
 
@@ -342,80 +399,71 @@ class Manager {
 
         device = await Device.findOne({ name: deviceName });
 
-        if(device != null){
+        if (device != null) {
             await device.updateOne({
                 lastCommand: command
             });
         }
     }
 
-    async sendConsoleCommandToDevice(deviceName, command)
-    {
+    async sendConsoleCommandToDevice(deviceName, command) {
         console.log('Sending console command:', deviceName);
-        let jsonCommand = '{"process":"console","command":"remote","cmd":"'+command+'"}';
-        this.sendJSONCommandToDevice(deviceName,jsonCommand);
+        let jsonCommand = '{"process":"console","command":"remote","cmd":"' + command + '"}';
+        this.sendJSONCommandToDevice(deviceName, jsonCommand);
     }
 
-    async restartDevice(deviceName)
-    {
+    async restartDevice(deviceName) {
         console.log('Restarting:', deviceName);
-        this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","cmd":"restart"}');
+        this.sendJSONCommandToDevice(deviceName, '{"process":"console","command":"remote","cmd":"restart"}');
     }
 
-    async startDeviceOTAupdate(deviceName)
-    {
+    async startDeviceOTAupdate(deviceName) {
         console.log('Updating:', deviceName);
-        this.sendJSONCommandToDevice(deviceName,'{"process":"console","command":"remote","cmd":"otaupdate"}');
+        this.sendJSONCommandToDevice(deviceName, '{"process":"console","command":"remote","cmd":"otaupdate"}');
     }
 
-    async sendCommandToDevices(devices, command)
-    {
+    async sendCommandToDevices(devices, command) {
         console.log(`Sending command:${command}`);
 
-        devices.forEach(device=>{
+        devices.forEach(device => {
             console.log(`    to:${device.name}`);
-            this.sendJSONCommandToDevice(device.name,command);
+            this.sendJSONCommandToDevice(device.name, command);
         });
     }
 
-    async findTaggedDevices(tag){
-        let result = await Device.find({tags:{ $regex: ".*"+tag+".*" }} );
+    async findTaggedDevices(tag) {
+        let result = await Device.find({ tags: { $regex: ".*" + tag + ".*" } });
         return result;
     }
 
-    async setLightColours(tag, colour)
-    {
+    async setLightColours(tag, colour) {
         let devices = await this.findTaggedDevices(tag);
         let command = `{"process":"pixels","command":"setnamedcolour","colourname":"${colour}"}`;
-        this.sendCommandToDevices(devices,command);
+        this.sendCommandToDevices(devices, command);
     }
 
-    async setLightPattern(tag, pattern)
-    {
+    async setLightPattern(tag, pattern) {
         let devices = await this.findTaggedDevices(tag);
         let command = `{"process":"pixels","command":"pattern","pattern":"mask","colourmask":"${pattern}"}`;
-        this.sendCommandToDevices(devices,command);
+        this.sendCommandToDevices(devices, command);
     }
 
-    async setWalkingLightPattern(tag, pattern)
-    {
+    async setWalkingLightPattern(tag, pattern) {
         let devices = await this.findTaggedDevices(tag);
         let command = `{"process":"pixels","command":"pattern","pattern":"walking","colourmask":"${pattern}"}`;
-        this.sendCommandToDevices(devices,command);
+        this.sendCommandToDevices(devices, command);
     }
 
-    async setLightsTimedTwinkle(tag)
-    {
+    async setLightsTimedTwinkle(tag) {
         let devices = await this.findTaggedDevices(tag);
         let command = `{"process":"pixels","command":"twinkle","options":"timed","sensor":"clock","trigger":"minute"}`;
-        this.sendCommandToDevices(devices,command);
+        this.sendCommandToDevices(devices, command);
     }
 
-    async setLightsTimedRandom(tag)
-    {
+    async setLightsTimedRandom(tag) {
         let devices = await this.findTaggedDevices(tag);
         let command = `{"process":"pixels","command":"setrandomcolour","options":"timed","sensor":"clock","trigger":"minute"}`;
-        this.sendCommandToDevices(devices,command);
+        this.sendCommandToDevices(devices, command);
     }
 
     async handleIncomingMessage(topic, message, packet) {
@@ -426,7 +474,7 @@ class Manager {
         const hours = date.getHours();
         const mins = date.getMinutes();
 
-        console.log( `${hours}:${mins} Received a packet:{messageString} on topic {topic}`);
+        console.log(`${hours}:${mins} Received a packet:{messageString} on topic {topic}`);
 
         let messageObject = null;
 
@@ -438,21 +486,20 @@ class Manager {
             return;
         }
 
-        if (topic === process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_CONNECTED_TOPIC) {
+        if (topic === process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_CONNECTED_TOPIC) {
             await this.doDeviceConnected(messageObject);
         }
 
-        if (topic === process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_REGISTERED_TOPIC) {
+        if (topic === process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_REGISTERED_TOPIC) {
             await this.doDeviceRegistration(messageObject);
         }
 
-        if(topic.startsWith(`${process.env.MQTT_TOPIC_PREFIX}/${process.env.MQTT_DATA_TOPIC}`)) {
+        if (topic.startsWith(`${process.env.MQTT_TOPIC_PREFIX}/${process.env.MQTT_DATA_TOPIC}`)) {
             await this.doDeviceResponse(topic, message, messageObject);
         }
     }
 
-    async checkForAdminUser()
-    {
+    async checkForAdminUser() {
         const adminUser = await User.findOne({ email: process.env.INITIAL_ADMIN_USERNAME });
 
         if (adminUser == null) {
@@ -473,18 +520,17 @@ class Manager {
     async connectServices() {
         console.log("Connecting services");
 
-        this.sequenceNumber=0;
+        this.sequenceNumber = 0;
 
-        this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_CONNECTED_TOPIC, { qos: 1 });
-        this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_REGISTERED_TOPIC, { qos: 1 });
-        this.mqttClient.subscribe( process.env.MQTT_TOPIC_PREFIX +'/'+ process.env.MQTT_DATA_TOPIC + '/#', { qos: 1 });
+        this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_CONNECTED_TOPIC, { qos: 1 });
+        this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_REGISTERED_TOPIC, { qos: 1 });
+        this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_DATA_TOPIC + '/#', { qos: 1 });
         this.mqttClient.on("message", (topic, message, packet) =>
             this.handleIncomingMessage(topic, message, packet));
 
         await this.addPrinter("CLB-b00808");
         await this.addDisplay("CLB-3030da");
-        await this.addPixelsProcessManager();
-        await this.addMax7219MessagesProcessManager();
+        await this.updateProcessManagers();
         await this.checkForAdminUser();
     }
 
@@ -520,9 +566,8 @@ class Manager {
 
     static activeManager = null;
 
-    static getActiveManger()
-    {
-        if(Manager.activeManager == null)
+    static getActiveManger() {
+        if (Manager.activeManager == null)
             Manager.activeManager = new Manager();
 
         return Manager.activeManager;

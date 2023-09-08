@@ -212,10 +212,11 @@ async function connectConIOandSelectStage(stage) {
             return false;
         }
         else {
-            console.log("console opened for business");
+            console.log("Console opened");
             consoleIO.startSerialPump(handleIncomingText);
         }
     }
-    selectStage(stage);
+    await selectStage(stage);
+    return true;
 }
 

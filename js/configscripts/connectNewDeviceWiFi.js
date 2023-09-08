@@ -1,7 +1,7 @@
 var device = null;
 var flashConnected = false;
 var terminal = null;
-var accessPoint, hostAddress;
+var accessPoint, hostAddress,hostIPAddress;
 var stages;
 
 var stage;
@@ -11,7 +11,13 @@ function buildStages() {
   stages = {
     FormatSelect: {
       description: [
+        `You can use this page to configure your box over WiFi. The box will turn into a WiFi access point that you can connect to. It will host a web page you can use to set up the box.`,
+        `You can do the box using any WiFi enabled device, for example a smartphone or laptop.`,
+        `You can't use the same device to view these pages and connect to the box.`,
+        `The interactive setup takes you through each step.`,
+        `The printed instructions describe the entire process on one page.`,
         `Select what kind of help you would like.`
+
       ],
       inputFields: [],
       buttons: [
@@ -71,6 +77,8 @@ function buildStages() {
         `Scan the above QR code with your phone to navigate to the box web page.`,
         `If your phone can't read QR codes or you are using a different device to configure your box you should start your browser and a web page with the address:`,
         `#${hostAddress}`,
+        `If this doesn't work you can enter the direct IP address for the box into your:`,
+        `#${hostIPAddress}`,
         "Press Page Open when you have opened the page."
       ],
       inputFields: [],
@@ -104,8 +112,8 @@ function buildStages() {
         `If your phone can connect to WiFi using a QR code you can use the code below:`,
         `QR:WIFI:S:${accessPoint};`,
         `*Opening the settings page`,
-        `Once you have connected to the box WiFi you can open the box settings page in your browser. The page has the following address:`,
-        `#${hostAddress}`,
+        `Once you have connected to the box WiFi you can open the box settings page in your browser. The page has the following addresses:`,
+        `#${hostAddress} or ${hostIPAddress}`,
         `If your phone can browse to a web site by using a QR code you can use the code below:`,
         `QR:${hostAddress}`,
         `Once you have connected to the page you will see the site below:`,
@@ -129,10 +137,11 @@ async function doExit()
   await selectStage(stages.FormatSelect);
 }
 
-async function doStart(configAccessPoint, configHostAddress) {
-  console.log(`AP: ${configAccessPoint}, Host:${configHostAddress}`);
+async function doStart(configAccessPoint, configHostAddress, configHostIPAddress) {
+  console.log(`AP: ${configAccessPoint}, Host:${configHostAddress}, IP:${configHostIPAddress}`);
   accessPoint = configAccessPoint;
   hostAddress = configHostAddress;
+  hostIPAddress = configHostIPAddress;
   buildStages();
   await selectStage(stages.FormatSelect);
 }

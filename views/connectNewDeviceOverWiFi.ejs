@@ -18,14 +18,14 @@
     </style>
 </head>
 
-<body onload= "doStart('<%= configAccessPoint %>', '<%= configHostAddress %>');" >
+<body onload= "doStart('<%= configAccessPoint %>', '<%= configHostAddress %>', '<%= configHostIPAddress %>');" >
     <div class="container mb-4">
         <h1 class="mb-4">Connected Little Boxes</h1>
-        <h2 class="mb-4">Connect a Box</h2>
+        <h2 class="mb-4">Configure your box over WiFi</h2>
         <p id="stageDescription"></p>
     </div>
   <script src="/js/configscripts/stageManager.js"></script>
-  <script src="/js/configscripts/connectNewDevice.js"></script>
+  <script src="/js/configscripts/connectNewDeviceWiFi.js"></script>
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 </body>
 </html>

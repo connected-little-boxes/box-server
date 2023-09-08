@@ -1,6 +1,8 @@
+
+
 const mongoose = require('mongoose');
 
-const commandItemSchema = new mongoose.Schema(
+const processManagerCommandItemSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -10,29 +12,83 @@ const commandItemSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        version: {
+            type: String,
+            required: true
+        },
+        optional: {
+            type: Number,
+            required: true
+        },
         type: {
             type: String,
             required: true
+        },
+        processCommand: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref:'ProcessManagerCommand',
+            required: true
         }
     }
-)
+);
 
-const commandSchema = new mongoose.Schema(
+const processManagerCommandSchema = new mongoose.Schema(
     {
         name: {
             type: String,
             required: true
         },
-        description: {
+        version: {
+            type: String,
+            required: true
+        },
+        desc: {
+            type: String,
+            required: true
+        },
+        processManager: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref:'ProcessManager',
+            required: true
+        }
+    }
+);
+
+const processManagerMessageItemSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: true
+        },
+        value: {
+            type: String,
+            required: true
+        },
+        processManagerMessage: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref:'ProcessManagerMessage',
+            required: true
+        }
+    }
+);
+
+const processManagerMessageSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: true
+        },
+        desc: {
             type: String,
             default: ""
         },
-        items:
-        {
-            type: [commandItemSchema],
-            default:[]
+        processManager: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref:'ProcessManager',
+            required: true
         }
-    });
+    }
+);
 
 const processManagerSchema = new mongoose.Schema(
     {
@@ -40,19 +96,23 @@ const processManagerSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        description: {
+        desc: {
             type: String,
             default: ""
-        },
-        configJS : {
-            type: String,
-            required: true
-        },
-        commands: {
-            type: [commandSchema],
-            required: true
         }
     }
 );
 
-module.exports = mongoose.model('ProcessManager', processManagerSchema);
+let ProcessManagerCommandItems= mongoose.model('ProcessManagerCommandItem', processManagerCommandItemSchema);
+let ProcessManagerCommands= mongoose.model('ProcessManagerCommands', processManagerCommandSchema);
+let ProcessManagerMessageItems=mongoose.model('ProcessManagerMessageItem', processManagerMessageItemSchema);
+let ProcessManagerMessages= mongoose.model('ProcessManagerMessages', processManagerMessageSchema);
+let ProcessManagers= mongoose.model('ProcessManagers', processManagerSchema);
+
+module.exports = {
+    ProcessManagerCommandItems,
+    ProcessManagerCommands,
+    ProcessManagerMessageItems,
+    ProcessManagerMessages,
+    ProcessManagers
+ };

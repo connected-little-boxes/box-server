@@ -1,3 +1,11 @@
+const ConsoleStates = {
+  starting: "Starting",
+  waitingForGot: "waitingForGot",
+  waitingForValueCommandResponse: "waitingForValueCommandResponse",
+  waitingForJSONCommandResponse: "waitingForJSONCommandResponse",
+  waitingforValueCommandComplete: "waitingforValueCommandComplete",
+  waitingforSettingCommandCompete: "waitingforSettingCommandCompete"
+}
 
 class ConsoleIO {
 
@@ -7,7 +15,8 @@ class ConsoleIO {
     this.handleIncomingText = null;
     this.lineBuffer = "";
     this.command = "";
-    this.gotCommandBack = false;
+    this.reply = null;
+    this.setState(ConsoleStates.starting);
   }
 
   async connectToSerialPort() {
@@ -28,66 +37,134 @@ class ConsoleIO {
     return "";
   }
 
-  async disconnectFromSerialPort(){
+  async disconnectFromSerialPort() {
     await this.port.close();
     this.reader = null;
   }
 
+  setState(newState) {
+    console.log(`    State:${newState}`);
+    this.state = newState;
+  }
+
   handleCommand(text) {
-    console.log("Got a reply:" + text + " " + text.length);
-    if (this.gotCommandBack) {
-      this.gotCommandBack = false;
-      this.command = "";
-      // text contains the response to the command
-      if(text.startsWith("{")){
-        // might be a respose to a JSON command - check for OK
-        try{
-          let responseObject = JSON.parse(text);
-          if(responseObject.error == 0){
-            // no error - promise has been kept
-            this.kept(responseObject.message);
+
+    text = text.trim();
+
+    console.log("Got a reply:" + text);
+
+    switch (this.state) {
+
+      case ConsoleStates.starting:
+        break;
+
+      case ConsoleStates.waitingForGot:
+        if (text.startsWith("Got command: ")) {
+          text = text.slice("Got command: ".length);
+          if (text == this.command) {
+            if (text.startsWith('{')) {
+              this.setState(ConsoleStates.waitingForJSONCommandResponse);
+            }
+            else {
+              // if the command contains an equals it is a setting command
+              if(text.includes('=')){
+                this.setState(ConsoleStates.waitingforSettingCommandCompete);
+              }
+              else {
+              this.setState(ConsoleStates.waitingForValueCommandResponse);
+              }
+            }
+            break;
           }
           else {
-            this.broken(text);
+            this.setState(ConsoleStates.starting);
+            this.broken(`Got ${text} doesn't match ${this.command}`);
             return;
           }
         }
-        catch (e){
-          this.broken(e);
+        break;
+
+      case ConsoleStates.waitingforSettingCommandCompete:
+        if (text == "setting set OK") {
+          this.kept(`Set command: ${this.command} completed OK`);
+          this.setState(ConsoleStates.starting);
+        }
+        break;
+
+      case ConsoleStates.waitingForValueCommandResponse:
+
+        if (text == "setting not found") {
+          this.setState(ConsoleStates.starting);
+          this.broken(`Setting ${this.command} not found`);
           return;
         }
-      }
-      if (text == "done") {
-        console.log("command complete");
-        this.kept(text);
-        return;
-      }
-      else {
-        let replies = text.split('=');
-        if (replies.length > 1) {
-          this.kept(replies[1])
+
+        // return the value
+        let items = text.split('=');
+
+        if (items.length == 1) {
+          // value not present
+          this.setState(ConsoleStates.starting);
+          this.broken(`Value for ${this.command} missing`);
+          return;
         }
         else {
-          this.broken(text);
+          // send the value back
+          this.setState(ConsoleStates.waitingforValueCommandComplete);
+          this.result = items[1];
+          return;
         }
-      }
-    }
-    if (text == this.command) {
-      this.gotCommandBack = true;
+
+      case ConsoleStates.waitingforValueCommandComplete:
+
+        if (text = "setting displayed OK") {
+          this.setState(ConsoleStates.starting);
+          this.kept(this.result);
+          this.result = null;
+          return;
+        }
+        break;
+
+      case ConsoleStates.waitingForJSONCommandResponse:
+        if (text.startsWith("{")) {
+          // A respose to a JSON command - check for OK
+          try {
+            let responseObject = JSON.parse(text);
+            if (responseObject.error == 0) {
+              // no error - promise has been kept
+              this.kept(responseObject.message);
+            }
+            else {
+              this.broken(text);
+              return;
+            }
+          }
+          catch (e) {
+            this.setState(ConsoleStates.starting);
+            this.broken(e);
+            return;
+          }
+        }
+        else {
+          // should get JSON back from a JSON command
+          this.setState(ConsoleStates.starting);
+          this.broken(`No JSON received from ${this.command} request`);
+          return;
+        }
     }
   }
 
   performCommand(command) {
     console.log("Performing:" + command);
     const commandPromise = new Promise((kept, broken) => {
-      if (this.command != "") {
-        broken("Command already active:" + command);
+      if (this.state != ConsoleStates.starting) {
+        broken(`Command ${this.command} already active when command ${command} received`);
       }
       else {
         this.kept = kept;
         this.broken = broken;
         this.command = command;
-        this.gotCommandBack = false;
+        this.setState("waitingForGot");
         this.sendText(command + '\r');
       }
     });

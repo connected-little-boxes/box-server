@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <title>Connected Little Boxes</title>
+    <style>
+        /* Define print styles */
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body onload="doStart();">
+    <div class="container mb-4">
+        <h1 class="mb-4">Connected Little Boxes</h1>
+        <h2 class="mb-4">Configure your box over USB</h2>
+        <p id="stageDescription"></p>
+        <textarea class="mb-4 w-100" rows="5" id="logOutput"></textarea>
+    </div>
+    <script src="/js/esptool/ConsoleIO.js"></script>
+    <script src="/js/configscripts/stageManager.js"></script>
+    <script src="/js/configscripts/connectNewDeviceUSB.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+</body>
+
+</html>

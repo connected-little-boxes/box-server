@@ -5,7 +5,7 @@ const Device = require('../models/device');
 const Manager = require('../manager');
 const authenticateToken = require('../_helpers/authenticateToken');
 const getDeviceByDeviceName = require('../_helpers/getDeviceByDeviceName');
-const ProcessManager = require('../models/ProcessManager');
+const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessageItems, ProcessManagerMessages, ProcessManagers } = require('../models/ProcessManager');
 
 // define the home page route
 router.get('/', authenticateToken, async function (req, res) {
@@ -79,7 +79,7 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
   // device. The ProcessManager table contains a list of all the process managers
   // get a list of all the ProcessManager objects
   //
-  let systemProcessManagers = await ProcessManager.find({});
+  let systemProcessManagers = await ProcessManagers.find({});
 
   systemProcessManagers.forEach(systemProcessManager => {
 

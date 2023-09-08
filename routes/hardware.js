@@ -7,7 +7,7 @@ const authenticateToken = require('../_helpers/authenticateToken');
 router.get('/flash', authenticateToken, async function (req, res) {
 
     res.render("configureDeviceHardware.ejs", { name: res.user.name, host: process.env.HOST_ADDRESS, 
-        configScript:"/js/configscripts/flashDevice.js", title:"Flash device" });
+        configScript:"/js/configscripts/flashDevice.js", title:"Flash a Connected Little Box with HullOS" });
 });
 
 
