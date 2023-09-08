@@ -4,7 +4,7 @@ const router = express.Router();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const authenticateToken = require('../_helpers/authenticateToken');
-const messageDisplay = require('../_helpers/messageDisplay');
+const menuPage = require('../_helpers/menuPage');
 
 router.get('/', authenticateToken, (req, res) => {
     res.render('changePassword.ejs', { name: res.user.name });
@@ -38,7 +38,7 @@ router.post('/', authenticateToken, async (req, res) => {
         }
     }
 
-    messageDisplay(
+    menuPage(
         "Password change",
         message,
         [

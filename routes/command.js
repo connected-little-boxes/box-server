@@ -5,10 +5,11 @@ const Command = require('../models/Command');
 const CommandGroup = require('../models/CommandGroup');
 const Manager = require('../manager');
 const authenticateToken = require('../_helpers/authenticateToken');
-const messageDisplay = require('../_helpers/messageDisplay');
+const menuPage = require('../_helpers/menuPage');
 const qrcode = require('qrcode');
 const Uuid = require('uuid');
 const CommandDeviceMessage = require('../models/CommandDeviceMessage');
+const User = require('../models/user');
 
 function generateQRCode(data) {
     return new Promise((kept, broken) => {
@@ -110,16 +111,28 @@ async function buildCommandMessageDescriptions(owner_id, messages) {
 
 router.get('/commandGroupSelect', authenticateToken, async function (req, res) {
 
-    // find all the groups owned by this user
-    let commandGroups = await CommandGroup.find({ owner: res.user._id });
+    let user = res.user;
 
+    // find all the groups owned by this user
+    let commandGroups ;
+    let commandPage;
+
+    if (user.role == "admin") {
+        commandGroups = await CommandGroup.find();
+        commandPage="commandGroupAdminSelect.ejs";
+    }
+    else {
+        commandGroups = await CommandGroup.find({ owner: user._id });
+        commandPage="commandGroupSelect.ejs";
+    }
+  
     commandGroups.sort((a, b) => {
         let textA = (a.name).toUpperCase();
         let textB = (b.name).toUpperCase();
         return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
     });
 
-    res.render("commandGroupSelect.ejs", { username: res.user.name, commandGroups: commandGroups });
+    res.render(commandPage, { username: user.name, commandGroups: commandGroups });
 });
 
 router.get('/commandGroupNew', authenticateToken, async function (req, res) {
@@ -162,6 +175,62 @@ router.get('/commandGroupEdit/:commandGroup_id', authenticateToken, async functi
 
     res.render("commandGroupEdit.ejs", { commandGroup: commandGroup, commands: commands });
 });
+
+
+async function buildUserDescriptions(owner_id, owner_name) {
+
+    let userDescriptions = [];
+
+
+    let users = await User.find();
+
+    for (let i = 0; i < users.length; i++) {
+        let user = users[i];
+        if(user._id.equals(owner_id)){
+            continue;
+        }
+        userDescriptions.push({id:user._id, name:user.name});
+    };
+
+    userDescriptions.sort((a, b) => {
+        let textA = (a.name).toUpperCase();
+        let textB = (b.name).toUpperCase();
+        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+    });
+
+    userDescriptions.unshift({id:owner_id, name:owner_name});
+
+    return userDescriptions;
+}
+
+
+router.get('/commandGroupMove/:commandGroup_id', authenticateToken, async function (req, res) {
+
+    let commandGroup_id = req.params.commandGroup_id;
+
+    let commandGroup = await CommandGroup.findOne(
+        { _id: commandGroup_id }
+    );
+
+    let owner = await User.findOne({_id:commandGroup.owner});
+
+    let users = await buildUserDescriptions(owner._id,owner.name);
+
+    res.render("commandGroupMove.ejs", { commandGroup:commandGroup, ownerName:owner.name, users: users});
+});
+
+router.post('/commandGroupMove/:commandGroup_id', authenticateToken, async function (req, res) {
+
+    menuPage(
+        "Command group moved",
+        "Move completed successfully",
+        [
+            { description: "Continue", route: "/command/commandGroupSelect/" }
+        ],
+        res
+    );
+});
+
 
 router.post('/commandGroupEdit/:commandGroup_id', authenticateToken, async function (req, res) {
 
@@ -209,7 +278,7 @@ router.get('/commandGroupDelete/:commandGroup_id', async function (req, res) {
         message = "Delete failed:${error}";
     }
 
-    messageDisplay(
+    menuPage(
         "Command group deleted",
         message,
         [
@@ -266,7 +335,7 @@ router.get('/commandDelete/:commandGroup_id/:command_id', async function (req, r
         message = "Delete failed:${error}";
     }
 
-    messageDisplay(
+    menuPage(
         "Command deleted",
         message,
         [
@@ -488,7 +557,7 @@ router.get('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id'
     let messageDescription = await buildOneCommandMessageDescription(user, message_id);
 
     if (!messageDescription) {
-        messageDisplay(
+        menuPage(
             "Command message edit",
             `Message not found`,
             [
@@ -545,7 +614,7 @@ router.post('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id
                 { _id: commandMessage_id }
             );
 
-            messageDisplay(
+            menuPage(
                 "Create new message",
                 `Device ${deviceName} not found`,
                 [
@@ -627,7 +696,7 @@ router.get('/commandMessageDelete/:commandGroup_id/:command_id/:message_id', asy
         message = "Delete failed:${error}";
     }
 
-    messageDisplay(
+    menuPage(
         "Command deleted",
         message,
         [

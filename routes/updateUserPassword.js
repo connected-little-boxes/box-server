@@ -4,15 +4,23 @@ const router = express.Router();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const authenticateToken = require('../_helpers/authenticateToken');
+const menuPage = require('../_helpers/menuPage');
 
 router.get('/', authenticateToken, (req, res) => {
-    res.render('updateUserPassword.ejs', { role: res.user.role, message:"" });
+    res.render('updateUserPassword.ejs', { role: res.user.role, message: "" });
 });
 
 router.post('/', authenticateToken, async (req, res) => {
 
-    if(res.user.role != "admin"){
-        res.redirect('/');
+    if (res.user.role != "admin") {
+        menuPage(
+            "Password change",
+            "Only admin users can change passwords",
+            [
+                { description: "Continue", route: "/" }
+            ],
+            res
+        );
         return;
     }
 
@@ -21,7 +29,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
         if (existingUser == null) {
             console.log("No user with that name");
-            res.render('updateUserPassword.ejs', { role: res.user.role, message:`No user with the email ${req.body.email}` });
+            res.render('updateUserPassword.ejs', { role: res.user.role, message: `No user with the email ${req.body.email}` });
             return;
         }
 
@@ -31,13 +39,28 @@ router.post('/', authenticateToken, async (req, res) => {
             {
                 password: hashedPassword,
             }
-          );
-        
+        );
+
         console.log("Password changed:", req.body.email);
-        res.render('updateUserPassword.ejs', { role: res.user.role, message:`Password changed successfully` });
+
+        menuPage(
+            "Password change",
+            "Password changed successfully",
+            [
+                { description: "Continue", route: "/" }
+            ],
+            res
+        );
     } catch (err) {
         console.log("err:", err.message);
-        res.render('updateUserPassword.ejs', { role: res.user.role, message:`Change failed: ${err.message}` });
+        menuPage(
+            "Password change",
+            `Password changed failed: ${err.message}`,
+            [
+                { description: "Continue", route: "/" }
+            ],
+            res
+        );
     }
 })
 
