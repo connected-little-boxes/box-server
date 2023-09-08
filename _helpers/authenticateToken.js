@@ -9,13 +9,13 @@ async function authenticateToken(req, res, next) {
 
   // if the cookie is not set, return an unauthorized error
   if (!token) {
-    console.log("Token cookie not found");
+    console.log("Authentication: Token cookie not found");
     res.redirect('/login');
     return;
   }
 
   if(token == "logged out"){
-    console.log("Token cookie logged out");
+    console.log("Authentication: Token cookie logged out");
     res.redirect('/login');
     return;
   }
@@ -31,7 +31,7 @@ async function authenticateToken(req, res, next) {
     // or if the signature does not match
     payload = jwt.verify(token, process.env.ACTIVE_TOKEN_SECRET);
   } catch (e) {
-    console.log("jwt failed", e.message);
+    console.log("Authentication: jwt verify failed", e.message);
     res.redirect('/login');
     return;
   }
@@ -40,7 +40,7 @@ async function authenticateToken(req, res, next) {
   const user = await User.findOne({ _id: payload.id });
 
   if (user === null) {
-    console.log("User not found");
+    console.log("Authentication: User not found");
     res.redirect('/login');
     return;
   }
@@ -57,7 +57,7 @@ async function authenticateToken(req, res, next) {
 
   // console.log(`Token seconds left:${tokenSecondsLeft}`);
   if (tokenSecondsLeft < jwtRenewSeconds) {
-    console.log("Making a new token..");
+    console.log("Authentication: Making a new token..");
     // need to make a new token
     userDetails = {
       id: user.id

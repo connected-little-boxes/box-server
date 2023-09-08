@@ -19,6 +19,7 @@ const Connection = require('./models/connection');
 const Installation = require('./models/installation');
 const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessageItems, ProcessManagerMessages, ProcessManagers } = require('./models/ProcessManager');
 const User = require('./models/user');
+const tinyLog = require('./_helpers/tinyLog');
 const { Console } = require('console');
 
 class Manager {
@@ -33,7 +34,7 @@ class Manager {
     }
 
     startMqttPromise(hostUrl, options) {
-        console.log(`Connecting to MQTT server at: ${hostUrl}`);
+        tinyLog(`Connecting to MQTT server at: ${hostUrl}`);
         return new Promise((kept, broken) => {
             const mqttClient = mqtt.connect(hostUrl, options);
             mqttClient.on("connect", () => kept(mqttClient));
@@ -43,7 +44,7 @@ class Manager {
 
     async doDeviceRegistration(messageObject) {
 
-        console.log("Registering a device from: ", JSON.stringify(messageObject));
+        tinyLog("Registering a device from: ", JSON.stringify(messageObject));
 
         var device = null;
 
@@ -58,7 +59,7 @@ class Manager {
                         processes: messageObject.processes,
                         sensors: messageObject.sensors
                     });
-                    console.log("Device updated");
+                    tinyLog("Device updated");
                 }
                 else {
                     device = new Device({
@@ -70,11 +71,11 @@ class Manager {
                         sensors: messageObject.sensors
                     });
                     await device.save();
-                    console.log("Device created");
+                    tinyLog("Device created");
                 }
             }
             catch (err) {
-                console.log('Device registration failed:', err.message);
+                tinyLog('Device registration failed:', err.message);
                 return false;
             }
 
@@ -83,13 +84,13 @@ class Manager {
             await this.mqttClient.publish(devCommandTopic, '{"process":"registration","command":"register"}');
         }
         else {
-            console.log('Device registration failed: missing device name');
+            tinyLog('Device registration failed: missing device name');
         }
     }
 
     async doDeviceConnected(messageObject) {
 
-        console.log("Connecting a device from: ", JSON.stringify(messageObject));
+        tinyLog("Connecting a device from: ", JSON.stringify(messageObject));
 
         // Log the connection
 
@@ -120,7 +121,7 @@ class Manager {
                     if (commandText.length == 0) {
                         continue;
                     }
-                    console.log("   sending boot command:", commandText);
+                    tinyLog("   sending boot command:", commandText);
                     await this.mqttClient.publish(devCommandTopic, commandText);
                 }
             }
@@ -153,7 +154,7 @@ class Manager {
         const hours = date.getHours();
         const mins = date.getMinutes();
 
-        console.log(`${hours}:${mins} Got a response: ${JSON.stringify(messageObject)} from:${deviceName}`);
+        tinyLog(`${hours}:${mins} Got a response: ${JSON.stringify(messageObject)} from:${deviceName}`);
 
         var device = null;
 
@@ -168,12 +169,12 @@ class Manager {
     }
 
     async getInstallation() {
-        console.log("Loading installation configuration");
+        tinyLog("Loading installation configuration");
 
         let installation = await Installation.findOne({ version: process.env.INSTALLATION_VERSION });
 
         if (installation === null) {
-            console.log("Creating a new installation record");
+            tinyLog("Creating a new installation record");
             installation = new Installation(
                 {
                     version: process.env.INSTALLATION_VERSION,
@@ -185,22 +186,22 @@ class Manager {
                 }
             );
             await installation.save();
-            console.log("  new record saved");
+            tinyLog("  new record saved");
         }
         else {
-            console.log("  got configuration:", installation.name);
+            tinyLog("  got configuration:", installation.name);
         }
 
         return installation;
     }
 
     async addPrinter(printerDestination) {
-        console.log("Adding a printer destination:", printerDestination);
+        tinyLog("Adding a printer destination:", printerDestination);
 
         let installation = await this.getInstallation();
 
         if (installation.printerDestinations.includes(printerDestination)) {
-            console.log("  printer already present");
+            tinyLog("  printer already present");
             return;
         }
 
@@ -211,7 +212,9 @@ class Manager {
 
     async updateProcessManagers() {
 
-        console.log("Updating process manager from JSON");
+        tinyLog("Updating process manager from JSON");
+
+        tinyLog("*OFF*");
 
         let filePath = "./JSON/deviceprocesscommands.json";
         let jsonData = null;
@@ -220,27 +223,29 @@ class Manager {
             const data = fs.readFileSync(filePath, 'utf8');
             jsonData = JSON.parse(data);
         } catch (err) {
-            console.error('Error reading or parsing file:', err);
+            tinyLog('Error reading or parsing file:', err);
             return false;
         }
 
         let processes = jsonData.processes;
 
-        console.log(`  ..file loaded`);
+        tinyLog('*OFF*');
+
+        tinyLog(`  ..file loaded`);
 
         try {
             for (let procIndex = 0; procIndex < processes.length; procIndex++) {
                 let process = processes[procIndex];
 
-                console.log(`  ..working on ${process.name}`);
+                tinyLog(`  ..working on ${process.name}`);
 
                 let storedProcess = await ProcessManagers.findOne({ name: process.name });
 
                 if (storedProcess) {
-                    console.log(`  ..updating process manager for ${process.name}`);
+                    tinyLog(`  ..updating process manager for ${process.name}`);
                 }
                 else {
-                    console.log(`  ..creating a process manager for ${process.name}`);
+                    tinyLog(`  ..creating a process manager for ${process.name}`);
                     storedProcess = ProcessManagers({
                         name: process.name,
                         desc: process.desc
@@ -252,13 +257,13 @@ class Manager {
 
                 for (let commandIndex = 0; commandIndex < commands.length; commandIndex++) {
                     let command = commands[commandIndex];
-                    console.log(`     ..command ${command.name}`);
+                    tinyLog(`     ..command ${command.name}`);
                     let storedCommand = await ProcessManagerCommands.findOne({ name: command.name });
                     if (storedCommand) {
-                        console.log(`    ..updating the command`);
+                        tinyLog(`    ..updating the command`);
                     }
                     else {
-                        console.log(`    ..creating new command`);
+                        tinyLog(`    ..creating new command`);
                         storedCommand = ProcessManagerCommands(
                             {
                                 name: command.name,
@@ -272,7 +277,7 @@ class Manager {
                     for (let itemsIndex = 0; itemsIndex < command.items.length; itemsIndex++) {
                         let item = command.items[itemsIndex];
                         let name = command.name;
-                        console.log(`        ..item ${name}`);
+                        tinyLog(`        ..item ${name}`);
 
                         let storedItem = await ProcessManagerCommandItems.findOne({
                             $and:
@@ -283,10 +288,10 @@ class Manager {
                         });
 
                         if (storedItem) {
-                            console.log(`        ..updating the item`);
+                            tinyLog(`        ..updating the item`);
                         }
                         else {
-                            console.log(`        ..creating new item`);
+                            tinyLog(`        ..creating new item`);
                             storedItem = ProcessManagerCommandItems(
                                 {
                                     name: name,
@@ -303,18 +308,22 @@ class Manager {
                 }
             };
         } catch (err) {
-            console.error('Error building the data:', err);
+            tinyLog('Error building the data:', err);
             return false;
         }
+
+        tinyLog('*ON*');
+
+        tinyLog("... done");
     }
 
     async addDisplay(displayDestination) {
-        console.log("Adding a display destination:", displayDestination);
+        tinyLog("Adding a display destination:", displayDestination);
 
         let installation = await this.getInstallation();
 
         if (installation.displayDestinations.includes(displayDestination)) {
-            console.log("  display already present");
+            tinyLog("  display already present");
             return;
         }
 
@@ -326,7 +335,7 @@ class Manager {
     async sendMessageToPrinter(message, printer) {
         let printcommand = '{"process":"printer","command":"print","options":"datestamp","text":"' + message + '"}';
         let printdest = process.env.MQTT_TOPIC_PREFIX + "/command/" + printer;
-        console.log("        ", printcommand, " to ", printdest);
+        tinyLog("        ", printcommand, " to ", printdest);
         this.mqttClient.publish(printdest, printcommand);
     }
 
@@ -337,7 +346,7 @@ class Manager {
     }
 
     async printMessage(message) {
-        console.log("Printing a message:", message);
+        tinyLog("Printing a message:", message);
 
         let installation = await this.getInstallation();
 
@@ -347,7 +356,7 @@ class Manager {
     async sendMessageToDisplay(message, display) {
         let displayCommand = '{"process":"max7219","command":"display","options":"scroll,sticky","text":"' + message + '"}';
         let displaydest = process.env.MQTT_TOPIC_PREFIX + '/command/' + display;
-        console.log("        ", displayCommand, " to ", displaydest);
+        tinyLog("        ", displayCommand, " to ", displaydest);
         this.mqttClient.publish(displaydest, displayCommand);
     }
 
@@ -358,7 +367,7 @@ class Manager {
     }
 
     async displayMessage(message) {
-        console.log("Displaying a message:", message);
+        tinyLog("Displaying a message:", message);
 
         let installation = await this.getInstallation();
 
@@ -366,7 +375,7 @@ class Manager {
     }
 
     async showMessageToAll(message) {
-        console.log("Showing a message to all:", message);
+        tinyLog("Showing a message to all:", message);
 
         let installation = await this.getInstallation();
 
@@ -377,7 +386,7 @@ class Manager {
     async sendJSONCommandToDevice(deviceName, command) {
         let topic = process.env.MQTT_TOPIC_PREFIX + '/command/' + deviceName;
 
-        console.log(`Sending:${command} to:${topic}`);
+        tinyLog(`Sending:${command} to:${topic}`);
 
         // validate the command JSON and add a sequence number
         let commandObject = null;
@@ -387,7 +396,7 @@ class Manager {
             command = JSON.stringify(commandObject);
         }
         catch (err) {
-            console.log(`Invalid json command:${command} error:${err} for:${deviceName}`);
+            tinyLog(`Invalid json command:${command} error:${err} for:${deviceName}`);
             throw (err);
         }
 
@@ -407,26 +416,26 @@ class Manager {
     }
 
     async sendConsoleCommandToDevice(deviceName, command) {
-        console.log('Sending console command:', deviceName);
+        tinyLog('Sending console command:', deviceName);
         let jsonCommand = '{"process":"console","command":"remote","cmd":"' + command + '"}';
         this.sendJSONCommandToDevice(deviceName, jsonCommand);
     }
 
     async restartDevice(deviceName) {
-        console.log('Restarting:', deviceName);
+        tinyLog('Restarting:', deviceName);
         this.sendJSONCommandToDevice(deviceName, '{"process":"console","command":"remote","cmd":"restart"}');
     }
 
     async startDeviceOTAupdate(deviceName) {
-        console.log('Updating:', deviceName);
+        tinyLog('Updating:', deviceName);
         this.sendJSONCommandToDevice(deviceName, '{"process":"console","command":"remote","cmd":"otaupdate"}');
     }
 
     async sendCommandToDevices(devices, command) {
-        console.log(`Sending command:${command}`);
+        tinyLog(`Sending command:${command}`);
 
         devices.forEach(device => {
-            console.log(`    to:${device.name}`);
+            tinyLog(`    to:${device.name}`);
             this.sendJSONCommandToDevice(device.name, command);
         });
     }
@@ -474,7 +483,7 @@ class Manager {
         const hours = date.getHours();
         const mins = date.getMinutes();
 
-        console.log(`${hours}:${mins} Received a packet:{messageString} on topic {topic}`);
+        tinyLog(`${hours}:${mins} Received a packet:{messageString} on topic {topic}`);
 
         let messageObject = null;
 
@@ -482,7 +491,7 @@ class Manager {
             messageObject = JSON.parse(messageString);
         }
         catch (err) {
-            console.log("Invalid incoming json: " + err);
+            tinyLog("Invalid incoming json: " + err);
             return;
         }
 
@@ -503,7 +512,7 @@ class Manager {
         const adminUser = await User.findOne({ email: process.env.INITIAL_ADMIN_USERNAME });
 
         if (adminUser == null) {
-            console.log(`  Admin user not registered`);
+            tinyLog(`  Admin user not registered`);
             const hashedPassword = await bcrypt.hash(process.env.INITIAL_ADMIN_PASSWORD, 10);
             const user = new User(
                 {
@@ -513,12 +522,12 @@ class Manager {
                     email: process.env.INITIAL_ADMIN_USERNAME
                 });
             await user.save();
-            console.log("  Admin user successfully registered");
+            tinyLog("  Admin user successfully registered");
         }
     }
 
     async connectServices() {
-        console.log("Connecting services");
+        tinyLog("Connecting services");
 
         this.sequenceNumber = 0;
 
@@ -530,12 +539,14 @@ class Manager {
 
         await this.addPrinter("CLB-b00808");
         await this.addDisplay("CLB-3030da");
-        await this.updateProcessManagers();
+        // Only do this when the process managers have changed - which is not very often
+        // May make this an admin option in a later release
+        //await this.updateProcessManagers();
         await this.checkForAdminUser();
     }
 
     async startServices() {
-        console.log("Starting services");
+        tinyLog("Starting services");
 
         let promiseList = [];
 

@@ -35,6 +35,7 @@ const stages = {
       `Other settings will be downloaded from the internet and used to connect your device to the server.`
     ],
     inputFields: [
+      { displayName: "Device Name", deviceName: "friendlyName", type: "text", allowEmpty: false, loadType: "fromDevice" },
       { displayName: "WiFi SSID", deviceName: "wifissid1", type: "text", allowEmpty: false, loadType: "fromDevice" },
       { displayName: "WiFi Password", deviceName: "wifipwd1", type: "password", allowEmpty: true, loadType: "fromDevice" },
       { displayName: "Number of X pixels", deviceName: "noofxpixels", type: "number", allowEmpty: false, loadType: "fromDevice" },
@@ -54,13 +55,25 @@ const stages = {
       { buttonText: "Retry", buttonDest: doAttemptConnection }
     ]
   },
+  PixelTest: {
+    description: ["*Pixel test",
+      `Wait for the device to reset. Then click the "Test pixels" button. The pixels should turn blue. If they wait a while and try again.`,
+      `If they still don't turn blue press the Pixels are not blue button to retry.`,
+      `If the pixels do turn blue (Yay!) press the Pixels blue button`],
+    inputFields: [
+    ],
+    buttons: [
+      { buttonText: "Test pixels", buttonDest: doTestPixels },
+      { buttonText: "Pixels not blue", buttonDest: doConnectToDevice },
+      { buttonText: "Pixels are blue", buttonDest: doTestPassed }
+    ]
+  },
   ConfigSuccess: {
     description: ["*Configuration complete",
       'The device has been configured as a Connected Little Box.',
       'You will find it listed in your devices.'],
     inputFields: [],
     buttons: [
-      { buttonText: "Done", buttonDest: doGoHome }
     ]
   }
 }
@@ -79,6 +92,10 @@ async function doConnectToDevice() {
 
 async function doReconfigurePixels() {
   await selectStage(stages.PixelConfig);
+}
+
+async function doTestPassed() {
+  await selectStage(stages.ConfigSuccess);
 }
 
 async function doTestPixels() {
@@ -112,9 +129,11 @@ async function doConfigBox() {
       let loadType = field.loadType;
       switch (loadType) {
         case "localValue":
-          userEnteredFriendlyName = value;
           break;
         case "fromDevice":
+          if (field.deviceName == "friendlyName") {
+            userEnteredFriendlyName = value;
+          }
           if ((field.type != "password") ||
             (field.type == "password" && value != "")) {
             let command = field.deviceName + "=" + value;
@@ -133,7 +152,7 @@ async function doConfigBox() {
 
   let deviceName = await consoleIO.performCommand("mqttdevicename");
 
-  let fullURL = `${hostAddress}/connect/initialSettings.json`;
+  let fullURL = `${hostAddress}/connect/initialSettings.json/${deviceName}/${userEnteredFriendlyName}`;
 
   addLineToLog("Getting setting information from the server");
 
@@ -161,7 +180,7 @@ async function doConfigBox() {
   await consoleIO.performCommand("restart");
   addLineToLog("Device reset");
 
-  selectStage(stages.ConfigSuccess);
+  selectStage(stages.PixelTest);
 }
 
 

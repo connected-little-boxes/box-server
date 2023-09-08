@@ -14,22 +14,31 @@
     <div class="container mb-2 mt-2">
         <h1 class="mb-4">Connected Little Boxes</h1>
         <h2 class="mb-4">
-            <%= name %>
+            Admin: <%= name %>
         </h2>
         <div class="container mb-4">
-            <a href="/connect/wiFi" class="btn btn-primary mb-4 btn-block w-100">Configure your box over WiFi</a>
+            <a href="<%= host %>hardware/flash" class="btn btn-primary mb-4 btn-block">Flash a box with new firmware</a>
         </div>
         <div class="container mb-4">
-            <a href="/connect/usb" class="btn btn-primary mb-4 btn-block w-100">Configure your box by plugging it into your PC</a>
+            <a href="/deviceSelect" class="btn btn-primary mb-4 btn-block">Manage all Boxes</a>
         </div>
         <div class="container mb-4">
-            <a href="/deviceSelect" class="btn btn-primary mb-4 btn-block">Manage your Boxes</a>
+            <a href="/command/commandGroupSelect" class="btn btn-primary mb-4 btn-block">Manage all Command Groups</a>
         </div>
         <div class="container mb-4">
-            <a href="/command/commandGroupSelect" class="btn btn-primary mb-4 btn-block">Manage Command Groups</a>
+            <a href="/processManager/Select" class="btn btn-primary mb-4 btn-block">Process Managers</a>
+        </div>
+        <div class="container mb-4">
+            <a href="/lightShow" class="btn btn-primary mb-4  btn-block">Light Show</a>
         </div>
         <div class="container mb-4">
             <a href="/changePassword" class="btn btn-primary mb-4  btn-block">Change password</a>
+        </div>
+        <div class="container mb-4">
+            <a href="/register" class="btn btn-primary mb-4  btn-block">Register a new user</a>
+        </div>
+        <div class="container mb-4">
+            <a href="/updateUserPassword" class="btn btn-primary mb-4  btn-block">Change a user password</a>
         </div>
         <div class="container mb-4">
             <a href="/logout" class="btn btn-primary mb-4 btn-block">Logout</a>

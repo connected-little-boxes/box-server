@@ -7,7 +7,16 @@ const authenticateToken = require('../_helpers/authenticateToken');
 
 // define the home page route
 router.get('/', authenticateToken, async function (req, res) {
-  let userDevices = await Device.find({ owner: { $eq: res.user._id } });
+
+  let userDevices;
+
+  if (res.user.role == "admin") {
+    userDevices = await Device.find();
+  }
+  else {
+    userDevices = await Device.find({ owner: { $eq: res.user._id } });
+  }
+
   userDevices.sort((a, b) => {
     let textA = (a.friendlyName ? a.friendlyName : a.name).toUpperCase();
     let textB = (b.friendlyName ? b.friendlyName : b.name).toUpperCase();

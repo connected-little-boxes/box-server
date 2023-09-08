@@ -3,8 +3,10 @@ const express = require('express');
 const router = express.Router();
 const Device = require('../models/device');
 const Manager = require('../manager');
+const User = require('../models/user');
 const authenticateToken = require('../_helpers/authenticateToken');
 const getDeviceByDeviceName = require('../_helpers/getDeviceByDeviceName');
+const validateFriendlyName = require('../_helpers/validateFriendlyName');
 const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessageItems, ProcessManagerMessages, ProcessManagers } = require('../models/ProcessManager');
 
 // define the home page route
@@ -74,6 +76,13 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
   let deviceProcessManagers = device.processManagers;
   let managers = [];
 
+  let ownerName = "Unknown";
+  let owner = await User.findOne({_id:device.owner});
+
+  if(owner){
+    ownerName = owner.name;
+  }
+
   // We are going to display something for each process manager that
   // will allow the user to select which processes are active in the remote 
   // device. The ProcessManager table contains a list of all the process managers
@@ -92,11 +101,10 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
       description: systemProcessManager.description,
       active: processActive
     }
-
     managers.push(processDescription);
   });
 
-  res.render('device.ejs', { device: res.device, managers: managers });
+  res.render('device.ejs', { device: res.device, managers: managers, owner: ownerName});
 });
 
 router.post('/:name/:friendlyName', authenticateToken, getDeviceByDeviceName, async (req, res) => {
@@ -105,8 +113,8 @@ router.post('/:name/:friendlyName', authenticateToken, getDeviceByDeviceName, as
   // not already been entered - if it has we will add a unique number on the end
 
   let orignalFriendlyName = req.params.friendlyName;
-
   let editedFriendlyName = req.body.friendlyName;
+  let owner = res.user;
 
   let proposedFriendlyName;
 
@@ -117,31 +125,7 @@ router.post('/:name/:friendlyName', authenticateToken, getDeviceByDeviceName, as
   else{
     // Check to make sure that the user hasn't entered a name that
     // clashes with an existing one
-
-    proposedFriendlyName = editedFriendlyName;
-
-    let friendlyNameIndex = 1;
-
-    while (true) {
-
-      // search for a device with the friendly name
-
-      let device = await Device.findOne({
-        $and:
-          [
-            { owner: { $eq: res.user._id } },
-            { friendlyName: { $eq: proposedFriendlyName } }
-          ]
-      });
-
-      if (device) {
-        proposedFriendlyName = `${editedFriendlyName}(${friendlyNameIndex})`;
-        friendlyNameIndex++;
-      }
-      else {
-        break;
-      }
-    }
+    proposedFriendlyName = await validateFriendlyName(editedFriendlyName,owner._id);
   }
 
   await res.device.updateOne(

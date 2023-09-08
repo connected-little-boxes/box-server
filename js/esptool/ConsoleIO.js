@@ -67,11 +67,11 @@ class ConsoleIO {
             }
             else {
               // if the command contains an equals it is a setting command
-              if(text.includes('=')){
+              if (text.includes('=')) {
                 this.setState(ConsoleStates.waitingforSettingCommandCompete);
               }
               else {
-              this.setState(ConsoleStates.waitingForValueCommandResponse);
+                this.setState(ConsoleStates.waitingForValueCommandResponse);
               }
             }
             break;
@@ -93,6 +93,13 @@ class ConsoleIO {
 
       case ConsoleStates.waitingForValueCommandResponse:
 
+        if (text == "done") {
+          this.setState(ConsoleStates.starting);
+          this.kept("done");
+          this.result = null;
+          return;
+        }
+
         if (text == "setting not found") {
           this.setState(ConsoleStates.starting);
           this.broken(`Setting ${this.command} not found`);
@@ -103,9 +110,8 @@ class ConsoleIO {
         let items = text.split('=');
 
         if (items.length == 1) {
-          // value not present
-          this.setState(ConsoleStates.starting);
-          this.broken(`Value for ${this.command} missing`);
+          // value not present - might be a command
+          this.result = "";
           return;
         }
         else {
@@ -132,9 +138,11 @@ class ConsoleIO {
             let responseObject = JSON.parse(text);
             if (responseObject.error == 0) {
               // no error - promise has been kept
+              this.setState(ConsoleStates.starting);
               this.kept(responseObject.message);
             }
             else {
+              this.setState(ConsoleStates.starting);
               this.broken(text);
               return;
             }
