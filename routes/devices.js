@@ -6,8 +6,10 @@ const Manager = require('../manager');
 const User = require('../models/user');
 const authenticateToken = require('../_helpers/authenticateToken');
 const getDeviceByDeviceName = require('../_helpers/getDeviceByDeviceName');
+const menuPage = require('../_helpers/menuPage');
 const validateFriendlyName = require('../_helpers/validateFriendlyName');
 const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessageItems, ProcessManagerMessages, ProcessManagers } = require('../models/ProcessManager');
+const buildUserDescriptions = require('../_helpers/buildUserDescriptions');
 
 // define the home page route
 router.get('/', authenticateToken, async function (req, res) {
@@ -104,10 +106,12 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
     managers.push(processDescription);
   });
 
-  res.render('device.ejs', { device: res.device, managers: managers, owner: ownerName});
+  let role = res.user.role;
+
+  res.render('device.ejs', { device: res.device, managers: managers, owner: ownerName, role:role});
 });
 
-router.post('/:name/:friendlyName', authenticateToken, getDeviceByDeviceName, async (req, res) => {
+router.post('/updateDetails/:name/:friendlyName', authenticateToken, getDeviceByDeviceName, async (req, res) => {
 
   // this is the friendly name that we would like to use - need to make sure it has 
   // not already been entered - if it has we will add a unique number on the end
@@ -138,5 +142,61 @@ router.post('/:name/:friendlyName', authenticateToken, getDeviceByDeviceName, as
   );
   res.redirect('/devices/' + res.device.name);
 })
+
+
+router.get('/moveToNewOwner/:device_id', authenticateToken, async function (req, res) {
+
+  let device_id = req.params.device_id;
+
+  let device = await Device.findOne(
+      { _id: device_id }
+  );
+
+  let owner = await User.findOne({ _id: device.owner });
+
+  let users = await buildUserDescriptions(owner._id, owner.name);
+
+  res.render("deviceMove.ejs", { device: device, ownerName: owner.name, users: users });
+});
+
+router.post('/moveToNewOwner/:device_id', authenticateToken, async function (req, res) {
+
+  let owner_id = req.body.user;
+
+  let device_id = req.params.device_id;
+
+  try {
+
+      let device = await Device.findOne(
+          { _id: device_id }
+      );
+
+      await device.updateOne(
+          { owner: owner_id }
+      );
+  }
+  catch (error) {
+      menuPage(
+          "Device move",
+          `Move failed: ${error}`,
+          [
+              { description: "Continue", route: "/deviceSelect/" }
+          ],
+          res
+      );
+  }
+
+  menuPage(
+      "Device move",
+      "Move completed successfully",
+      [
+        { description: "Continue", route: "/deviceSelect/" }
+      ],
+      res
+  );
+});
+
+
+
 
 module.exports = router;

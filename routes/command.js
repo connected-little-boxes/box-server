@@ -5,6 +5,7 @@ const Command = require('../models/Command');
 const CommandGroup = require('../models/CommandGroup');
 const Manager = require('../manager');
 const authenticateToken = require('../_helpers/authenticateToken');
+const buildUserDescriptions = require('../_helpers/buildUserDescriptions');
 const menuPage = require('../_helpers/menuPage');
 const qrcode = require('qrcode');
 const Uuid = require('uuid');
@@ -115,15 +116,12 @@ router.get('/commandGroupSelect', authenticateToken, async function (req, res) {
 
     // find all the groups owned by this user
     let commandGroups;
-    let commandPage;
 
     if (user.role == "admin") {
         commandGroups = await CommandGroup.find();
-        commandPage = "commandGroupAdminSelect.ejs";
     }
     else {
         commandGroups = await CommandGroup.find({ owner: user._id });
-        commandPage = "commandGroupSelect.ejs";
     }
 
     commandGroups.sort((a, b) => {
@@ -132,7 +130,7 @@ router.get('/commandGroupSelect', authenticateToken, async function (req, res) {
         return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
     });
 
-    res.render(commandPage, { username: user.name, commandGroups: commandGroups });
+    res.render("commandGroupSelect.ejs", { username: user.name, role:user.role, commandGroups: commandGroups });
 });
 
 router.get('/commandGroupNew', authenticateToken, async function (req, res) {
@@ -175,33 +173,6 @@ router.get('/commandGroupEdit/:commandGroup_id', authenticateToken, async functi
 
     res.render("commandGroupEdit.ejs", { commandGroup: commandGroup, commands: commands });
 });
-
-
-async function buildUserDescriptions(owner_id, owner_name) {
-
-    let userDescriptions = [];
-
-
-    let users = await User.find();
-
-    for (let i = 0; i < users.length; i++) {
-        let user = users[i];
-        if (user._id.equals(owner_id)) {
-            continue;
-        }
-        userDescriptions.push({ _id: String(user._id), name: user.name });
-    };
-
-    userDescriptions.sort((a, b) => {
-        let textA = (a.name).toUpperCase();
-        let textB = (b.name).toUpperCase();
-        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
-    });
-
-    userDescriptions.unshift({ _id: owner_id, name: owner_name });
-
-    return userDescriptions;
-}
 
 
 router.get('/commandGroupMove/:commandGroup_id', authenticateToken, async function (req, res) {

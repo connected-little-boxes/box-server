@@ -1,3 +1,5 @@
+const Device = require('../models/device');
+
 async function validateFriendlyName(editedFriendlyName, owner_id) {
 
     let proposedFriendlyName;

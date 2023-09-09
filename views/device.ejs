@@ -24,20 +24,20 @@
         <div class="card-subtitle text-muted mb-2">
             <p>
                 Version: <%= device.version %>
-                Registered: <%= device.regDate.toLocaleDateString() %>
-                    <%= device.regDate.toLocaleTimeString() %>
-                        Last connected: <%= device.lastConnectedDate.toLocaleDateString() %>
-                            <%= device.lastConnectedDate.toLocaleTimeString() %>
-                                <br>
-                                Last commmand:<%= device.lastCommand %>
+                    Registered: <%= device.regDate.toLocaleDateString() %>
+                        <%= device.regDate.toLocaleTimeString() %>
+                            Last connected: <%= device.lastConnectedDate.toLocaleDateString() %>
+                                <%= device.lastConnectedDate.toLocaleTimeString() %>
                                     <br>
+                                    Last commmand:<%= device.lastCommand %>
+                                        <br>
             </p>
         </div>
         <div class="container">
 
         </div>
 
-        <form action="/devices/<%= device.name %>/<%= device.friendlyName %>" method="POST">
+        <form action="/devices/updateDetails/<%= device.name %>/<%= device.friendlyName %>" method="POST">
 
             <div class="form-group">
                 <label for="friendlyName">Friendly Name</label>
@@ -53,11 +53,14 @@
                 <label for="tags">Tags</label>
                 <input type="text" name="tags" id="tags" class="form-control" value="<%= device.tags %>">
             </div>
+
+
             <div class="form-group">
                 <label for="bootCommands">Boot Commands</label>
                 <textarea rows=5 type="text" name="bootCommands" id="bootCommands"
                     class="form-control"><%= device.bootCommands %></textarea>
             </div>
+
             <button type="submit" class="btn btn-primary mt-4">Update Details</button>
         </form>
 
@@ -93,6 +96,7 @@
                                 <button type="submit" class="btn btn-primary mt-4">Send JSON Command</button>
                             </form>
     </div>
+
     <div class="container mb-4">
         <a href="/deviceSelect" class="btn btn-success mb-4">Done</a>
         <a href="/devices/restart/<%= device.name %>"" class=" btn btn-success mb-4">Restart</a>

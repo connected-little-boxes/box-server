@@ -44,16 +44,8 @@ mgr.startServices().then(() => {
 
   console.log("Services now running....");
 
-  let pageName = "";
-
   app.get('/', authenticateToken, async (req, res) => {
-    if (res.user.role == "admin") {
-      pageName = 'adminindex.ejs';
-    }
-    else {
-      pageName = "index.ejs";
-    }
-    res.render(pageName, { name: res.user.name, role: res.user.role, host: process.env.HOST_ADDRESS });
+    res.render("index.ejs", { name: res.user.name, role: res.user.role, host: process.env.HOST_ADDRESS });
   });
 
   app.use('/public', express.static('public'));

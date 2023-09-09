@@ -14,7 +14,7 @@ async function getDeviceByDeviceName(req, res, next) {
     device = await Device.findOne({ name: req.params.name });
 
     if (device === null) {
-      return res.status(404).json({ message: `Cannot find device ${req.params.name}` });
+      return res.status(404).json({ message: `GetDeviceByName: cannot find device ${req.params.name}` });
     }
 
     let owner_id = device.owner;
@@ -22,7 +22,7 @@ async function getDeviceByDeviceName(req, res, next) {
 
     if (!owner_id.equals(user_id)) {
       if (user.role != "admin") {
-        return res.status(404).json({ message: `User does not own the device ${req.params.name}` });
+        return res.status(404).json({ message: `GetDeviceByName: user does not own the device ${req.params.name}` });
       }
     }
   }

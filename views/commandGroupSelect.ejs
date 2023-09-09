@@ -31,6 +31,9 @@
             </p>
             <a href="/command/commandGroupDeleteConfirm/<%= commandGroup._id %>" class="btn btn-primary">Delete</a>
                 <a href="/command/commandGroupEdit/<%= commandGroup._id %>" class="btn btn-primary">Edit</a>
+                <% if (role=="admin"){ %>
+                    <a href="/command/commandGroupMove/<%= commandGroup._id %>" class="btn btn-primary">Change Owner</a>
+                    <% } %>
                 <hr />
             </div>
             <% }) %>

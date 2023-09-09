@@ -13,7 +13,7 @@
 <body>
     <div class="container mb-2 mt-2">
         <h1 class="mb-4">Connected Little Boxes</h1>
-        <h2 class="mb-4">Devices</h2>                
+        <h2 class="mb-4">Devices</h2>
         <div class="form-group">
             <form action="/deviceSelect" method="POST">
                 <div class="d-flex justify-content-between mt-2 mb-4">
@@ -24,7 +24,7 @@
 
         <div class="container">
             <% devices.forEach(device=> { %>
-                <div class="card mb-2 mt-2">
+                <div class="container mb-2 mt-2">
                     <h4 class="card-title">
                         <% var name; if (device.friendlyName !="" ) name=device.friendlyName; else name=device.name; %>
                             <%= name %>
@@ -35,11 +35,15 @@
                                     Last seen:<%= device.lastResponseDate.toLocaleDateString() %>
                                         <%= device.lastResponseDate.toLocaleTimeString() %>
                     </div>
-                    <a href="devices/<%= device.name %>" class="btn btn-primary btn-block">Manage Device</a>
-                </div>
+                    <a href="devices/<%= device.name %>" class="btn btn-primary">Edit</a>
+                    <% if (role=="admin"){ %>
+                        <a href="/devices/moveToNewOwner/<%= device._id %>" class="btn btn-primary">Change Owner</a>
+                        <% } %>
+                    <hr />
+                    </div>
                 <% }) %>
-                <a href="/" class="btn btn-primary mt-2 mb-4 btn-block">Done</a>
-            </div>
+                    <a href="/" class="btn btn-primary mt-2 mb-4 btn-block">Done</a>
+        </div>
 </body>
 
 </html>
