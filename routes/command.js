@@ -114,18 +114,18 @@ router.get('/commandGroupSelect', authenticateToken, async function (req, res) {
     let user = res.user;
 
     // find all the groups owned by this user
-    let commandGroups ;
+    let commandGroups;
     let commandPage;
 
     if (user.role == "admin") {
         commandGroups = await CommandGroup.find();
-        commandPage="commandGroupAdminSelect.ejs";
+        commandPage = "commandGroupAdminSelect.ejs";
     }
     else {
         commandGroups = await CommandGroup.find({ owner: user._id });
-        commandPage="commandGroupSelect.ejs";
+        commandPage = "commandGroupSelect.ejs";
     }
-  
+
     commandGroups.sort((a, b) => {
         let textA = (a.name).toUpperCase();
         let textB = (b.name).toUpperCase();
@@ -186,10 +186,10 @@ async function buildUserDescriptions(owner_id, owner_name) {
 
     for (let i = 0; i < users.length; i++) {
         let user = users[i];
-        if(user._id.equals(owner_id)){
+        if (user._id.equals(owner_id)) {
             continue;
         }
-        userDescriptions.push({id:user._id, name:user.name});
+        userDescriptions.push({ _id: String(user._id), name: user.name });
     };
 
     userDescriptions.sort((a, b) => {
@@ -198,7 +198,7 @@ async function buildUserDescriptions(owner_id, owner_name) {
         return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
     });
 
-    userDescriptions.unshift({id:owner_id, name:owner_name});
+    userDescriptions.unshift({ _id: owner_id, name: owner_name });
 
     return userDescriptions;
 }
@@ -212,17 +212,42 @@ router.get('/commandGroupMove/:commandGroup_id', authenticateToken, async functi
         { _id: commandGroup_id }
     );
 
-    let owner = await User.findOne({_id:commandGroup.owner});
+    let owner = await User.findOne({ _id: commandGroup.owner });
 
-    let users = await buildUserDescriptions(owner._id,owner.name);
+    let users = await buildUserDescriptions(owner._id, owner.name);
 
-    res.render("commandGroupMove.ejs", { commandGroup:commandGroup, ownerName:owner.name, users: users});
+    res.render("commandGroupMove.ejs", { commandGroup: commandGroup, ownerName: owner.name, users: users });
 });
 
 router.post('/commandGroupMove/:commandGroup_id', authenticateToken, async function (req, res) {
 
+    let owner_id = req.body.user;
+
+    let commandGroup_id = req.params.commandGroup_id;
+
+    try {
+
+        let commandGroup = await CommandGroup.findOne(
+            { _id: commandGroup_id }
+        );
+
+        await commandGroup.updateOne(
+            { owner: owner_id }
+        );
+    }
+    catch (error) {
+        menuPage(
+            "Command group move",
+            `Move failed: ${error}`,
+            [
+                { description: "Continue", route: "/command/commandGroupSelect/" }
+            ],
+            res
+        );
+    }
+
     menuPage(
-        "Command group moved",
+        "Command group move",
         "Move completed successfully",
         [
             { description: "Continue", route: "/command/commandGroupSelect/" }
@@ -479,15 +504,15 @@ router.post('/commandEdit/:commandGroup_id/:command_id', authenticateToken, asyn
     );
 
     for (let key in req.body) {
-        if(key.startsWith('message_') && key.endsWith('_messageName') ){
+        if (key.startsWith('message_') && key.endsWith('_messageName')) {
             let body = req.body[key];
             console.log(`Processing: ${body}`);
             // have a message value to update
             let content = key.split('_');
             let id = content[1];
-            message = await CommandDeviceMessage.findOne({_id:id});
-            
-            if(message){
+            message = await CommandDeviceMessage.findOne({ _id: id });
+
+            if (message) {
                 // got a message to update
                 let name = req.body[`message_${id}_messageName`];
                 let description = req.body[`message_${id}_description`];
@@ -501,7 +526,7 @@ router.post('/commandEdit/:commandGroup_id/:command_id', authenticateToken, asyn
                             { friendlyName: { $eq: deviceName } }
                         ]
                 });
-        
+
                 await CommandDeviceMessage.updateOne(
                     { _id: id },
                     {

@@ -154,17 +154,19 @@ class Manager {
         const hours = date.getHours();
         const mins = date.getMinutes();
 
-        tinyLog(`${hours}:${mins} Got a response: ${JSON.stringify(messageObject)} from:${deviceName}`);
-
         var device = null;
 
         device = await Device.findOne({ name: deviceName });
 
         if (device != null) {
+            tinyLog(`${hours}:${mins} Got a response: ${JSON.stringify(messageObject)} from:${device.friendlyName}(${deviceName})`);
             await device.updateOne({
                 lastResponse: message,
                 lastResponseDate: Date.now()
             });
+        }
+        else{
+            tinyLog(`${hours}:${mins} Got a response: ${JSON.stringify(messageObject)} from:${deviceName} which is not registered`);
         }
     }
 

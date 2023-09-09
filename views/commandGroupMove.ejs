@@ -23,10 +23,10 @@
     <div class="container mb-4">
         <form action="/command/commandGroupMove/<%= commandGroup._id %>" method="POST">
             <div class="form-group">
-                <label for="userName">User</label>
-                <select class="form-control" name="userName" id="userName">
+                <label for="user">User</label>
+                <select class="form-control" name="user" id="user">
                     <% users.forEach(user=> { %>
-                        <option value="<%=user._id %>">
+                        <option value="<%= user._id %>">
                             <%=user.name %>
                         </option>
                         <% }) %>
