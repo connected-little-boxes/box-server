@@ -1,26 +1,3 @@
-import * as esptooljs from "/js/esptools/bundle.js";
-const ESPLoader = esptooljs.ESPLoader;
-const Transport = esptooljs.Transport;
-
-class configManager {
-  constructor(host)
-  {
-    this.host = host;
-  }
-
-  startConfig(){
-    console.log("here we go....");
-  }
-}
-
-console.log("here we are in the config script....");
-
-function startConfig(host){
-  console.log("hello from start config");
-  doFlash();
-}
-
-/* 
 var device = null;
 var flashConnected = false;
 var terminal = null;
@@ -79,9 +56,10 @@ const stages = {
   }
 }
 
-async function doStart(host) {
+async function doStart() {
   console.log("starting");
-  hostAddress = host;
+  // get the name of the web host
+  hostAddress = window.location.origin;
   await selectStage(stages.ConnectUSB);
 }
 
@@ -178,4 +156,4 @@ async function doFlash() {
 function doGoHome() {
   window.location.replace("/");
 }
- */
+

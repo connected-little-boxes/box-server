@@ -10,7 +10,7 @@
   <title>Connected Little Boxes</title>
 </head>
 
-<body onload= "doStart('<%= host %>');" >
+<body onload= "doStart();" >
   <div class="container mb-4">
     <h3 class="mt-2 mb-2">
       <%= name %>
@@ -30,15 +30,7 @@
   <script src="/js/esptool/stubs.js"></script>
   <script src="/js/simpleterm/terminal.js"></script>
   <script src="/js/configscripts/stageManager.js"></script>
-  <script src="<%=configScript%>" type="module"></script>
-<script>
-  function doStart(host){
-    console.log(`Starting with the host ${host}`);
-
-    let manager = new configManager(host);
-    manager.startConfig();
-  }
-</script>
+  <script src="<%=configScript%>"></script>
   
 </body>
 

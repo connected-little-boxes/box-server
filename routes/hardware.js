@@ -13,7 +13,6 @@ router.get('/flash', authenticateToken, async function (req, res) {
 
 // define the flash page route
 router.get('/esptoolsflash', authenticateToken, async function (req, res) {
-
     res.render("espToolsFlash.ejs");
 });
 

@@ -183,7 +183,6 @@ async function doConfigBox() {
   selectStage(stages.PixelTest);
 }
 
-
 function doGoHome() {
   window.location.replace("/");
 }

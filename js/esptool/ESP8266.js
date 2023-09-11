@@ -146,7 +146,7 @@ class ESP8266ROM extends ESPToolJS {
 
     async flashImages()
     {
-        let imageUrls = ['/js/esptool/firmware/esp8266/firmware_0x0000.bin'];
+        let imageUrls = ['/firmware/flash/esp8266/firmware_0x0000.bin'];
 
         for(let url of imageUrls){
             await this.flashFromUrl(url);
