@@ -589,7 +589,6 @@ class ESPToolJS {
             image = image.slice(ESPToolJS.FLASH_WRITE_SIZE);
             seq++;
             written += block.length;
-            await this.delay(100); // this delay is only here because the software won't work without it.
         }
 
         this.logFunction(`\nWrite completed`);

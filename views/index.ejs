@@ -36,11 +36,9 @@
                     <% } %>
             </a>
         </div>
-        <% if (role=="admin"){ %>
             <div class="container mb-4">
             <a href="<%= host %>hardware/flash" class="btn btn-primary mb-4 btn-block">Flash a box with new firmware</a>
         </div>
-        <% } %>
         <div class="container mb-4">
             <a href="/command/commandGroupSelect" class="btn btn-primary mb-4 btn-block">
                 <% if (role=="admin"){ %>
