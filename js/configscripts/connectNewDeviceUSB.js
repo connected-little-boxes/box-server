@@ -32,12 +32,21 @@ const stages = {
   BoxConfig: {
     description: ["*Configure Device",
       `They are stored securely in the device.`,
-      `Other settings will be downloaded from the internet and used to connect your device to the server.`
+      `Other settings will be downloaded from the internet and used to connect your device to the server.`,
+      `You don't have to set up all the WiFi credentials, but they will be useful if you take the device to a new location or want to connect your box to your phone.`,
+      `You won't see any of the password values, but you can set new ones by entering them into the box`,
+      `Press Submit when you have finished`
     ],
     inputFields: [
       { displayName: "Device Name", deviceName: "friendlyName", type: "text", allowEmpty: false, loadType: "fromDevice" },
-      { displayName: "WiFi SSID", deviceName: "wifissid1", type: "text", allowEmpty: false, loadType: "fromDevice" },
-      { displayName: "WiFi Password", deviceName: "wifipwd1", type: "password", allowEmpty: true, loadType: "fromDevice" },
+      { displayName: "WiFi SSID 1", deviceName: "wifissid1", type: "text", allowEmpty: false, loadType: "fromDevice" },
+      { displayName: "WiFi Password 1", deviceName: "wifipwd1", type: "password", allowEmpty: true, loadType: "fromDevice" },
+      { displayName: "WiFi SSID 2", deviceName: "wifissid2", type: "text", allowEmpty: true, loadType: "fromDevice" },
+      { displayName: "WiFi Password 2", deviceName: "wifipwd2", type: "password", allowEmpty: true, loadType: "fromDevice" },
+      { displayName: "WiFi SSID 3", deviceName: "wifissid3", type: "text", allowEmpty: true, loadType: "fromDevice" },
+      { displayName: "WiFi Password 3", deviceName: "wifipwd3", type: "password", allowEmpty: true, loadType: "fromDevice" },
+      { displayName: "WiFi SSID 4", deviceName: "wifissid4", type: "text", allowEmpty: true, loadType: "fromDevice" },
+      { displayName: "WiFi Password 4", deviceName: "wifipwd4", type: "password", allowEmpty: true, loadType: "fromDevice" },
       { displayName: "Number of X pixels", deviceName: "noofxpixels", type: "number", allowEmpty: false, loadType: "fromDevice" },
       { displayName: "Number of Y pixels", deviceName: "noofypixels", type: "number", allowEmpty: false, loadType: "fromDevice" }
     ],

@@ -14,6 +14,13 @@ async function displayStage(stage) {
     stage.description.forEach(message => {
         let element;
 
+        if (message == "=") {
+            console.log("doing the horizontal rule thing");
+            element = document.createElement("hr");
+            stageElement.appendChild(element);
+            return;
+        }
+
         if (message.startsWith("IMAGE:")) {
             console.log("doing the image thing");
             message = message.slice(6);
@@ -24,7 +31,6 @@ async function displayStage(stage) {
             stageElement.appendChild(image);
             return;
         }
-
 
         if (message.startsWith("QR:")) {
             message = message.slice(3);
@@ -128,7 +134,7 @@ async function displayStage(stage) {
         let button = stage.buttons[i];
         let buttonElement = document.createElement("button");
 
-        buttonElement.className = "btn btn-primary w-100";
+        buttonElement.className = "btn btn-primary mt-2 w-100";
         buttonElement.textContent = button.buttonText;
         buttonElement.setAttribute("id", button.buttonText);
         buttonElement.setAttribute("type", "button");
