@@ -57,7 +57,7 @@ const stages = {
   ConnectFailed: {
     description: ["*Connect failed",
       `The connection to your device seems to have failed`,
-      `Make sure that it is connected correctly.`,
+      `Make sure that it is connected correctly and that no other program (for example serial terminal program) is using the device.`,
       "Press Retry Connection to try again."],
     inputFields: [],
     buttons: [

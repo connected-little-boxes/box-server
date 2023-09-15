@@ -28,18 +28,20 @@ let espLoaderTerminal = {
 
 const stages = {
   ConnectUSB: {
-    description: ["*Plug into the usb socket",
+    description: ["*Create or unpdate a box",
+      `This is where you make a new box or update the software in an existing one.`,
+      `If your box is working fine there is no need to do this.`,
+      `If you've got a brand new ESP8266 or ESP32 device you can use this process to put the Connected Little Boxes software (known as HULLOS-X) onto your box. Then you can connect your device to the wide range of sensors and outputs that are supported by Connected Little Boxes.`,
       `You'll need a usb cable to connect your device to your computer. When you plug it the computer should recognise it automatically and install the drivers. If it doesn't you may have to install them by hand. `,
       `In Windows you can check in Device Manager to make sure that the device is working OK. Click the Windows Start button and search for 'Device' and then select the Device Manager from the menu. If all is well you should see your device appear.`,
-      "Click device plugged in when your device is plugged in.",
-      `If you have already flashed the firmware and just want to configure a device you can press Skip`
+      "Click device plugged in when your device is plugged in."
     ],
     inputFields: [],
     buttons: [
       { buttonText: "Device plugged in", buttonDest: doConnectToDevice }    ]
   },
   ConnectToDevice: {
-    description: ["*Connect to device for flashing",
+    description: ["*Connect to device",
       `Next we will connect your device to the browser. Press the Connect Device button below when you are ready.`,
       `A dialog box will pop up inviting you to select a device to program.`,
       "Click Connect to device when you are ready."
@@ -50,18 +52,18 @@ const stages = {
     ]
   },
   StartFlash: {
-    description: ["*Start the flash",
+    description: ["*Start sending software into your device.",
       `Now that you are connected you can start the process.`,
       `Note that this will take a while. The window below will show the progress.`,
-      "Click Start Flash when you are ready."],
+      "Click Start sending when you are ready."],
     inputFields: [],
     buttons: [
-      { buttonText: "Start Flash", buttonDest: doFlash }
+      { buttonText: "Start sending", buttonDest: doFlash }
     ]
   },
   FlashDone: {
-    description: ["*Flash complete",
-      `The flash process has completed.`,
+    description: ["*Software load complete",
+      `The software upload process has completed.`,
       `Your device should be running the Connected Little Boxes software.`,
       `The led on your device will indicate the state of the device.`,
       `*Slowly flashing led`,
@@ -85,10 +87,13 @@ const stages = {
     description: ["*Connect failed",
       `The connection to your device seems to have failed`,
       `Make sure that it is connected correctly and that it is not connected to another program on your computer.`,
+      `If your device is not recognised by your PC or laptop you may need to install some device drivers to make it work.`,
+      `The Wemos D1 mini uses Windows drivers from here: https://www.wch-ic.com/downloads/CH341SER_EXE.html`,
+      `The Windows D1 mini ESP32 and the DOIT-32 modules use Windows drivers from here: https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers`,
       "Click Retry Connection to try again."],
     inputFields: [],
     buttons: [
-      { buttonText: "Retry", buttonDest: doAttemptDeviceConnection }
+      { buttonText: "Retry", buttonDest: async () => { window.location.replace("/hardware/flash");} }
     ]
   },
   LedSlowFlash: {
@@ -129,17 +134,17 @@ const stages = {
   LedOff: {
     description: ["*Status led off",
       `This means that the software in your box is not running correctly.`,
-      `Plug the box into a different USB port and repeat the flashing process.`,
+      `Plug the box into a different USB port and repeat the upload process.`,
       `Otherwise click Done to return to the main menu.`],
     inputFields: [],
     buttons: [
-      { buttonText: "Retry Flash", buttonDest: doConnectToDevice },
+      { buttonText: "Retry upload", buttonDest: doConnectToDevice },
       { buttonText: "Done", buttonDest: doExitFlash }
     ]
   },
 
   NoFirmwareFiles: {
-    description: ["*Flash failed",
+    description: ["*Software upload not possible",
       `There are no firmware files for the device.`,
       `This means that we can't turn it into a Connected Little Box.`,
       "Please send us the device information shown below and we will see if we can add them for your device."],
@@ -318,10 +323,10 @@ async function doFlash() {
   if (firmware) {
     await flashFromUrls(firmware);
     await selectStage(stages.NoFirmwareFiles)
-    return true;
+    return false;
   }
   else {
-    await selectStage(stages.NoFirmwareFiles);
+    await selectStage(stages.FlashDone);
     return;
   }
 }

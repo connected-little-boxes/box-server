@@ -16,63 +16,69 @@
         <h2 class="mb-4">
             <%= name %>
         </h2>
-        <% if (role!="admin"){ %>
-            <div class="container mb-4">
-                <a href="/connect/wiFi" class="btn btn-primary mb-4 btn-block w-100">Configure your box over WiFi</a>
-            </div>
-            <% } %>
-
-            <% if (role!="admin"){ %>
-                <div class="container mb-4">
-            <a href="/connect/usb" class="btn btn-primary mb-4 btn-block w-100">Configure your box by plugging it into your PC</a>
-        </div>
-        <% } %>
-        <div class="container mb-4">
-            <a href="/deviceSelect" class="btn btn-primary mb-4 btn-block">
-                <% if (role=="admin"){ %>
-                    Manage all Boxes
-                    <% } else { %>
-                    Manage your Boxes
-                    <% } %>
-            </a>
-        </div>
-            <div class="container mb-4">
-            <a href="<%= host %>hardware/flash" class="btn btn-primary mb-4 btn-block">Flash a box with new firmware</a>
-        </div>
-        <div class="container mb-4">
-            <a href="/command/commandGroupSelect" class="btn btn-primary mb-4 btn-block">
-                <% if (role=="admin"){ %>
-                    Manage all Command Groups
-                    <% } else { %>
-                    Manage your Command Groups
-                    <% } %>
-            </a>
-        </div>
-        <% if (role=="admin"){ %>
-            <div class="container mb-4">
-            <a href="/processManager/Select" class="btn btn-primary mb-4 btn-block">Process Managers</a>
-        </div>
-        <% } %>
-        <% if (role=="admin"){ %>
-            <div class="container mb-4">
-            <a href="/lightShow" class="btn btn-primary mb-4  btn-block">Light Show</a>
-        </div>
-        <% } %>
-        <div class="container mb-4">
-            <a href="/changePassword" class="btn btn-primary mb-4  btn-block">Change password</a>
-        </div>
-        <% if (role=="admin"){ %>
-            <div class="container mb-4">
-            <a href="/register" class="btn btn-primary mb-4  btn-block">Register a new user</a>
-        </div>
-        <div class="container mb-4">
-            <a href="/updateUserPassword" class="btn btn-primary mb-4  btn-block">Change a user password</a>
-        </div>
-        <% } %>
-        <div class="container mb-4">
-            <a href="/logout" class="btn btn-primary mb-4 btn-block">Logout</a>
-        </div>
     </div>
+    <div class="container mb-4">
+        <a href="<%= host %>hardware/flash" class="btn btn-primary mb-4 btn-block">Create a new box or update an
+            existing one</a>
+    </div>
+    <% if (role!="admin" ){ %>
+        <div class="container mb-4">
+            <a href="/connect/wiFi" class="btn btn-primary mb-4 btn-block w-100">Use your phone or tablet to configure your box over WiFi</a>
+        </div>
+        <% } %>
+
+            <% if (role!="admin" ){ %>
+                <div class="container mb-4">
+                    <a href="/connect/usb" class="btn btn-primary mb-4 btn-block w-100">Configure your box by plugging
+                        it into a PC or laptop</a>
+                </div>
+                <% } %>
+                    <div class="container mb-4">
+                        <a href="/deviceSelect" class="btn btn-primary mb-4 btn-block w-100">
+                            <% if (role=="admin" ){ %>
+                                Manage all boxes
+                                <% } else { %>
+                                    Manage your boxes
+                                    <% } %>
+                        </a>
+                    </div>
+                    <div class="container mb-4">
+                        <a href="/command/commandGroupSelect" class="btn btn-primary mb-4 btn-block w-100">
+                            <% if (role=="admin" ){ %>
+                                Manage all Command Groups
+                                <% } else { %>
+                                    Create groups of commands that can be triggered from the web
+                                    <% } %>
+                        </a>
+                    </div>
+                    <% if (role=="admin" ){ %>
+                        <div class="container mb-4">
+                            <a href="/processManager/Select" class="btn btn-primary mb-4 btn-block w-100">Create behaviours for box processes</a>
+                        </div>
+                        <% } %>
+                            <% if (role=="admin" ){ %>
+                                <div class="container mb-4">
+                                    <a href="/lightShow" class="btn btn-primary mb-4  btn-block w-100">Send commands to trigger large numbers of lights</a>
+                                </div>
+                                <% } %>
+                                    <div class="container mb-4">
+                                        <a href="/changePassword" class="btn btn-primary mb-4  btn-block w-100">Change your 
+                                            password</a>
+                                    </div>
+                                    <% if (role=="admin" ){ %>
+                                        <div class="container mb-4">
+                                            <a href="/register" class="btn btn-primary mb-4  btn-block w-100">Register a
+                                                new user</a>
+                                        </div>
+                                        <div class="container mb-4">
+                                            <a href="/updateUserPassword"
+                                                class="btn btn-primary mb-4  btn-block w-100">Change a user password</a>
+                                        </div>
+                                        <% } %>
+                                            <div class="container mb-4">
+                                                <a href="/logout"
+                                                    class="btn btn-primary mb-4 btn-block w-100">Logout</a>
+                                            </div>
 </body>
 
 </html>
