@@ -28,37 +28,28 @@ let espLoaderTerminal = {
 
 const stages = {
   ConnectUSB: {
-    description: ["*Create or unpdate a box",
+    description: ["*Create or update a box",
       `This is where you make a new box or update the software in an existing one.`,
       `If your box is working fine there is no need to do this.`,
       `If you've got a brand new ESP8266 or ESP32 device you can use this process to put the Connected Little Boxes software (known as HULLOS-X) onto your box. Then you can connect your device to the wide range of sensors and outputs that are supported by Connected Little Boxes.`,
       `You'll need a usb cable to connect your device to your computer. When you plug it the computer should recognise it automatically and install the drivers. If it doesn't you may have to install them by hand. `,
       `In Windows you can check in Device Manager to make sure that the device is working OK. Click the Windows Start button and search for 'Device' and then select the Device Manager from the menu. If all is well you should see your device appear.`,
-      "Click device plugged in when your device is plugged in."
+      `Click device plugged in when your device is plugged in.`,
+      `A dialog box will pop up inviting you to select a device to program.`
     ],
     inputFields: [],
     buttons: [
-      { buttonText: "Device plugged in", buttonDest: doConnectToDevice }    ]
+      { buttonText: "Device plugged in", buttonDest: doFlash }]
   },
-  ConnectToDevice: {
-    description: ["*Connect to device",
-      `Next we will connect your device to the browser. Press the Connect Device button below when you are ready.`,
-      `A dialog box will pop up inviting you to select a device to program.`,
-      "Click Connect to device when you are ready."
+  FlashWorking: {
+    description: ["*Software transferring",
+      `The Connected Little Boxes software is being copied into your device.`,
+      `You will see messages in the log window showing you stages.`,
+      `If the copying process seems to get stuck you can press the Retry button to retry`
     ],
     inputFields: [],
     buttons: [
-      { buttonText: "Connect to device", buttonDest: doAttemptDeviceConnection }
-    ]
-  },
-  StartFlash: {
-    description: ["*Start sending software into your device.",
-      `Now that you are connected you can start the process.`,
-      `Note that this will take a while. The window below will show the progress.`,
-      "Click Start sending when you are ready."],
-    inputFields: [],
-    buttons: [
-      { buttonText: "Start sending", buttonDest: doFlash }
+      { buttonText: "Retry", buttonDest: async () => { window.location.replace("/hardware/flash"); } }
     ]
   },
   FlashDone: {
@@ -84,7 +75,7 @@ const stages = {
     ]
   },
   ConnectFailed: {
-    description: ["*Connect failed",
+    description: ["*Upload Connection Failed",
       `The connection to your device seems to have failed`,
       `Make sure that it is connected correctly and that it is not connected to another program on your computer.`,
       `If your device is not recognised by your PC or laptop you may need to install some device drivers to make it work.`,
@@ -93,7 +84,7 @@ const stages = {
       "Click Retry Connection to try again."],
     inputFields: [],
     buttons: [
-      { buttonText: "Retry", buttonDest: async () => { window.location.replace("/hardware/flash");} }
+      { buttonText: "Retry", buttonDest: async () => { window.location.replace("/hardware/flash"); } }
     ]
   },
   LedSlowFlash: {
@@ -138,7 +129,7 @@ const stages = {
       `Otherwise click Done to return to the main menu.`],
     inputFields: [],
     buttons: [
-      { buttonText: "Retry upload", buttonDest: doConnectToDevice },
+      { buttonText: "Retry Upload", buttonDest: async () => { window.location.replace("/hardware/flash"); } },
       { buttonText: "Done", buttonDest: doExitFlash }
     ]
   },
@@ -160,12 +151,12 @@ async function doExitFlash() {
 }
 
 
-async function doWiFiSettingsUSB(){
+async function doWiFiSettingsUSB() {
   window.location.replace("/connect/usb");
 }
 
 
-async function doWiFiSettingsAP (){
+async function doWiFiSettingsAP() {
   window.location.replace("/connect/wifi");
 }
 
@@ -175,10 +166,6 @@ async function doStart() {
   // get the name of the web host
   hostAddress = window.location.origin;
   await selectStage(stages.ConnectUSB);
-}
-
-async function doConnectToDevice() {
-  await selectStage(stages.ConnectToDevice);
 }
 
 async function doLedSlowFlashStatus() {
@@ -212,42 +199,54 @@ const firmwareLocations = {
   ]
 }
 
-async function doAttemptDeviceConnection() {
+let flashActive = false;
 
-  if (device === null) {
-    device = await navigator.serial.requestPort({});
-    transport = new Transport(device);
-  }
-  try {
-    esploader = new ESPLoader(transport, 115200, espLoaderTerminal);
-    connected = true;
-    chip = await esploader.main_fn();
-  } catch (e) {
-    console.log(`Error: ${e.message}`);
-    await selectStage(stages.ConnectFailed);
+async function doFlash() {
+
+  if (flashActive) {
     return;
   }
 
-  let nextState;
+  flashActive = true;
 
-  if (connected) {
+  try {
+    let chip = "";
+
+    if (device === null) {
+      device = await navigator.serial.requestPort({});
+      transport = new Transport(device);
+    }
+    try {
+      esploader = new ESPLoader(transport, 115200, espLoaderTerminal);
+      chip = await esploader.main_fn();
+    } catch (e) {
+      console.log(`Error: ${e.message}`);
+      await selectStage(stages.ConnectFailed);
+      return;
+    }
 
     console.log('Connected to device :' + chip);
 
     let firmware = firmwareLocations[chip];
 
-    if(!firmware){
-      nextState = stages.NoFirmwareFiles;
+    if (!firmware) {
+      await selectStage(stages.NoFirmwareFiles);
+      return;
     }
-    else{
-    nextState = stages.StartFlash;
+
+    await selectStage(stages.FlashWorking);
+  
+    let flashResult = await flashFromUrls(firmware);
+
+    if (!flashResult) {
+      await selectStage(stages.ConnectFailed);
+      return;
     }
+    await selectStage(stages.FlashDone);
   }
-  else {
-    console.log('Connect failed');
-    nextState = stages.ConnectFailed;
+  finally{
+    flashActive=false;
   }
-  await selectStage(nextState);
 }
 
 async function doSetupDevice() {
@@ -310,30 +309,13 @@ async function flashFromUrls(urls) {
     await esploader.hard_reset();
 
     espLoaderTerminal.writeLine(`Device reset`);
+    return true;
   }
   catch (error) {
-    console.error('Error fetching the network file:', error);
-  }
-}
-
-async function doFlash() {
-
-  let firmware = firmwareLocations[chip];
-
-  if (firmware) {
-    await flashFromUrls(firmware);
-    await selectStage(stages.NoFirmwareFiles)
     return false;
   }
-  else {
-    await selectStage(stages.FlashDone);
-    return;
-  }
 }
 
-function doGoHome() {
-  window.location.replace("/");
-}
 
 window.onload = async function () {
   await doStart();

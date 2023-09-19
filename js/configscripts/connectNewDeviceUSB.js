@@ -13,26 +13,17 @@ const stages = {
     description: ["*Plug into the usb socket",
       `You'll need a usb cable to connect your device to your computer. When you plug it the computer should recognise it automatically and install the drivers. If it doesn't you may have to install them by hand. `,
       `In Windows you can check in Device Manager to make sure that the device is working OK. Click the Windows Start button and search for 'Device' and then select the Device Manager from the menu. If all is well you should see your device appear.`,
-      "Press device plugged in when your device is plugged in."],
+      "Next you need to connect your device to the browser. Press device plugged in when your device is plugged in and dialogue box will appear inviting you to select the device to work with.",
+      `Once the device has been selected the configuration will begin.`
+    ],
     inputFields: [],
     buttons: [
-      { buttonText: "Device plugged in", buttonDest: doConnectToDevice }
-    ]
-  },
-  ConnectToDevice: {
-    description: ["*Connect to device",
-      `Next we will connect your device to the browser. Press the Connect Device button below when you are ready.`,
-      `A dialog box will pop up inviting you to select a device to program.`,
-      "Press Connect to device when you are ready."],
-    inputFields: [],
-    buttons: [
-      { buttonText: "Connect to device", buttonDest: doAttemptConnection }
+      { buttonText: "Device plugged in", buttonDest: doAttemptConnection }
     ]
   },
   BoxConfig: {
     description: ["*Configure Device",
-      `They are stored securely in the device.`,
-      `Other settings will be downloaded from the internet and used to connect your device to the server.`,
+      `Some settings are stored securely in the device. Other settings will be downloaded from the internet and used to connect your device to the server.`,
       `You don't have to set up all the WiFi credentials, but they will be useful if you take the device to a new location or want to connect your box to your phone.`,
       `You won't see any of the password values, but you can set new ones by entering them into the box`,
       `Press Submit when you have finished`
@@ -64,25 +55,13 @@ const stages = {
       { buttonText: "Retry", buttonDest: doAttemptConnection }
     ]
   },
-  PixelTest: {
-    description: ["*Pixel test",
-      `Wait for the device to reset. Then click the "Test pixels" button. The pixels should turn blue. If they wait a while and try again.`,
-      `If they still don't turn blue press the Pixels are not blue button to retry.`,
-      `If the pixels do turn blue (Yay!) press the Pixels blue button`],
-    inputFields: [
-    ],
-    buttons: [
-      { buttonText: "Test pixels", buttonDest: doTestPixels },
-      { buttonText: "Pixels not blue", buttonDest: doConnectToDevice },
-      { buttonText: "Pixels are blue", buttonDest: doTestPassed }
-    ]
-  },
   ConfigSuccess: {
     description: ["*Configuration complete",
       'The device has been configured as a Connected Little Box.',
       'You will find it listed in your devices.'],
     inputFields: [],
     buttons: [
+      { buttonText: "Exit ", buttonDest: () => { window.location.replace("/");}  }
     ]
   }
 }
@@ -189,7 +168,7 @@ async function doConfigBox() {
   await consoleIO.performCommand("restart");
   addLineToLog("Device reset");
 
-  selectStage(stages.PixelTest);
+  selectStage(stages.ConfigSuccess);
 }
 
 function doGoHome() {
