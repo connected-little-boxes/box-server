@@ -24,7 +24,7 @@ const stages = {
   BoxConfig: {
     description: ["*Configure Device",
       `Some settings are stored securely in the device. Other settings will be downloaded from the internet and used to connect your device to the server.`,
-      `You don't have to set up all the WiFi credentials, but they will be useful if you take the device to a new location or want to connect your box to your phone.`,
+      `You don't have to set up multiple WiFi credentials, but they will be useful if you take the device to a new location or want to connect your box to your phone.`,
       `You won't see any of the password values, but you can set new ones by entering them into the box`,
       `Press Submit when you have finished`
     ],
