@@ -42,7 +42,7 @@ const stages = {
       { displayName: "Number of Y pixels", deviceName: "noofypixels", type: "number", allowEmpty: false, loadType: "fromDevice" }
     ],
     buttons: [
-      { buttonText: "Submit", buttonDest: doConfigBox }
+      { buttonText: "Submit", buttonDest:   doConfigBox }
     ]
   },
   ConnectFailed: {

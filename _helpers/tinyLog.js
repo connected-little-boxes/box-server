@@ -15,11 +15,12 @@ function tinyLog() {
         }
     }
 
-    for (let i = 0; i < arguments.length; i++) {
-        output += String(arguments[i]);
+    if (!logActive) {
+        return;
     }
 
-    if (logActive) {
+    for (let i = 0; i < arguments.length; i++) {
+        output += String(arguments[i]);
         console.log(output);
     }
 }

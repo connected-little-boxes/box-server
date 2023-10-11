@@ -9,6 +9,14 @@ const ConsoleStates = {
 
 class ConsoleIO {
 
+  async delay(timeInMs) {
+    return new Promise(async (kept, broken) => {
+        setTimeout(async () => {
+            return kept("tick");
+        }, timeInMs);
+    });
+}
+
   constructor() {
     this.port = null;
     this.reader = null;
@@ -164,7 +172,7 @@ class ConsoleIO {
 
   performCommand(command) {
     console.log("Performing:" + command);
-    const commandPromise = new Promise((kept, broken) => {
+     const commandPromise = new Promise((kept, broken) => {
       if (this.state != ConsoleStates.starting) {
         broken(`Command ${this.command} already active when command ${command} received`);
       }
@@ -172,21 +180,20 @@ class ConsoleIO {
         this.kept = kept;
         this.broken = broken;
         this.command = command;
-        this.setState("waitingForGot");
+        this.setState(ConsoleStates.waitingForGot);
         this.sendText(command + '\r');
       }
     });
 
     const timeout = 5000;
 
-    const timeoutPromise = new Promise((kept, broken) => {
-      setTimeout(() => {
-        broken(`Operation timed out after ${timeout} ms`);
-      }, timeout);
-    });
+    setTimeout(() => {
+      this.kept(``);
+    }, timeout);
 
-    return Promise.race([commandPromise, timeoutPromise]);
+    return commandPromise;
   }
+
 
   async performCommands(commands) {
     for (let i = 0; i < commands.length; i++) {
