@@ -18,9 +18,11 @@
         <h2 class="mb-4">
             <%= device.name %>
         </h2>
-        <h2 class="mb-4">
+        <% if(owner){ %>
+        <h2 class="mb-2">
             Owner: <%= owner %>
         </h2>
+        <% } %>
         <div class="card-subtitle text-muted mb-2">
             <p>
                 Version: <%= device.version %>
@@ -31,7 +33,8 @@
                                     <br>
                                     Last command:<%= device.lastCommand %>
                                         <br>
-            </p>
+                                            MAC address: <%= device.macAddress %>
+                                            </p>
         </div>
         <div class="container">
 

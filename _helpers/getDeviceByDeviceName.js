@@ -17,12 +17,14 @@ async function getDeviceByDeviceName(req, res, next) {
       return res.status(404).json({ message: `GetDeviceByName: cannot find device ${req.params.name}` });
     }
 
-    let owner_id = device.owner;
-    let user_id = user._id;
+    if (device.owner) {
+      let owner_id = device.owner;
+      let user_id = user._id;
 
-    if (!owner_id.equals(user_id)) {
-      if (user.role != "admin") {
-        return res.status(404).json({ message: `GetDeviceByName: user does not own the device ${req.params.name}` });
+      if (!owner_id.equals(user_id)) {
+        if (user.role != "admin") {
+          return res.status(404).json({ message: `GetDeviceByName: user does not own the device ${req.params.name}` });
+        }
       }
     }
   }

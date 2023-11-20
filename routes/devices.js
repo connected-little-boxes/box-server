@@ -78,7 +78,7 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
   let deviceProcessManagers = device.processManagers;
   let managers = [];
 
-  let ownerName = "Unknown";
+  let ownerName = "";
   let owner = await User.findOne({_id:device.owner});
 
   if(owner){
@@ -152,11 +152,17 @@ router.get('/moveToNewOwner/:device_id', authenticateToken, async function (req,
       { _id: device_id }
   );
 
-  let owner = await User.findOne({ _id: device.owner });
+  let users;
 
-  let users = await buildUserDescriptions(owner._id, owner.name);
+  if(device.owner){
+    owner = await User.findOne({ _id: device.owner });
+    users = await buildUserDescriptions(owner._id, owner.name);
+  }
+  else{
+    users = await buildUserDescriptions();
+  }
 
-  res.render("deviceMove.ejs", { device: device, ownerName: owner.name, users: users });
+  res.render("deviceMove.ejs", { device: device, users: users });
 });
 
 router.post('/moveToNewOwner/:device_id', authenticateToken, async function (req, res) {
@@ -180,7 +186,7 @@ router.post('/moveToNewOwner/:device_id', authenticateToken, async function (req
           "Device move",
           `Move failed: ${error}`,
           [
-              { description: "Continue", route: "/deviceSelect/" }
+              { description: "Continue", route: "/deviceSelect" }
           ],
           res
       );
@@ -190,13 +196,10 @@ router.post('/moveToNewOwner/:device_id', authenticateToken, async function (req
       "Device move",
       "Move completed successfully",
       [
-        { description: "Continue", route: "/deviceSelect/" }
+        { description: "Continue", route: "/deviceSelect" }
       ],
       res
   );
 });
-
-
-
 
 module.exports = router;

@@ -55,6 +55,7 @@ class Manager {
                     await device.updateOne({
                         name: messageObject.name,
                         processor: messageObject.processor,
+                        macAddress:messageObject.macAddress,
                         version: messageObject.version,
                         processes: messageObject.processes,
                         sensors: messageObject.sensors
@@ -66,6 +67,7 @@ class Manager {
                         name: messageObject.name,
                         friendlyName: messageObject.friendlyName,
                         processor: messageObject.processor,
+                        macAddress:messageObject.macAddress,
                         version: messageObject.version,
                         processes: messageObject.processes,
                         sensors: messageObject.sensors

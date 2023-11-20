@@ -4,13 +4,14 @@ async function buildUserDescriptions(owner_id, owner_name) {
 
     let userDescriptions = [];
 
-
     let users = await User.find();
 
     for (let i = 0; i < users.length; i++) {
         let user = users[i];
-        if (user._id.equals(owner_id)) {
-            continue;
+        if (owner_id) {
+            if (user._id.equals(owner_id)) {
+                continue;
+            }
         }
         userDescriptions.push({ _id: String(user._id), name: user.name });
     };
@@ -21,7 +22,9 @@ async function buildUserDescriptions(owner_id, owner_name) {
         return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
     });
 
-    userDescriptions.unshift({ _id: owner_id, name: owner_name });
+    if (owner_id) {
+        userDescriptions.unshift({ _id: owner_id, name: owner_name });
+    }
 
     return userDescriptions;
 }

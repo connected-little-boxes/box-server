@@ -27,19 +27,28 @@ router.get('/', authenticateToken, async function (req, res) {
 })
 
 router.post('/', authenticateToken, async (req, res) => {
+
+  let user = res.user;
   const regex = new RegExp(req.body.filter, 'i');
 
-  let userDevices = await Device.find({
-    $and:
-      [
-        { owner: { $eq: res.user._id } },
-        {
-          $or: [
-            { friendlyName: { $regex: regex } }
-          ]
-        }
-      ]
-  });
+  let userDevices;
+
+  if (res.user.role == "admin") {
+    userDevices = await Device.find({ friendlyName: { $regex: regex } });
+  }
+  else {
+    userDevices = await Device.find({
+      $and:
+        [
+          { owner: { $eq: res.user._id } },
+          {
+            $or: [
+              { friendlyName: { $regex: regex } }
+            ]
+          }
+        ]
+    });
+  }
 
   userDevices.sort((a, b) => {
     let textA = (a.friendlyName ? a.friendlyName : a.name).toUpperCase();
