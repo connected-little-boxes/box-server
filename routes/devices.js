@@ -8,6 +8,7 @@ const authenticateToken = require('../_helpers/authenticateToken');
 const getDeviceByDeviceName = require('../_helpers/getDeviceByDeviceName');
 const menuPage = require('../_helpers/menuPage');
 const validateFriendlyName = require('../_helpers/validateFriendlyName');
+const generateQRCode = require('../_helpers/generateQRCode');
 const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessageItems, ProcessManagerMessages, ProcessManagers } = require('../models/ProcessManager');
 const buildUserDescriptions = require('../_helpers/buildUserDescriptions');
 
@@ -114,7 +115,11 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
 
   let role = res.user.role;
 
-  res.render('device.ejs', { device: res.device, managers: managers, owner: ownerName, role: role });
+  let url = process.env.HOST_ADDRESS + "openDevice/" + device.guid;
+
+  let qrCode = await generateQRCode(url);
+
+  res.render('device.ejs', { device: res.device, managers: managers, owner: ownerName, role: role, url:url, qrCode:qrCode });
 });
 
 router.post('/updateDetails/:name/:friendlyName', authenticateToken, getDeviceByDeviceName, async (req, res) => {
@@ -148,7 +153,6 @@ router.post('/updateDetails/:name/:friendlyName', authenticateToken, getDeviceBy
   );
   res.redirect('/devices/' + res.device.name);
 })
-
 
 router.get('/moveToNewOwner/:device_id', authenticateToken, async function (req, res) {
 

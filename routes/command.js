@@ -5,25 +5,13 @@ const Command = require('../models/Command');
 const CommandGroup = require('../models/CommandGroup');
 const Manager = require('../manager');
 const authenticateToken = require('../_helpers/authenticateToken');
+const authenticateAdmin = require('../_helpers/authenticateAdmin');
 const buildUserDescriptions = require('../_helpers/buildUserDescriptions');
 const menuPage = require('../_helpers/menuPage');
-const qrcode = require('qrcode');
+const generateQRCode = require('../_helpers/generateQRCode');
 const Uuid = require('uuid');
 const CommandDeviceMessage = require('../models/CommandDeviceMessage');
 const User = require('../models/user');
-
-function generateQRCode(data) {
-    return new Promise((kept, broken) => {
-        qrcode.toDataURL(data, function (err, url) {
-            if (err) {
-                broken(err);
-            }
-            else {
-                kept(url);
-            }
-        });
-    });
-}
 
 async function buildCommandDescription(commandGroup) {
     let commands = [];
@@ -46,26 +34,51 @@ async function buildCommandDescription(commandGroup) {
 
 async function buildUserDeviceFriendlyNameList(owner_id, selectedDeviceID) {
 
-    let userDevices = await Device.find({ owner: owner_id });
+    let owner = await User.findOne({ _id: owner_id });
 
-    userDevices.sort((a, b) => {
-        let textA = (a.friendlyName ? a.friendlyName : a.name).toUpperCase();
-        let textB = (b.friendlyName ? b.friendlyName : b.name).toUpperCase();
-        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
-    });
-
+    let userDevices;
     let nameList = [];
 
-    for (let i = 0; i < userDevices.length; i++) {
-        let device = userDevices[i];
-        let name = (device.friendlyName ? device.friendlyName : device.name);
-        if (device._id.equals(selectedDeviceID)) {
-            nameList.unshift(name);
-        }
-        else {
-            nameList.push(name);
-        }
-    };
+    if (owner.role = "admin") {
+        userDevices = await Device.find();
+
+        userDevices.sort((a, b) => {
+            let textA = (a.friendlyName ? a.friendlyName : a.name).toUpperCase();
+            let textB = (b.friendlyName ? b.friendlyName : b.name).toUpperCase();
+            return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+        });
+
+        for (let i = 0; i < userDevices.length; i++) {
+            let device = userDevices[i];
+            let name = (device.friendlyName ? device.friendlyName : device.name);
+            let owner = await User.findOne({ _id: device.owner });
+            if (owner) {
+                let fullName = `${name}:${owner.name}`;
+                nameList.push(fullName);
+            }
+        };
+    }
+    else {
+        userDevices = await Device.find({ owner: owner_id });
+
+        userDevices.sort((a, b) => {
+            let textA = (a.friendlyName ? a.friendlyName : a.name).toUpperCase();
+            let textB = (b.friendlyName ? b.friendlyName : b.name).toUpperCase();
+            return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+        });
+
+        for (let i = 0; i < userDevices.length; i++) {
+            let device = userDevices[i];
+            let name = (device.friendlyName ? device.friendlyName : device.name);
+            if (device._id.equals(selectedDeviceID)) {
+                nameList.unshift(name);
+            }
+            else {
+                nameList.push(name);
+            }
+        };
+    }
+
     return nameList;
 }
 
@@ -130,7 +143,7 @@ router.get('/commandGroupSelect', authenticateToken, async function (req, res) {
         return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
     });
 
-    res.render("commandGroupSelect.ejs", { username: user.name, role:user.role, commandGroups: commandGroups });
+    res.render("commandGroupSelect.ejs", { username: user.name, role: user.role, commandGroups: commandGroups });
 });
 
 router.get('/commandGroupNew', authenticateToken, async function (req, res) {
@@ -143,14 +156,8 @@ router.post('/commandGroupNew', authenticateToken, async function (req, res) {
 
     const newGuid = Uuid.v4();
 
-    let url = process.env.HOST_ADDRESS + "command/perform/" + newGuid;
-
-    let qrCode = await generateQRCode(url);
-
     let newCommandGroup = new CommandGroup({
         guid: newGuid,
-        pageURL: url,
-        pageQRcode: qrCode,
         name: req.body.name,
         description: req.body.description,
         owner: owner_id
@@ -171,7 +178,11 @@ router.get('/commandGroupEdit/:commandGroup_id', authenticateToken, async functi
 
     let commands = await buildCommandDescription(commandGroup);
 
-    res.render("commandGroupEdit.ejs", { commandGroup: commandGroup, commands: commands });
+    let url = process.env.HOST_ADDRESS + "command/perform/" + commandGroup.guid;
+
+    let qrCode = await generateQRCode(url);
+
+    res.render("commandGroupEdit.ejs", { commandGroup: commandGroup, commands: commands, url: url, qrCode: qrCode });
 });
 
 
@@ -190,7 +201,7 @@ router.get('/commandGroupMove/:commandGroup_id', authenticateToken, async functi
     res.render("commandGroupMove.ejs", { commandGroup: commandGroup, ownerName: owner.name, users: users });
 });
 
-router.post('/commandGroupMove/:commandGroup_id', authenticateToken, async function (req, res) {
+router.post('/commandGroupMove/:commandGroup_id', authenticateToken, authenticateAdmin, async function (req, res) {
 
     let owner_id = req.body.user;
 
@@ -462,6 +473,10 @@ router.get('/commandEdit/:commandGroup_id/:command_id', authenticateToken, async
 
 router.post('/commandEdit/:commandGroup_id/:command_id', authenticateToken, async function (req, res) {
 
+    let user = res.user;
+    let owner_id = user._id;
+    let owner = await User.findOne({ _id: owner_id });
+
     let command_id = req.params.command_id;
 
     let commandGroup_id = req.params.commandGroup_id;
@@ -490,14 +505,57 @@ router.post('/commandEdit/:commandGroup_id/:command_id', authenticateToken, asyn
                 let deviceName = req.body[`message_${id}_deviceName`];
                 let messageText = req.body[`message_${id}_messageText`];
 
-                let device = await Device.findOne({
-                    $and:
-                        [
-                            { owner: { $eq: res.user._id } },
-                            { friendlyName: { $eq: deviceName } }
-                        ]
-                });
+                let device;
 
+                if (owner.role == "admin") {
+                    let deviceOwnerName, friendlyName;
+                    [friendlyName,deviceOwnerName] = deviceName.split(":");
+                    let owner = await User.findOne({ name: deviceOwnerName });
+                    // first look for the friendy name
+                    device = await Device.findOne({
+                        $and:
+                            [
+                                { owner: { $eq: owner._id } },
+                                { friendlyName: { $eq: friendlyName } }
+                            ]
+                    });
+                    if (!device) {
+                        device = await Device.findOne({
+                            $and:
+                                [
+                                    { owner: { $eq: owner._id } },
+                                    { name: { $eq: friendlyName } }
+                                ]
+                        });
+                    }
+                }
+                else {
+                    device = await Device.findOne({
+                        $and:
+                            [
+                                { owner: { $eq: res.user._id } },
+                                { friendlyName: { $eq: deviceName } }
+                            ]
+                    });
+                }
+
+                if (!device) {
+
+                    await CommandDeviceMessage.deleteOne(
+                        { _id: commandMessage_id }
+                    );
+            
+                    menuPage(
+                        "Command message edit",
+                        `Device ${deviceName} not found`,
+                        [
+                            { description: "Continue", route: "/command/commandGroupSelect/" }
+                        ],
+                        res
+                    );
+                    return;
+                }
+           
                 await CommandDeviceMessage.updateOne(
                     { _id: id },
                     {
@@ -576,6 +634,7 @@ router.post('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id
 
     let user = res.user;
     let owner_id = user._id;
+    let owner = await User.findOne({ _id: owner_id });
 
     let commandMessage_id = req.params.commandMessage_id;
     let commandGroup_id = req.params.commandGroup_id;
@@ -586,40 +645,66 @@ router.post('/commandMessageEdit/:commandGroup_id/:command_id/:commandMessage_id
     let deviceName = req.body.deviceName;
     let message = req.body.message;
 
-    let device = await Device.findOne({
-        $and:
-            [
-                { owner: { $eq: res.user._id } },
-                { friendlyName: { $eq: deviceName } }
-            ]
-    });
+    let device;
 
-    if (!device) {
-
+    if (owner.role == "admin") {
+        let deviceOwnerName, friendlyName;
+        [friendlyName,deviceOwnerName] = deviceName.split(":");
+        let owner = await User.findOne({ name: deviceOwnerName });
+        device = await Device.findOne({
+            $and:
+                [
+                    { owner: { $eq: owner._id } },
+                    { friendlyName: { $eq: friendlyName } }
+                ]
+        });
+        if (!device) {
+            device = await Device.findOne({
+                $and:
+                    [
+                        { owner: { $eq: owner._id } },
+                        { name: { $eq: friendlyName } }
+                    ]
+            });
+        }
+    }
+    else {
+        // first look for the friendly name
         device = await Device.findOne({
             $and:
                 [
                     { owner: { $eq: res.user._id } },
-                    { name: { $eq: deviceName } }
+                    { friendlyName: { $eq: deviceName } }
                 ]
         });
-
+        // Now look for the device name
         if (!device) {
 
-            await CommandDeviceMessage.deleteOne(
-                { _id: commandMessage_id }
-            );
-
-            menuPage(
-                "Create new message",
-                `Device ${deviceName} not found`,
-                [
-                    { description: "Continue", route: "/command/commandGroupSelect/" }
-                ],
-                res
-            );
-            return;
+            device = await Device.findOne({
+                $and:
+                    [
+                        { owner: { $eq: res.user._id } },
+                        { name: { $eq: deviceName } }
+                    ]
+            });
         }
+    }
+
+    if (!device) {
+
+        await CommandDeviceMessage.deleteOne(
+            { _id: commandMessage_id }
+        );
+
+        menuPage(
+            "Create new message",
+            `Device ${deviceName} not found`,
+            [
+                { description: "Continue", route: "/command/commandGroupSelect/" }
+            ],
+            res
+        );
+        return;
     }
 
     // got the device - now we can update the message
@@ -714,11 +799,16 @@ router.get('/perform/:guid', async function (req, res) {
 
     let commands = await buildCommandDescription(commandGroup);
 
-    let url = process.env.HOST_ADDRESS;
+    let url = process.env.HOST_ADDRESS + "command/perform/" + commandGroup.guid;
+
+    let qrCode = await generateQRCode(url);
+
+    let siteUrl = process.env.HOST_ADDRESS;
+
 
     res.render("commandGroupPerform.ejs", {
         commandGroup: commandGroup,
-        commands: commands, guid: guid, url: url
+        commands: commands, guid: guid, url: url, siteUrl: siteUrl, qrCode: qrCode
     });
 });
 

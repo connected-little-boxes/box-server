@@ -6,14 +6,6 @@ const CommandGroupSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        pageURL: {
-            type: String,
-            required: true
-        },
-        pageQRcode: {
-            type: String,
-            required: true
-        },
         commands: {
             type: [mongoose.Schema.Types.ObjectId],
             ref:'Command',

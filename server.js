@@ -35,6 +35,7 @@ var command = require('./routes/command');
 var changePassword = require('./routes/changePassword');
 var processManager = require('./routes/processManager');
 var connectNewDevice = require('./routes/connectNewDevice');
+var openDevice = require('./routes/openDevice');
 
 console.log("Starting up...");
 
@@ -66,6 +67,7 @@ mgr.startServices().then(() => {
   app.use('/processManager', processManager);
   app.use('/changePassword', changePassword);
   app.use('/connect', connectNewDevice);
+  app.use('/openDevice', openDevice);
 
   app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
   console.log(`Server listening on:${port}`);

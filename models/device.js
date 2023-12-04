@@ -10,6 +10,10 @@ const deviceSchema = new mongoose.Schema(
             type: String,
             required: false
         },
+        guid: {
+            type: String,
+            required: false
+        },
         processor: {
             type: String,
             required: true
@@ -61,6 +65,11 @@ const deviceSchema = new mongoose.Schema(
         description: {
             type: String,
             default:undefined,
+            required: false
+        },
+        pythonIsh: {
+            type: String,
+            default:"",
             required: false
         },
         tags: {

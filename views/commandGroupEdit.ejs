@@ -20,14 +20,14 @@
         </h3>
     </div>
     <div class="container mb-4">
-        <a href="<%= commandGroup.pageURL %>">
-            <%= commandGroup.pageURL %>
+        <a href="<%= url %>">
+            <%= url %>
         </a>
         <p>The link above will send you to the web page from which you can 
             select a comand to be performed. 
         </p>
         <p>
-            <img src=" <%= commandGroup.pageQRcode %> "></img>
+            <img src=" <%= qrCode %> "></img>
         </p>
         <p>The QR code contains the URL of the web page. </p>
 
@@ -55,7 +55,7 @@
             <p class="mt-3 mb-3">Each command will send one or more messages to devices when the command is selected from the command group.</p>
                 <a href="/command/commandNew/<%= commandGroup._id %>" class="btn btn-primary mt-6 mb-1 btn-block">
                     New Command</a>
-                    <button onclick="doQRcodePrint( '<%= commandGroup.pageQRcode %>' )" href="/command/printCommandGroupQRcode/<%= commandGroup._id %>" class="btn btn-primary mt-2 mb-4 btn-block">
+                    <button onclick="doQRcodePrint( '<%= qrCode %>' )" href="/command/printCommandGroupQRcode/<%= commandGroup._id %>" class="btn btn-primary mt-2 mb-4 btn-block">
                         Print QR code</button>
                         <a href="/command/commandGroupSelect" class="btn btn-primary mt-2 mb-4 btn-block">
                             Done</a>

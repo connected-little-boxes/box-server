@@ -1,3 +1,5 @@
+const Uuid = require('uuid');
+const generateQRCode = require('./_helpers/generateQRCode');
 
 // PORT is defined in Heroku
 // Otherwise we use 3000 for localhost
@@ -55,7 +57,7 @@ class Manager {
                     await device.updateOne({
                         name: messageObject.name,
                         processor: messageObject.processor,
-                        macAddress:messageObject.macAddress,
+                        macAddress: messageObject.macAddress,
                         version: messageObject.version,
                         processes: messageObject.processes,
                         sensors: messageObject.sensors
@@ -63,14 +65,17 @@ class Manager {
                     tinyLog("Device updated");
                 }
                 else {
+                    let guid = Uuid.v4();
                     device = new Device({
                         name: messageObject.name,
                         friendlyName: messageObject.friendlyName,
                         processor: messageObject.processor,
-                        macAddress:messageObject.macAddress,
+                        macAddress: messageObject.macAddress,
                         version: messageObject.version,
                         processes: messageObject.processes,
-                        sensors: messageObject.sensors
+                        sensors: messageObject.sensors,
+                        tags: "",
+                        guid : guid
                     });
                     await device.save();
                     tinyLog("Device created");
@@ -167,7 +172,7 @@ class Manager {
                 lastResponseDate: Date.now()
             });
         }
-        else{
+        else {
             tinyLog(`${hours}:${mins} Got a response: ${JSON.stringify(messageObject)} from:${deviceName} which is not registered`);
         }
     }
@@ -530,6 +535,19 @@ class Manager {
         }
     }
 
+    async addGUIDtoDevices() {
+        let userDevices = await Device.find();
+        userDevices.forEach(async device => {
+            // let url = process.env.HOST_ADDRESS + "devices/openDevice/"+device.guid;
+            // console.log(`Device ${device.name} missing pageURL suggest ${url}`);
+            // let qrCode = await generateQRCode(url);                    
+            await device.updateOne({
+                    pageURL: 0,
+                    pageQRcode : 0
+            });
+        });
+    }
+
     async connectServices() {
         tinyLog("Connecting services");
 
@@ -546,7 +564,8 @@ class Manager {
         await this.addDisplay("CLB-3030da");
         // Only do this when the process managers have changed - which is not very often
         // May make this an admin option in a later release
-        await this.updateProcessManagers();
+        //await this.updateProcessManagers();
+        await this.addGUIDtoDevices();
         await this.checkForAdminUser();
     }
 
