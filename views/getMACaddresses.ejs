@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <title>Connected Little Boxes</title>
+</head>
+
+<body>
+    <div class="container mb-2 mt-2">
+        <h1 class="mb-4">Connected Little Boxes</h1>
+        <h2 class="mb-4">Device MAC addresses</h2>
+        <% let fullOutput = false; %>
+        <div class="container">
+            <% devices.forEach(device=> { %>
+                <% if (device.macAddress) {%>
+                <p>
+                    <% if(fullOutput) { %>
+                    <% var name; if (device.friendlyName !="" ) name=device.friendlyName; else name=device.name; %>
+                        <%= name %>, <%= device.name %>,<%= device.macAddress %>
+                    <% } else { %>
+                        <%= device.macAddress %>
+                        <% } %>
+                    </p>
+                <% } %>
+                <% }) %>
+                    <a href="/" class="btn btn-primary mt-2 mb-4 btn-block">Done</a>
+        </div>
+</body>
+
+</html>

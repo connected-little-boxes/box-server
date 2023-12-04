@@ -75,13 +75,19 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
   // at the moment we just have pixels
 
   let device = res.device;
+
+  // deal with missing friendly names for devices
+  if (!device.friendlyName) {
+    device.friendlyName = device.name;
+  }
+
   let deviceProcessManagers = device.processManagers;
   let managers = [];
 
   let ownerName = "";
-  let owner = await User.findOne({_id:device.owner});
+  let owner = await User.findOne({ _id: device.owner });
 
-  if(owner){
+  if (owner) {
     ownerName = owner.name;
   }
 
@@ -108,7 +114,7 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
 
   let role = res.user.role;
 
-  res.render('device.ejs', { device: res.device, managers: managers, owner: ownerName, role:role});
+  res.render('device.ejs', { device: res.device, managers: managers, owner: ownerName, role: role });
 });
 
 router.post('/updateDetails/:name/:friendlyName', authenticateToken, getDeviceByDeviceName, async (req, res) => {
@@ -126,10 +132,10 @@ router.post('/updateDetails/:name/:friendlyName', authenticateToken, getDeviceBy
     // If the friendly name hasn't been edited we just write it back again
     proposedFriendlyName = orignalFriendlyName;
   }
-  else{
+  else {
     // Check to make sure that the user hasn't entered a name that
     // clashes with an existing one
-    proposedFriendlyName = await validateFriendlyName(editedFriendlyName,owner._id);
+    proposedFriendlyName = await validateFriendlyName(editedFriendlyName, owner._id);
   }
 
   await res.device.updateOne(
@@ -149,16 +155,16 @@ router.get('/moveToNewOwner/:device_id', authenticateToken, async function (req,
   let device_id = req.params.device_id;
 
   let device = await Device.findOne(
-      { _id: device_id }
+    { _id: device_id }
   );
 
   let users;
 
-  if(device.owner){
+  if (device.owner) {
     owner = await User.findOne({ _id: device.owner });
     users = await buildUserDescriptions(owner._id, owner.name);
   }
-  else{
+  else {
     users = await buildUserDescriptions();
   }
 
@@ -173,32 +179,32 @@ router.post('/moveToNewOwner/:device_id', authenticateToken, async function (req
 
   try {
 
-      let device = await Device.findOne(
-          { _id: device_id }
-      );
+    let device = await Device.findOne(
+      { _id: device_id }
+    );
 
-      await device.updateOne(
-          { owner: owner_id }
-      );
+    await device.updateOne(
+      { owner: owner_id }
+    );
   }
   catch (error) {
-      menuPage(
-          "Device move",
-          `Move failed: ${error}`,
-          [
-              { description: "Continue", route: "/deviceSelect" }
-          ],
-          res
-      );
-  }
-
-  menuPage(
+    menuPage(
       "Device move",
-      "Move completed successfully",
+      `Move failed: ${error}`,
       [
         { description: "Continue", route: "/deviceSelect" }
       ],
       res
+    );
+  }
+
+  menuPage(
+    "Device move",
+    "Move completed successfully",
+    [
+      { description: "Continue", route: "/deviceSelect" }
+    ],
+    res
   );
 });
 

@@ -401,7 +401,7 @@ class Manager {
         }
         catch (err) {
             tinyLog(`Invalid json command:${command} error:${err} for:${deviceName}`);
-            throw (err);
+            return;
         }
 
         this.mqttClient.publish(topic, command);
@@ -487,7 +487,7 @@ class Manager {
         const hours = date.getHours();
         const mins = date.getMinutes();
 
-        tinyLog(`${hours}:${mins} Received a packet:{messageString} on topic {topic}`);
+        tinyLog(`${hours}:${mins} Received a packet:${messageString} on topic ${topic}`);
 
         let messageObject = null;
 
@@ -538,6 +538,7 @@ class Manager {
         this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_CONNECTED_TOPIC, { qos: 1 });
         this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_REGISTERED_TOPIC, { qos: 1 });
         this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_DATA_TOPIC + '/#', { qos: 1 });
+        this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_ROBOT_TOPIC, { qos: 1 });
         this.mqttClient.on("message", (topic, message, packet) =>
             this.handleIncomingMessage(topic, message, packet));
 
@@ -545,7 +546,7 @@ class Manager {
         await this.addDisplay("CLB-3030da");
         // Only do this when the process managers have changed - which is not very often
         // May make this an admin option in a later release
-        //await this.updateProcessManagers();
+        await this.updateProcessManagers();
         await this.checkForAdminUser();
     }
 

@@ -59,4 +59,26 @@ router.post('/', authenticateToken, async (req, res) => {
   res.render('deviceSelect.ejs', { name: res.user.name, role: res.user.role, devices: userDevices });
 })
 
+router.get('/getMacAddresses', authenticateToken, async function (req, res) {
+
+
+  if (res.user.role != "admin") {
+    menuPage(
+      "Get MAC addresses",
+      "Only Admin users can get MAC addresses",
+      [
+        { description: "Continue", route: "/" }
+      ],
+      res
+    );
+    return;
+  }
+
+  let userDevices;
+  userDevices = await Device.find();
+
+  res.render("getMACaddresses.ejs", { devices: userDevices });
+});
+
+
 module.exports = router;
