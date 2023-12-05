@@ -23,16 +23,13 @@
     <div class="container mb-2 mt-2">
         <form method="POST" action="/openDevice/saveProgram/<%= device.name %>">
         <label for="codeTextarea">Enter your text:</label>
-        <textarea id="codeTextarea" name="codeTextarea" style="font-family:monospace;" class="w-100" rows="20" cols="120"></textarea>
-        <input type="submit" value="Submit" class="btn btn-primary mb-2" >
+        <textarea id="codeTextarea" name="codeTextarea" style="font-family:monospace;" class="w-100" rows="20" cols="120" ><%= device.pythonIsh %></textarea>
+        <input type="submit" value="Submit" class="btn btn-primary mb-4 btn-block" >
       </form>
     </div>
 
     <div class="container mb-2 mt-2" id="actionButtons">
         <div class="row justify-content-between">
-            <div class="col">
-                <button class="btn btn-primary mb-2" onclick="doSend();">Send </button>
-            </div>
             <div class="col">
                 <button class="btn btn-primary mb-2" onclick="doRun();">Run</button>
             </div>
@@ -127,26 +124,33 @@
         let builtInProgramNo = 0;
 
         let builtInPrograms = [
-            `# Coloured flashing
+            `begin
+# Coloured flashing
 forever
   red
   delay 5
   green
   delay 5
+end
 `,
-            `# Alarm 
+            `begin
+# Alarm 
 forever
   sound 1000
   delay 5
   sound 2000
   delay 5
+end
 `,
-            `# square dance 
+            `begin
+# square dance 
 forever
   move 100
   turn 90
+end
 `,
-            `# distance light 
+            `begin
+# distance light 
 forever
   d = @distance
   if d < 100:
@@ -156,16 +160,20 @@ forever
     yellow
     continue
   green
+end
 `,
-            `# robot coward 
+            `begin
+# robot coward 
 forever
   green
   d = @distance
   if d < 100:
     red
     move -100
+end
 `,
-            `# turn and run 
+            `begin
+# turn and run 
 forever
   green
   d = @distance
@@ -173,8 +181,10 @@ forever
     red
     turn 180
     move 100
+end
 `,
-            `# avoid obstacles 
+            `begin
+# avoid obstacles 
 forever
   green
   move
@@ -182,8 +192,10 @@ forever
   if d < 100:
     red
     turn 90
+end
 `,
-            `# spin the bottle
+            `begin
+# spin the bottle
 forever
   green
   if @distance < 100:
@@ -191,12 +203,15 @@ forever
     a = a+360
     red
     turn a
+end
 `,
-            `# theramin
+            `begin
+# theramin
 forever
   f=@distance*20
   f=f+1000
   sound f
+end
 `
         ];
 

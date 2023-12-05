@@ -13,7 +13,7 @@ const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessag
 const buildUserDescriptions = require('../_helpers/buildUserDescriptions');
 
 
-router.get('/:device_guid', authenticateToken, async function (req, res) {
+router.get('/:device_guid', async function (req, res) {
     let device_guid = req.params.device_guid;
 
     let device = await Device.findOne({ guid: device_guid });
@@ -56,28 +56,26 @@ router.get('/:device_guid', authenticateToken, async function (req, res) {
         return;
     };
 
-    res.render('pythonIshEditor.ejs', { device: device});
+    res.render('pythonIshEditor.ejs', { device: device });
 });
 
-router.post('/saveProgram/:name', authenticateToken, getDeviceByDeviceName, async (req, res) => {
+router.post('/saveProgram/:name', getDeviceByDeviceName, async (req, res) => {
 
     let device = res.device;
     let codeText = req.body.codeTextarea;
 
     console.log("send code command pressed for:", device.name, " command:", codeText);
 
-    let command= {
-        process:"robot",
-        command:"send",
-        text:codeText
-    }
-
-    let commandJSON = JSON.stringify(command);
-  
     mgr = Manager.getActiveManger();
   
-    await mgr.sendJSONCommandToDevice(device.name, commandJSON);
-  
+    // the ** prefix causes the robot control software to route the string straight to the robot
+
+    await mgr.sendRawTextToDevice(device.name, `**${codeText}`);
+
+    await device.updateOne({
+        pythonIsh: codeText
+    });
+    
     res.render('pythonIshEditor.ejs', { device: device});
 })
   

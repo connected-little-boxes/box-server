@@ -392,6 +392,23 @@ class Manager {
         await this.sendMessageToDisplays(message, installation);
     }
 
+    async sendRawTextToDevice(deviceName, command) {
+        let topic = process.env.MQTT_TOPIC_PREFIX + '/command/' + deviceName;
+        tinyLog(`Sending:${command} to:${topic}`);
+        this.mqttClient.publish(topic, command);
+        // store the command for debugging
+
+        var device = null;
+
+        device = await Device.findOne({ name: deviceName });
+
+        if (device != null) {
+            await device.updateOne({
+                lastCommand: command.slice(0,50)
+            });
+        }
+     }
+
     async sendJSONCommandToDevice(deviceName, command) {
         let topic = process.env.MQTT_TOPIC_PREFIX + '/command/' + deviceName;
 
