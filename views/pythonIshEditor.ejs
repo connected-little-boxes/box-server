@@ -124,33 +124,27 @@
         let builtInProgramNo = 0;
 
         let builtInPrograms = [
-            `begin
-# Coloured flashing
+            `# Coloured flashing
 forever
   red
   delay 5
   green
   delay 5
-end
 `,
-            `begin
+            `
 # Alarm 
 forever
   sound 1000
   delay 5
   sound 2000
   delay 5
-end
 `,
-            `begin
-# square dance 
+            `# square dance 
 forever
   move 100
   turn 90
-end
 `,
-            `begin
-# distance light 
+            `# distance light 
 forever
   d = @distance
   if d < 100:
@@ -160,9 +154,8 @@ forever
     yellow
     continue
   green
-end
 `,
-            `begin
+            `
 # robot coward 
 forever
   green
@@ -170,10 +163,8 @@ forever
   if d < 100:
     red
     move -100
-end
 `,
-            `begin
-# turn and run 
+            `# turn and run 
 forever
   green
   d = @distance
@@ -181,10 +172,8 @@ forever
     red
     turn 180
     move 100
-end
 `,
-            `begin
-# avoid obstacles 
+            `# avoid obstacles 
 forever
   green
   move
@@ -194,8 +183,7 @@ forever
     turn 90
 end
 `,
-            `begin
-# spin the bottle
+            `# spin the bottle
 forever
   green
   if @distance < 100:
@@ -203,15 +191,12 @@ forever
     a = a+360
     red
     turn a
-end
 `,
-            `begin
-# theramin
+            `# theramin
 forever
   f=@distance*20
   f=f+1000
   sound f
-end
 `
         ];
 

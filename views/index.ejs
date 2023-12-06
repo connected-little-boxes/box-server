@@ -46,6 +46,11 @@
                     <a href="/deviceSelect/getMacAddresses" class="btn btn-primary mb-4 btn-block w-100">Get MAC addresses for boxes</a>
                 </div>
                 <% } %>
+            <% if (role=="admin" ){ %>
+                <div class="container mb-4">
+                    <a href="/rugbyMatch/index" class="btn btn-primary mb-4 btn-block w-100">Manage Rugby Match</a>
+                </div>
+                <% } %>
 
             <div class="container mb-4">
                 <a href="/command/commandGroupSelect" class="btn btn-primary mb-4 btn-block w-100">
