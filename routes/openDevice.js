@@ -70,13 +70,31 @@ router.post('/saveProgram/:name', getDeviceByDeviceName, async (req, res) => {
   
     // the ** prefix causes the robot control software to route the string straight to the robot
 
-    await mgr.sendRawTextToDevice(device.name, `**${codeText}`);
+    await mgr.sendRawTextToDevice(device.name, `**begin\r\n${codeText}\r\nend\r\n`);
 
-    await device.updateOne({
+    let updateResult = await device.updateOne({
         pythonIsh: codeText
     });
+
+    // reload the device to update it
+    device = await Device.findOne({ name: req.params.name });
     
     res.render('pythonIshEditor.ejs', { device: device});
-})
+});
+
+router.get('/doCommand/:name/:command', getDeviceByDeviceName, async (req, res) => {
+
+    let device = res.device;
+
+    let command = req.params.command;
+
+    mgr = Manager.getActiveManger();
+  
+    // the ** prefix causes the robot control software to route the string straight to the robot
+
+    await mgr.sendRawTextToDevice(device.name, `***${command}`);
+
+    res.render('pythonIshEditor.ejs', { device: device});
+});
   
 module.exports = router;
