@@ -5,7 +5,7 @@ const Device = require('../models/device');
 const Manager = require('../manager');
 const User = require('../models/user');
 const authenticateToken = require('../_helpers/authenticateToken');
-const getDeviceByDeviceName = require('../_helpers/getDeviceByDeviceName');
+const getOpenDeviceByDeviceName = require('../_helpers/getOpenDeviceByDeviceName');
 const menuPage = require('../_helpers/menuPage');
 const validateFriendlyName = require('../_helpers/validateFriendlyName');
 const generateQRCode = require('../_helpers/generateQRCode');
@@ -59,7 +59,7 @@ router.get('/:device_guid', async function (req, res) {
     res.render('pythonIshEditor.ejs', { device: device });
 });
 
-router.post('/saveProgram/:name', getDeviceByDeviceName, async (req, res) => {
+router.post('/saveProgram/:name', getOpenDeviceByDeviceName, async (req, res) => {
 
     let device = res.device;
     let codeText = req.body.codeTextarea;
@@ -82,7 +82,7 @@ router.post('/saveProgram/:name', getDeviceByDeviceName, async (req, res) => {
     res.render('pythonIshEditor.ejs', { device: device});
 });
 
-router.get('/doCommand/:name/:command', getDeviceByDeviceName, async (req, res) => {
+router.get('/doCommand/:name/:command', getOpenDeviceByDeviceName, async (req, res) => {
 
     let device = res.device;
 
