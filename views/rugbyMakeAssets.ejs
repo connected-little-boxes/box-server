@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>Connected Little Boxes</title>
+</head>
+
+<body>
+    <div class="container mb-2 mt-2">
+        <h1 class="mb-4">Robot Rugby</h1>
+        <h2 class="mb-4">
+            <%= match.name %> Match Players
+        </h2>
+    </div>
+    <div class="container mb-4">
+        <% devices.forEach(device=> { %>
+            <div class="container mb-2 mt-2">
+                <h2 class="mb-4">
+                    <%= device.name %>
+                </h2>
+                <p>        
+                    <img src=" <%= device.qrCode %> "></img>
+                </p>
+                <p>
+                    <a href="<%= device.url %>"><%= device.url %></a>
+                </p>
+                <p>
+                    <%= device.description %>
+                </p>
+                <b>
+                    To take control of your robot open the link or scan the QR code above.
+                </b>
+                <hr />
+            </div>
+            <% }) %>
+                <a href="/" class="btn btn-primary mt-2 mb-4 btn-block">Done</a>
+                <div class="container mb-4">
+                </div>
+    </div>
+</body>
+
+</html>

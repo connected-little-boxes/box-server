@@ -12,20 +12,11 @@
 
 <body>
     <div class="container mb-2 mt-2">
-        <h1 class="mb-4">Connected Little Boxes</h1>
+        <h1 class="mb-4">Create Robot Rugby Match</h1>
         <h2 class="mb-4">Enter Match Details</h2>
     </div>
     <div class="container mb-4">
-        <label for="deviceName">Matches</label>
-        <select class="form-control" name="deviceName" id="deviceName">
-            <% matchNameList.forEach(name=> { %>
-                <option value="<%=name %>">
-                    <%=name %>
-                </option>
-                <% }) %>
-        </select>
-
-        <form action="/rugbyMatch/openMatch" method="POST">
+        <form action="/rugbyMatch/createMatch" method="POST">
             <div>
                 <div class="form-group mt-4">
                     <label for="name">Match Name:</label>
