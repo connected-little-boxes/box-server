@@ -13,7 +13,7 @@
 <body>
     <div class="container mb-2 mt-2">
         <h1 class="mb-4">Robot Rugby</h1>
-        <h2 class="mb-4">Match edit</h2>
+        <h2 class="mb-4">Match Manage <%= match.name %></h2>
     </div>
     <div class="container mb-4">
         <div class="container mb-4">
@@ -29,6 +29,9 @@
         <div class="container mb-4">
             <a href="/rugbyMatch/getMatchAssets/<%= match.name %>" class="btn btn-primary mb-4 btn-block">Get match
                 assets</a>
+        </div>
+        <div class="container mb-4">
+            <a href="/rugbyMatch/commandAllRobots/<%= match.name %>/RH" class="btn btn-primary mb-4 btn-block">Stop all robots</a>
         </div>
     </div>
 

@@ -42,10 +42,10 @@ async function buildRugbyMatchNameList() {
     return nameList;
 }
 
-async function findAllRobots(){
+async function findAllRobots() {
     const searchTerm = 'robot';
     let result = await Device.find({ tags: { $regex: new RegExp(searchTerm, 'i') } });
-    return result ;    
+    return result;
 }
 
 router.get('/createMatch', authenticateToken, authenticateAdmin, async function (req, res) {
@@ -82,7 +82,7 @@ router.post('/createMatch', authenticateToken, authenticateAdmin, async function
     newMatch = RugbyMatch({
         name: matchName,
         description: matchDescription,
-        owner:owner._id,
+        owner: owner._id,
         devices: robots
     });
 
@@ -111,7 +111,7 @@ router.post('/openMatch', authenticateToken, authenticateAdmin, async (req, res)
 
     let match = await RugbyMatch.findOne({ name: matchName });
 
-    if(!match){
+    if (!match) {
         menuPage(
             `Robot Rugby`,
             `Match ${matchName} not found`,
@@ -123,7 +123,7 @@ router.post('/openMatch', authenticateToken, authenticateAdmin, async (req, res)
         return;
     }
 
-    res.render("rugbyEditMatch.ejs", { match: match });
+    res.render("rugbyManageMatch.ejs", { match: match });
 });
 
 router.post('/editMatch/:matchName', authenticateToken, authenticateAdmin, getRugbyMatchByName, async function (req, res) {
@@ -133,7 +133,7 @@ router.post('/editMatch/:matchName', authenticateToken, authenticateAdmin, getRu
 
     let match = res.rugbyMatch;
 
-    await match.updateOne( {description:description});
+    await match.updateOne({ description: description });
 
     match = await RugbyMatch.findOne({ name: matchName });
 
@@ -143,36 +143,36 @@ router.post('/editMatch/:matchName', authenticateToken, authenticateAdmin, getRu
 router.get('/getMatchAssets/:matchName', authenticateToken, authenticateAdmin, getRugbyMatchByName, async function (req, res) {
 
     let match = res.rugbyMatch;
-    
+
     let devices = [];
 
     for (let i = 0; i < match.devices.length; i++) {
-        let device = await Device.findOne( {_id:match.devices[i]});
+        let device = await Device.findOne({ _id: match.devices[i] });
 
         let name = device.friendlyName;
         let description = device.description;
 
-        if(!name) name = device.name;
+        if (!name) name = device.name;
 
-        if(name.startsWith('Robot ')){
+        if (name.startsWith('Robot ')) {
             name = name.slice(6);
         }
 
         let url = `${process.env.HOST_ADDRESS}rugbyMatch/player/${match.name}/${device.guid}`;
 
         let qrCode = await generateQRCode(url);
-      
+
         let deviceAsset = {
-            name:name,
-            description:description,
-            url:url,
-            qrCode:qrCode
+            name: name,
+            description: description,
+            url: url,
+            qrCode: qrCode
         };
 
         devices.push(deviceAsset);
     }
 
-    res.render("rugbyMakeAssets.ejs", { match: match, devices : devices });
+    res.render("rugbyMakeAssets.ejs", { match: match, devices: devices });
 
 });
 
@@ -210,29 +210,14 @@ router.get('/endPlay', authenticateToken, authenticateAdmin, async function (req
     );
 });
 
-router.get('/player/:matchName/:deviceGuid', getRugbyMatchByName, async function (req, res) {
+router.get('/player/:matchName/:deviceGuid', getRugbyMatchByName, getOpenDeviceByDeviceGUID, async function (req, res) {
 
     let match = res.rugbyMatch;
-
-    let deviceGuid = req.params.deviceGuid;
-
-    let device = await Device.findOne({ guid: deviceGuid });
-
-    if (!device) {
-        menuPage(
-            "Robot Rugby",
-            `Device not found ${deviceGuid}`,
-            [
-                { description: "Continue", route: "/" }
-            ],
-            res
-        );
-        return;
-    };
+    let device = res.device;
 
     let tags = device.tags;
 
-    if(!tags){
+    if (!tags) {
         menuPage(
             "Open Device - no tags",
             `Only devices with the robots tag can be opened directly. ${device_guid}`,
@@ -256,23 +241,39 @@ router.get('/player/:matchName/:deviceGuid', getRugbyMatchByName, async function
         return;
     };
 
-    res.render('robotRugbyEditor.ejs', { device: device, match:match });
+    res.render('robotRugbyEditor.ejs', { device: device, match: match });
 });
 
 router.get('/doCommand/:matchName/:name/:command', getOpenDeviceByDeviceName, async (req, res) => {
 
-        let device = res.device;
-    
-        let command = req.params.command;
-    
-        mgr = Manager.getActiveManger();
-      
+    let device = res.device;
+
+    let command = req.params.command;
+
+    mgr = Manager.getActiveManger();
+
+    // the ** prefix causes the robot control software to route the string straight to the robot
+
+    await mgr.sendRawTextToDevice(device.name, `***${command}`);
+
+    res.render('robotRugbyEditor.ejs', { device: device });
+});
+
+router.get('/commandAllRobots/:matchName/:command', authenticateToken, authenticateAdmin, getRugbyMatchByName, async (req, res) => {
+
+    let match = res.rugbyMatch;
+
+    let command = req.params.command;
+
+    mgr = Manager.getActiveManger();
+
+    for (let i = 0; i < match.devices.length; i++) {
+        let device = await Device.findOne({ _id: match.devices[i] });
         // the ** prefix causes the robot control software to route the string straight to the robot
-    
         await mgr.sendRawTextToDevice(device.name, `***${command}`);
-    
-        res.render('pythonIshEditor.ejs', { device: device});
-    });
-      
-    
+    }
+
+    res.render("rugbyManageMatch.ejs", { match: match });
+});
+
 module.exports = router;
