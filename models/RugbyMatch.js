@@ -15,6 +15,10 @@ const RugbyMatchSchema = new mongoose.Schema(
             ref:'Owner',
             required: true
         },
+        resetCode: {
+            type: String,
+            default:""
+        },
         devices: {
             type: [mongoose.Schema.Types.ObjectId],
             ref:'Device',

@@ -31,7 +31,20 @@
                 assets</a>
         </div>
         <div class="container mb-4">
+            <a href="/rugbyMatch/commandAllRobots/<%= match.name %>/RS" class="btn btn-primary mb-4 btn-block">Start all robots</a>
+        </div>
+        <div class="container mb-4">
             <a href="/rugbyMatch/commandAllRobots/<%= match.name %>/RH" class="btn btn-primary mb-4 btn-block">Stop all robots</a>
+        </div>
+        <div class="container mb-4">
+            <a href="/rugbyMatch/sendProgramAndRun/<%= match.name %>" class="btn btn-primary mb-4 btn-block">Send program and run</a>
+        </div>
+        <div class="container mb-2 mt-2">
+            <form method="POST" action="/rugbyMatch/saveProgramToAllRobots/<%=match.name%>">
+              <textarea id="codeTextarea" name="codeTextarea" style="font-family:monospace;" class="w-100" rows="20"
+                cols="120"><%= match.resetCode %></textarea>
+              <input type="submit" value="Send to all robots" class="btn btn-primary mt-2 mb-2 btn-block">
+            </form>
         </div>
     </div>
 

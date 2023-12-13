@@ -241,10 +241,10 @@ router.get('/player/:matchName/:deviceGuid', getRugbyMatchByName, getOpenDeviceB
         return;
     };
 
-    res.render('robotRugbyEditor.ejs', { device: device, match: match });
+    res.render('robotRugbyEditor.ejs', { device: device, match: match, message:"Robot opened" });
 });
 
-router.get('/doCommand/:matchName/:name/:command', getOpenDeviceByDeviceName, async (req, res) => {
+router.get('/doCommand/:matchName/:name/:command', getOpenDeviceByDeviceName, getRugbyMatchByName, async (req, res) => {
 
     let device = res.device;
 
@@ -256,7 +256,7 @@ router.get('/doCommand/:matchName/:name/:command', getOpenDeviceByDeviceName, as
 
     await mgr.sendRawTextToDevice(device.name, `***${command}`);
 
-    res.render('robotRugbyEditor.ejs', { device: device });
+    res.render('robotRugbyEditor.ejs', { device: device, match: match, message:"Command performed" });
 });
 
 router.get('/commandAllRobots/:matchName/:command', authenticateToken, authenticateAdmin, getRugbyMatchByName, async (req, res) => {
@@ -275,5 +275,71 @@ router.get('/commandAllRobots/:matchName/:command', authenticateToken, authentic
 
     res.render("rugbyManageMatch.ejs", { match: match });
 });
+
+router.post('/saveProgram/:matchName/:name', getOpenDeviceByDeviceName, getRugbyMatchByName, async (req, res) => {
+    let device = res.device;
+    let match = res.rugbyMatch;
+
+    let codeText = req.body.codeTextarea;
+
+    let updateResult = await device.updateOne({
+        pythonIsh: codeText
+    });
+
+    // reload the device to update it
+    device = await Device.findOne({ name: req.params.name });
+
+    const date = new Date();
+    const hours = date.getHours();
+    const mins = date.getMinutes();
+    const secs = date.getSeconds();
+
+    let message = `Program saved at ${hours}:${mins}:${secs}`;
+   
+    res.render('robotRugbyEditor.ejs', { device: device, match: match, message:message });
+});
+
+
+router.get('/sendProgramAndRun/:matchName', authenticateToken, authenticateAdmin, getRugbyMatchByName, async (req, res) => {
+
+    let match = res.rugbyMatch;
+
+    mgr = Manager.getActiveManger();
+
+    for (let i = 0; i < match.devices.length; i++) {
+        let device = await Device.findOne({ _id: match.devices[i] });
+        let code = `begin\r\n${device.pythonIsh}\r\nend\r\n`;
+        // the ** prefix causes the robot control software to route the string straight to the robot
+        await mgr.sendRawTextToDevice(device.name, `**${code}`);
+    }
+    res.render("rugbyManageMatch.ejs", { match: match, code:match.resetCode });
+});
+
+router.post('/saveProgramToAllRobots/:matchName', authenticateToken, authenticateAdmin, getRugbyMatchByName, async (req, res) => {
+
+    let match = res.rugbyMatch;
+    let codeText = req.body.codeTextarea;
+
+    await match.updateOne({resetCode:codeText});
+
+    match = await RugbyMatch.findOne({name:match.name});
+
+    mgr = Manager.getActiveManger();
+
+    for (let i = 0; i < match.devices.length; i++) {
+        let device = await Device.findOne({ _id: match.devices[i] });
+
+        let updateResult = await device.updateOne({
+            pythonIsh: codeText
+        });
+
+        let code = `begin\r\n${codeText}\r\nend\r\n`;
+        // the ** prefix causes the robot control software to route the string straight to the robot
+        await mgr.sendRawTextToDevice(device.name, `**${code}`);
+    }
+    res.render("rugbyManageMatch.ejs", { match: match, code:codeText });
+});
+
+
 
 module.exports = router;
