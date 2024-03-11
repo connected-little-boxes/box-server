@@ -39,7 +39,7 @@ async function buildUserDeviceFriendlyNameList(owner_id, selectedDeviceID) {
     let userDevices;
     let nameList = [];
 
-    if (owner.role = "admin") {
+    if (owner.role == "admin") {
         userDevices = await Device.find();
 
         userDevices.sort((a, b) => {
@@ -480,6 +480,7 @@ router.post('/commandEdit/:commandGroup_id/:command_id', authenticateToken, asyn
     let command_id = req.params.command_id;
 
     let commandGroup_id = req.params.commandGroup_id;
+    let message_id = req.params.commandMessage_id;
 
     await Command.updateOne(
         { _id: command_id },
@@ -506,6 +507,9 @@ router.post('/commandEdit/:commandGroup_id/:command_id', authenticateToken, asyn
                 let messageText = req.body[`message_${id}_messageText`];
 
                 let device;
+
+                let deviceOwnerName, friendlyName;
+                [friendlyName,deviceOwnerName] = deviceName.split(":");
 
                 if (owner.role == "admin") {
                     let deviceOwnerName, friendlyName;
