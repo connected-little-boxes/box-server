@@ -742,6 +742,19 @@ router.get('/commandMessageDeleteConfirm/:commandGroup_id/:command_id/:message_i
         { _id: message_id }
     );
 
+    if(!message)
+    {
+        menuPage(
+            "Command Device Message Delete",
+            `Message ${message_id} not found`,
+            [
+                { description: "Continue", route: "/command/commandGroupSelect/" }
+            ],
+            res
+        );
+        return;
+    }
+
     res.render("commandMessageDeleteConfirm.ejs", { message: message, command_id: command_id, commandGroup_id: commandGroup_id });
 });
 

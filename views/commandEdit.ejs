@@ -50,7 +50,7 @@
                                 <label for="<%= _id %>messageText">Message</label>
                                 <input required type="text" name="<%= _id %>_messageText" id="<%= _id %>_messageText"
                                     class="form-control" value="<%= messageDescription.message %>">
-                                <a href="/command/commandMessageDeleteConfirm/<%= commandGroup_id %>/<%= command._id %>/<%= _id %>"
+                                <a href="/command/commandMessageDeleteConfirm/<%= commandGroup_id %>/<%= command._id %>/<%= messageDescription._id %>"
                                     class="btn btn-primary mb-2 mt-2">Delete</a>
                         </div>
                         <% }) %>
