@@ -115,11 +115,12 @@ router.get('/:name', authenticateToken, getDeviceByDeviceName, async (req, res) 
 
   let role = res.user.role;
 
-  let url = process.env.HOST_ADDRESS + "openDevice/" + device.guid;
+  let openUrl = process.env.HOST_ADDRESS + "openDevice/" + device.guid;
+  let deviceUrl = process.env.HOST_ADDRESS + "openDevice/command/" + device.guid;
 
-  let qrCode = await generateQRCode(url);
+  let qrCode = await generateQRCode(openUrl);
 
-  res.render('device.ejs', { device: res.device, managers: managers, owner: ownerName, role: role, url:url, qrCode:qrCode });
+  res.render('device.ejs', { device: res.device, managers: managers, owner: ownerName, role: role, openUrl:openUrl, deviceUrl:deviceUrl, qrCode:qrCode });
 });
 
 router.post('/updateDetails/:name/:friendlyName', authenticateToken, getDeviceByDeviceName, async (req, res) => {

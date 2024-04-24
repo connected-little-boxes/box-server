@@ -12,7 +12,6 @@ const generateQRCode = require('../_helpers/generateQRCode');
 const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessageItems, ProcessManagerMessages, ProcessManagers } = require('../models/ProcessManager');
 const buildUserDescriptions = require('../_helpers/buildUserDescriptions');
 
-
 router.get('/:device_guid', async function (req, res) {
     let device_guid = req.params.device_guid;
 
@@ -57,6 +56,45 @@ router.get('/:device_guid', async function (req, res) {
     };
 
     res.render('pythonIshEditor.ejs', { device: device });
+});
+
+router.get('/command/:device_guid', async function (req, res) {
+
+    let device_guid = req.params.device_guid;
+    let commandText = req.query.text;
+
+    let device = await Device.findOne({ guid: device_guid });
+
+    if (!commandText) {
+        return res.status(404).json({ message: `Direct command no command provided ${device_guid}` });
+    };
+
+    if (!device) {
+        return res.status(404).json({ message: `Direct command: cannot find device ${device_guid}` });
+    };
+
+    let tags = device.tags;
+
+    if(!tags){
+        return res.status(404).json({ message: `Direct command: device has no tags ${device_guid}` });
+    }
+
+    if (!tags.includes("direct")) {
+        return res.status(404).json({ message: `Direct command: device does not have direct tag ${device_guid}` });
+    };
+
+    mgr = Manager.getActiveManger();
+
+    await mgr.sendJSONCommandToDevice(device.name, commandText);
+
+    menuPage(
+        "Command sent",
+        `Command has been sent`,
+        [
+        ],
+        res
+    );
+
 });
 
 router.post('/saveProgram/:name', getOpenDeviceByDeviceName, async (req, res) => {
