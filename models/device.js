@@ -42,6 +42,15 @@ const deviceSchema = new mongoose.Schema(
             default:"none",
             required: true
         },
+        numberOfConnections: {
+            type: Number,
+            default:0,
+            required: true,
+            validate: {
+                validator: Number.isInteger,
+                message: '{VALUE} is not an integer value for number of connections'
+            }        
+        },
         lastResponseDate: {
             type: Date,
             default: Date.now(),

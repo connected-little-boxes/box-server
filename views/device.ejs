@@ -29,8 +29,8 @@
                         Version: <%= device.version %>
                             Registered: <%= device.regDate.toLocaleDateString() %>
                                 <%= device.regDate.toLocaleTimeString() %>
-                                    Last connected: <%= device.lastConnectedDate.toLocaleDateString() %>
-                                        <%= device.lastConnectedDate.toLocaleTimeString() %>
+                                    Last connected: <%= device.lastConnectedDate.toLocaleDateString() %> 
+                                        <%= device.lastConnectedDate.toLocaleTimeString() %> Connections:<%= String(device.numberOfConnections) %> 
                                             <br>
                                             Last command:<%= device.lastCommand %>
                                                 <br>

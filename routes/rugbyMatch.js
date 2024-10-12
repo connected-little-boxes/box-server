@@ -247,6 +247,7 @@ router.get('/player/:matchName/:deviceGuid', getRugbyMatchByName, getOpenDeviceB
 router.get('/doCommand/:matchName/:name/:command', getOpenDeviceByDeviceName, getRugbyMatchByName, async (req, res) => {
 
     let device = res.device;
+    let match = res.rugbyMatch;
 
     let command = req.params.command;
 
@@ -280,6 +281,8 @@ router.post('/saveProgram/:matchName/:name', getOpenDeviceByDeviceName, getRugby
     let device = res.device;
     let match = res.rugbyMatch;
 
+    mgr = Manager.getActiveManger();
+
     let codeText = req.body.codeTextarea;
 
     let updateResult = await device.updateOne({
@@ -293,6 +296,10 @@ router.post('/saveProgram/:matchName/:name', getOpenDeviceByDeviceName, getRugby
     const hours = date.getHours();
     const mins = date.getMinutes();
     const secs = date.getSeconds();
+
+    let code = `begin\r\n${codeText}\r\nend\r\n`;
+    // the ** prefix causes the robot control software to route the string straight to the robot
+    await mgr.sendRawTextToDevice(device.name, `**${code}`);
 
     let message = `Program saved at ${hours}:${mins}:${secs}`;
    

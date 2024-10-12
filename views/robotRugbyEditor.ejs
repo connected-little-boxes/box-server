@@ -28,11 +28,13 @@
       <label for="codeTextarea">Enter your text:</label>
       <textarea id="codeTextarea" name="codeTextarea" style="font-family:monospace;" class="w-100" rows="20"
         cols="120"><%= device.pythonIsh %></textarea>
-      <input type="submit" value="Save your play" class="btn btn-primary mt-2 mb-2 btn-block">
+      <input type="submit" value="Send your program to the robot" class="btn btn-primary mt-2 mb-2 btn-block">
     </form>
-    <button class="btn btn-primary mt-2 mb-2 btn-block" onclick="doSampleProgram();">Pick your Play</button>
-    <button class="btn btn-primary mt-2 mb-2 btn-block" onclick="doClearProgram();">Clear Editor</button>
-    <p>
+    <button class="btn btn-primary mt-2 mb-2 btn-block" onclick="doSampleProgram();">Browse sample programs</button>
+    <button class="btn btn-primary mt-2 mb-2 btn-block" onclick="doClearProgram();">Clear Program</button>
+    <a href="/rugbyMatch/doCommand/<%=match.name%>/<%=device.name%>/RS" class="btn btn-primary mb-2 btn-block">Run program</a>
+  <a href="/rugbyMatch/doCommand/<%=match.name%>/<%=device.name%>/RH" class="btn btn-primary mt-2 mb-2 btn-block">Stop program</a>
+<p>
       <%= message %>
     </p>
   </div>
@@ -106,21 +108,6 @@ forever
   if d < 100:
     red
     turn 90
-`,
-    `# spin the bottle
-forever
-  green
-  if @distance < 100:
-    a = @random*30
-    a = a+360
-    red
-    turn a
-`,
-    `# theramin
-forever
-  f=@distance*20
-  f=f+1000
-  sound f
 `
   ];
 

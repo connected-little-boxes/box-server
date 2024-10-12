@@ -17,6 +17,7 @@ const mongoose = require('mongoose')
 const mqtt = require('mqtt');
 const bcrypt = require('bcrypt');
 const Device = require('./models/device');
+const RFIDcard = require('./models/RFIDcardData');
 const Connection = require('./models/connection');
 const Installation = require('./models/installation');
 const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessageItems, ProcessManagerMessages, ProcessManagers } = require('./models/ProcessManager');
@@ -75,7 +76,7 @@ class Manager {
                         processes: messageObject.processes,
                         sensors: messageObject.sensors,
                         tags: "",
-                        guid : guid
+                        guid: guid
                     });
                     await device.save();
                     tinyLog("Device created");
@@ -143,7 +144,8 @@ class Manager {
             }
 
             await device.updateOne({
-                lastConnectedDate: Date.now()
+                lastConnectedDate: Date.now(),
+                numberOfConnections: device.numberOfConnections + 1
             });
 
             await this.showMessageToAll(displayName + " on");
@@ -404,10 +406,10 @@ class Manager {
 
         if (device != null) {
             await device.updateOne({
-                lastCommand: command.slice(0,50)
+                lastCommand: command.slice(0, 50)
             });
         }
-     }
+    }
 
     async sendJSONCommandToDevice(deviceName, command) {
         let topic = process.env.MQTT_TOPIC_PREFIX + '/command/' + deviceName;
@@ -501,6 +503,47 @@ class Manager {
         this.sendCommandToDevices(devices, command);
     }
 
+    async doRFIDReport(topic, message, messageObject) {
+
+        let messageString = String.fromCharCode(...message);
+        let makingNewCards = true;
+        const date = new Date();
+        const hours = date.getHours();
+        const mins = date.getMinutes();
+
+        let cardID = messageObject.cardID;
+        let deviceName = messageObject.device;
+        let type = messageObject.type;
+
+        tinyLog(`${hours}:${mins} RFID card ${cardID} from ${deviceName}`);
+
+        let card = await RFIDcard.findOne({ idString: cardID });
+
+        if (card) {
+            await card.updateOne({
+                lastSeenDate: Date.now()
+            })
+            await this.sendJSONCommandToDevice(deviceName, '{"process":"pixels","command":"setnamedcolour","colourname":"green"}');            
+            tinyLog("RFID card updated");
+        }
+        else {
+            if (makingNewCards) {
+                let newCard = new RFIDcard({
+                    idString: cardID,
+                    owner: null,
+                    type: type,
+                    payload: ""
+                });
+                await newCard.save();
+                tinyLog("RFID card created");
+            }
+            else{
+                await this.sendJSONCommandToDevice(deviceName, '{"process":"pixels","command":"setnamedcolour","colourname":"red"}');            
+            }
+        }
+    }
+
+
     async handleIncomingMessage(topic, message, packet) {
 
         let messageString = String.fromCharCode(...message);
@@ -532,6 +575,10 @@ class Manager {
         if (topic.startsWith(`${process.env.MQTT_TOPIC_PREFIX}/${process.env.MQTT_DATA_TOPIC}`)) {
             await this.doDeviceResponse(topic, message, messageObject);
         }
+
+        if (topic.startsWith(`${process.env.MQTT_TOPIC_PREFIX}/${process.env.MQTT_RFID_TOPIC}`)) {
+            await this.doRFIDReport(topic, message, messageObject);
+        }
     }
 
     async checkForAdminUser() {
@@ -559,8 +606,8 @@ class Manager {
             // console.log(`Device ${device.name} missing pageURL suggest ${url}`);
             // let qrCode = await generateQRCode(url);                    
             await device.updateOne({
-                    pageURL: 0,
-                    pageQRcode : 0
+                pageURL: 0,
+                pageQRcode: 0
             });
         });
     }
@@ -574,6 +621,7 @@ class Manager {
         this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_REGISTERED_TOPIC, { qos: 1 });
         this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_DATA_TOPIC + '/#', { qos: 1 });
         this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_ROBOT_TOPIC, { qos: 1 });
+        this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_RFID_TOPIC, { qos: 1 });
         this.mqttClient.on("message", (topic, message, packet) =>
             this.handleIncomingMessage(topic, message, packet));
 

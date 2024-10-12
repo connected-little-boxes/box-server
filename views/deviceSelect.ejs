@@ -32,8 +32,8 @@
                     <div class="card-subtitle text-muted mb-2">
                         Name: <%= device.name %> Registered: <%= device.regDate.toLocaleDateString() %>
                                 <%= device.regDate.toLocaleTimeString() %>
-                                    Last seen:<%= device.lastResponseDate.toLocaleDateString() %>
-                                        <%= device.lastResponseDate.toLocaleTimeString() %>
+                                    Last seen:<%= device.lastResponseDate.toLocaleDateString() %> 
+                                        <%= device.lastResponseDate.toLocaleTimeString() %> Connections:<%= String(device.numberOfConnections) %>
                     </div>
                     <a href="devices/<%= device.name %>" class="btn btn-primary">Edit</a>
                     <% if (role=="admin"){ %>
