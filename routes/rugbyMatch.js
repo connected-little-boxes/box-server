@@ -176,40 +176,6 @@ router.get('/getMatchAssets/:matchName', authenticateToken, authenticateAdmin, g
 
 });
 
-
-router.get('/closeMatch', authenticateToken, authenticateAdmin, async function (req, res) {
-    menuPage(
-        "Robot Rugby",
-        `Coming Soon`,
-        [
-            { description: "Continue", route: "/" }
-        ],
-        res
-    );
-});
-
-router.get('/startPlay', authenticateToken, authenticateAdmin, async function (req, res) {
-    menuPage(
-        "Robot Rugby",
-        `Coming Soon`,
-        [
-            { description: "Continue", route: "/" }
-        ],
-        res
-    );
-});
-
-router.get('/endPlay', authenticateToken, authenticateAdmin, async function (req, res) {
-    menuPage(
-        "Robot Rugby",
-        `Coming Soon`,
-        [
-            { description: "Continue", route: "/" }
-        ],
-        res
-    );
-});
-
 router.get('/player/:matchName/:deviceGuid', getRugbyMatchByName, getOpenDeviceByDeviceGUID, async function (req, res) {
 
     let match = res.rugbyMatch;

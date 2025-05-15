@@ -21,6 +21,7 @@
     "express-session": "^1.17.1",
     "mongoose": "^6.0.11",
     "mqtt": "^4.2.8",
+    "nodemon": "^3.1.10",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "qrcode": "^1.5.1",
@@ -28,7 +29,6 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "dotenv": "^8.2.0",
-    "nodemon": "^2.0.6"
+    "dotenv": "^8.2.0"
   }
 }
