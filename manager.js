@@ -416,16 +416,19 @@ class Manager {
 
         tinyLog(`Sending:${command} to:${topic}`);
 
-        // validate the command JSON and add a sequence number
-        let commandObject = null;
-        try {
-            commandObject = JSON.parse(command);
-            commandObject["seq"] = this.sequenceNumber++;
-            command = JSON.stringify(commandObject);
-        }
-        catch (err) {
-            tinyLog(`Invalid json command:${command} error:${err} for:${deviceName}`);
-            return;
+        if (!command.startsWith("**")) {
+            // commands that start with ** are passed straight to the robot
+            // validate the command JSON and add a sequence number
+            let commandObject = null;
+            try {
+                commandObject = JSON.parse(command);
+                commandObject["seq"] = this.sequenceNumber++;
+                command = JSON.stringify(commandObject);
+            }
+            catch (err) {
+                tinyLog(`Invalid json command:${command} error:${err} for:${deviceName}`);
+                return;
+            }
         }
 
         this.mqttClient.publish(topic, command);
@@ -523,7 +526,7 @@ class Manager {
             await card.updateOne({
                 lastSeenDate: Date.now()
             })
-            await this.sendJSONCommandToDevice(deviceName, '{"process":"pixels","command":"setnamedcolour","colourname":"green"}');            
+            await this.sendJSONCommandToDevice(deviceName, '{"process":"pixels","command":"setnamedcolour","colourname":"green"}');
             tinyLog("RFID card updated");
         }
         else {
@@ -537,8 +540,8 @@ class Manager {
                 await newCard.save();
                 tinyLog("RFID card created");
             }
-            else{
-                await this.sendJSONCommandToDevice(deviceName, '{"process":"pixels","command":"setnamedcolour","colourname":"red"}');            
+            else {
+                await this.sendJSONCommandToDevice(deviceName, '{"process":"pixels","command":"setnamedcolour","colourname":"red"}');
             }
         }
     }
