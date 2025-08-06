@@ -5,6 +5,7 @@ const Device = require('../models/device');
 const Manager = require('../manager');
 const User = require('../models/user');
 const RugbyMatch = require('../models/RugbyMatch');
+const RugbyPlayer = require('../models/RugbyPlayer');
 const authenticateToken = require('../_helpers/authenticateToken');
 const authenticateAdmin = require('../_helpers/authenticateAdmin');
 const getDeviceByDeviceName = require('../_helpers/getDeviceByDeviceName');
@@ -17,6 +18,7 @@ const generateQRCode = require('../_helpers/generateQRCode');
 const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessageItems, ProcessManagerMessages, ProcessManagers } = require('../models/ProcessManager');
 const buildUserDescriptions = require('../_helpers/buildUserDescriptions');
 const tinyLog = require('../_helpers/tinyLog');
+const Uuid = require('uuid');
 
 router.get('/index', authenticateToken, authenticateAdmin, async function (req, res) {
     res.render('rubgyIndex.ejs');
@@ -77,13 +79,53 @@ router.post('/createMatch', authenticateToken, authenticateAdmin, async function
         return;
     }
 
-    let robots = await Device.find({ tags: { $regex: new RegExp('robot', 'i') } });
+    let matchGuid = Uuid.v4();
 
-    newMatch = RugbyMatch({
+    let players = [];
+
+    let trackingCodeNumber = 0;
+
+    // Get the robots for this match 
+    // TODO - allow the user to select robots in the CreateMatch dialogue. 
+
+    // At the moment we just find devices with red and blue tags and form them into teams 
+
+    let teamNames = ["red", "blue"];
+
+    for (const teamName of teamNames) {
+
+        // get all the robots with the selected colour
+
+        let robots = await Device.find({ tags: { $regex: new RegExp(teamName, 'i') } });
+
+        // make a player for each of the robots
+
+        for (const device of robots) {
+
+            let newPlayer = RugbyPlayer({
+                guid: Uuid.v4(),
+                deviceGuid: device.guid,
+                matchGuid: matchGuid,
+                teamName: teamName,
+                trackingCode: String(trackingCodeNumber)
+            });
+
+            await newPlayer.save();
+
+            players.push(newPlayer.guid);
+
+            trackingCodeNumber++;
+        }
+    }
+
+    // Create a match
+
+    let newMatch = RugbyMatch({
         name: matchName,
+        guid: Uuid.v4(),
         description: matchDescription,
         owner: owner._id,
-        devices: robots
+        players: players
     });
 
     await newMatch.save();
@@ -146,12 +188,28 @@ router.get('/getMatchAssets/:matchName', authenticateToken, authenticateAdmin, g
 
     let devices = [];
 
-    for (let i = 0; i < match.devices.length; i++) {
-        let device = await Device.findOne({ _id: match.devices[i] });
+    for (let i = 0; i < match.players.length; i++) {
+
+        let player = await RugbyPlayer.findOne({ guid: match.players[i] });
+
+        if (!player) {
+            console.log(`${match.players[i]} player not found`);
+            continue;
+        }
+
+        let device = await Device.findOne({ guid: player.deviceGuid });
+
+        if (!device) {
+
+            console.log(`${player.deviceGuid} device not found`);
+            continue;
+        }
 
         let name = device.friendlyName;
         let description = device.description;
 
+        console.log(`Found ${name}:${description}`);
+        
         if (!name) name = device.name;
 
         if (name.startsWith('Robot ')) {
@@ -166,7 +224,9 @@ router.get('/getMatchAssets/:matchName', authenticateToken, authenticateAdmin, g
             name: name,
             description: description,
             url: url,
-            qrCode: qrCode
+            qrCode: qrCode,
+            teamName : player.teamName,
+            trackingCode : player.trackingCode
         };
 
         devices.push(deviceAsset);
@@ -207,7 +267,7 @@ router.get('/player/:matchName/:deviceGuid', getRugbyMatchByName, getOpenDeviceB
         return;
     };
 
-    res.render('robotRugbyEditor.ejs', { device: device, match: match, message:"Robot opened" });
+    res.render('robotRugbyEditor.ejs', { device: device, match: match, message: "Robot opened" });
 });
 
 router.get('/doCommand/:matchName/:name/:command', getOpenDeviceByDeviceName, getRugbyMatchByName, async (req, res) => {
@@ -223,7 +283,58 @@ router.get('/doCommand/:matchName/:name/:command', getOpenDeviceByDeviceName, ge
 
     await mgr.sendRawTextToDevice(device.name, `***${command}`);
 
-    res.render('robotRugbyEditor.ejs', { device: device, match: match, message:"Command performed" });
+    res.render('robotRugbyEditor.ejs', { device: device, match: match, message: "Command performed" });
+});
+
+router.get('/startArena/:matchName', authenticateToken, authenticateAdmin, getRugbyMatchByName, async (req, res) => {
+
+    let match = res.rugbyMatch;
+    console.log("Starting arena");
+
+    let command = req.params.command;
+
+    mgr = Manager.getActiveManger();
+
+    let playerDescriptions = [];
+
+    for (let i = 0; i < match.players.length; i++) {
+
+        let player = await RugbyPlayer.findOne({ guid: match.players[i] });
+
+        if (!player) {
+            console.log(`${match.players[i]} player not found`);
+            continue;
+        }
+
+        let device = await Device.findOne({ guid: player.deviceGuid });
+
+        if (!device) {
+
+            console.log(`${player.deviceGuid} device not found`);
+            continue;
+        }
+
+        let playerDescription = ({
+            name:device.friendlyName,
+            id:device.name,
+            trackingCodeNumber:player.trackingCode,
+            team:player.teamName
+        });
+
+        playerDescriptions.push(playerDescription);
+    }
+
+    let matchDescription = ({
+        name:match.name,
+        description:match.description,
+        players:playerDescriptions
+    })
+
+    console.log(matchDescription);
+
+    await mgr.sendMessageToArena(JSON.stringify(matchDescription));
+
+    res.render("rugbyManageMatch.ejs", { match: match });
 });
 
 router.get('/commandAllRobots/:matchName/:command', authenticateToken, authenticateAdmin, getRugbyMatchByName, async (req, res) => {
@@ -234,8 +345,23 @@ router.get('/commandAllRobots/:matchName/:command', authenticateToken, authentic
 
     mgr = Manager.getActiveManger();
 
-    for (let i = 0; i < match.devices.length; i++) {
-        let device = await Device.findOne({ _id: match.devices[i] });
+    for (let i = 0; i < match.players.length; i++) {
+
+        let player = await RugbyPlayer.findOne({ guid: match.players[i] });
+
+        if (!player) {
+            console.log(`${match.players[i]} player not found`);
+            continue;
+        }
+
+        let device = await Device.findOne({ guid: player.deviceGuid });
+
+        if (!device) {
+
+            console.log(`${player.deviceGuid} device not found`);
+            continue;
+        }
+
         // the ** prefix causes the robot control software to route the string straight to the robot
         await mgr.sendRawTextToDevice(device.name, `***${command}`);
     }
@@ -268,8 +394,8 @@ router.post('/saveProgram/:matchName/:name', getOpenDeviceByDeviceName, getRugby
     await mgr.sendRawTextToDevice(device.name, `**${code}`);
 
     let message = `Program saved at ${hours}:${mins}:${secs}`;
-   
-    res.render('robotRugbyEditor.ejs', { device: device, match: match, message:message });
+
+    res.render('robotRugbyEditor.ejs', { device: device, match: match, message: message });
 });
 
 
@@ -279,13 +405,28 @@ router.get('/sendProgramAndRun/:matchName', authenticateToken, authenticateAdmin
 
     mgr = Manager.getActiveManger();
 
-    for (let i = 0; i < match.devices.length; i++) {
-        let device = await Device.findOne({ _id: match.devices[i] });
+    for (let i = 0; i < match.players.length; i++) {
+
+        let player = await RugbyPlayer.findOne({ guid: match.players[i] });
+
+        if (!player) {
+            console.log(`${match.players[i]} player not found`);
+            continue;
+        }
+
+        let device = await Device.findOne({ guid: player.deviceGuid });
+
+        if (!device) {
+
+            console.log(`${player.deviceGuid} device not found`);
+            continue;
+        }
+
         let code = `begin\r\n${device.pythonIsh}\r\nend\r\n`;
         // the ** prefix causes the robot control software to route the string straight to the robot
         await mgr.sendRawTextToDevice(device.name, `**${code}`);
     }
-    res.render("rugbyManageMatch.ejs", { match: match, code:match.resetCode });
+    res.render("rugbyManageMatch.ejs", { match: match, code: match.resetCode });
 });
 
 router.post('/saveProgramToAllRobots/:matchName', authenticateToken, authenticateAdmin, getRugbyMatchByName, async (req, res) => {
@@ -293,15 +434,29 @@ router.post('/saveProgramToAllRobots/:matchName', authenticateToken, authenticat
     let match = res.rugbyMatch;
     let codeText = req.body.codeTextarea;
 
-    await match.updateOne({resetCode:codeText});
+    await match.updateOne({ resetCode: codeText });
 
-    match = await RugbyMatch.findOne({name:match.name});
+    match = await RugbyMatch.findOne({ name: match.name });
 
     mgr = Manager.getActiveManger();
 
-    for (let i = 0; i < match.devices.length; i++) {
-        let device = await Device.findOne({ _id: match.devices[i] });
+    for (let i = 0; i < match.players.length; i++) {
 
+        let player = await RugbyPlayer.findOne({ guid: match.players[i] });
+
+        if (!player) {
+            console.log(`${match.players[i]} player not found`);
+            continue;
+        }
+
+        let device = await Device.findOne({ guid: player.deviceGuid });
+
+        if (!device) {
+
+            console.log(`${player.deviceGuid} device not found`);
+            continue;
+        }
+        
         let updateResult = await device.updateOne({
             pythonIsh: codeText
         });
@@ -310,9 +465,7 @@ router.post('/saveProgramToAllRobots/:matchName', authenticateToken, authenticat
         // the ** prefix causes the robot control software to route the string straight to the robot
         await mgr.sendRawTextToDevice(device.name, `**${code}`);
     }
-    res.render("rugbyManageMatch.ejs", { match: match, code:codeText });
+    res.render("rugbyManageMatch.ejs", { match: match, code: codeText });
 });
-
-
 
 module.exports = router;

@@ -394,6 +394,12 @@ class Manager {
         await this.sendMessageToDisplays(message, installation);
     }
 
+    async sendMessageToArena(command) {
+        let topic = process.env.MQTT_TOPIC_PREFIX + '/arena';
+        tinyLog(`Sending:${command} to:${topic}`);
+        await this.mqttClient.publish(topic, command);
+    }
+
     async sendRawTextToDevice(deviceName, command) {
         let topic = process.env.MQTT_TOPIC_PREFIX + '/command/' + deviceName;
         tinyLog(`Sending:${command} to:${topic}`);
@@ -625,6 +631,7 @@ class Manager {
         this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_DATA_TOPIC + '/#', { qos: 1 });
         this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_ROBOT_TOPIC, { qos: 1 });
         this.mqttClient.subscribe(process.env.MQTT_TOPIC_PREFIX + '/' + process.env.MQTT_RFID_TOPIC, { qos: 1 });
+
         this.mqttClient.on("message", (topic, message, packet) =>
             this.handleIncomingMessage(topic, message, packet));
 

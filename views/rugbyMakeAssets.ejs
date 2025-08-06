@@ -23,18 +23,35 @@
                 <h2 class="mb-4">
                     <%= device.name %>
                 </h2>
-                <p>        
-                    <img src=" <%= device.qrCode %> "></img>
-                </p>
-                <p>
-                    <a href="<%= device.url %>"><%= device.url %></a>
-                </p>
                 <p>
                     <%= device.description %>
                 </p>
-                <b>
-                    To take control of your robot open the link or scan the QR code above.
-                </b>
+                <p>
+                    <b>
+                        Your are on team: <%= device.teamName %>
+                    </b>
+                </p>
+                <p>
+                    <img src=" <%= device.qrCode %> "></img>
+                </p>
+                <p>
+                    <a href="<%= device.url %>">
+                        <%= device.url %>
+                    </a>
+                </p>
+                <p>
+                    <b>
+                        To take control of your robot open the link or scan the QR code above.
+                    </b>
+                </p>
+                <p>
+                <p>
+                    <img src="/public/images/ArucoCodes/aruco<%=device.trackingCode %>.png" width="10%"></img>
+                </p>
+                    <b>
+                        Make sure that your robot is fitted with the above tracking marker. Your robot has tracking code number: <%= device.trackingCode %>
+                    </b>
+                </p>
                 <hr />
             </div>
             <% }) %>

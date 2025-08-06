@@ -6,6 +6,10 @@ const RugbyMatchSchema = new mongoose.Schema(
             type: String,
             default:""
         },
+        guid: {
+            type: String,
+            required: true
+        },
         description: {
             type: String,
             default:""
@@ -19,9 +23,9 @@ const RugbyMatchSchema = new mongoose.Schema(
             type: String,
             default:""
         },
-        devices: {
-            type: [mongoose.Schema.Types.ObjectId],
-            ref:'Device',
+        players: {
+            type: [String],
+            ref:'rugbyPlayerGUID',
             default:[]
         }
     });
