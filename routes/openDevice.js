@@ -11,6 +11,7 @@ const validateFriendlyName = require('../_helpers/validateFriendlyName');
 const generateQRCode = require('../_helpers/generateQRCode');
 const { ProcessManagerCommandItems, ProcessManagerCommands, ProcessManagerMessageItems, ProcessManagerMessages, ProcessManagers } = require('../models/ProcessManager');
 const buildUserDescriptions = require('../_helpers/buildUserDescriptions');
+const wrapPythonIshCode = require ('../_helpers/pythonish');
 
 router.get('/:device_guid', async function (req, res) {
     let device_guid = req.params.device_guid;
@@ -105,10 +106,9 @@ router.post('/saveProgram/:name', getOpenDeviceByDeviceName, async (req, res) =>
     console.log("send code command pressed for:", device.name, " command:", codeText);
 
     mgr = Manager.getActiveManger();
-  
-    // the ** prefix causes the robot control software to route the string straight to the robot
 
-    await mgr.sendRawTextToDevice(device.name, `**begin\r\n${codeText}\r\nend\r\n`);
+    let code = wrapPythonIshCode(codeText);
+    await mgr.sendRawTextToDevice(device.name, code);
 
     let updateResult = await device.updateOne({
         pythonIsh: codeText
@@ -128,9 +128,7 @@ router.get('/doCommand/:name/:command', getOpenDeviceByDeviceName, async (req, r
 
     mgr = Manager.getActiveManger();
   
-    // the ** prefix causes the robot control software to route the string straight to the robot
-
-    await mgr.sendRawTextToDevice(device.name, `***${command}`);
+    await mgr.sendRawTextToDevice(device.name, `*${command}\r\n`);
 
     res.render('pythonIshEditor.ejs', { device: device});
 });

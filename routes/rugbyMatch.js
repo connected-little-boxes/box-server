@@ -8,6 +8,7 @@ const RugbyMatch = require('../models/RugbyMatch');
 const RugbyPlayer = require('../models/RugbyPlayer');
 const authenticateToken = require('../_helpers/authenticateToken');
 const authenticateAdmin = require('../_helpers/authenticateAdmin');
+const wrapPythonIshCode = require ('../_helpers/pythonish');
 const getDeviceByDeviceName = require('../_helpers/getDeviceByDeviceName');
 const getOpenDeviceByDeviceName = require('../_helpers/getOpenDeviceByDeviceName');
 const getOpenDeviceByDeviceGUID = require('../_helpers/getOpenDeviceByDeviceGUID');
@@ -209,7 +210,7 @@ router.get('/getMatchAssets/:matchName', authenticateToken, authenticateAdmin, g
         let description = device.description;
 
         console.log(`Found ${name}:${description}`);
-        
+
         if (!name) name = device.name;
 
         if (name.startsWith('Robot ')) {
@@ -225,8 +226,8 @@ router.get('/getMatchAssets/:matchName', authenticateToken, authenticateAdmin, g
             description: description,
             url: url,
             qrCode: qrCode,
-            teamName : player.teamName,
-            trackingCode : player.trackingCode
+            teamName: player.teamName,
+            trackingCode: player.trackingCode
         };
 
         devices.push(deviceAsset);
@@ -279,9 +280,7 @@ router.get('/doCommand/:matchName/:name/:command', getOpenDeviceByDeviceName, ge
 
     mgr = Manager.getActiveManger();
 
-    // the ** prefix causes the robot control software to route the string straight to the robot
-
-    await mgr.sendRawTextToDevice(device.name, `***${command}`);
+    await mgr.sendRawTextToDevice(device.name, `*${command}\r\n`);
 
     res.render('robotRugbyEditor.ejs', { device: device, match: match, message: "Command performed" });
 });
@@ -315,19 +314,19 @@ router.get('/startArena/:matchName', authenticateToken, authenticateAdmin, getRu
         }
 
         let playerDescription = ({
-            name:device.friendlyName,
-            id:device.name,
-            trackingCodeNumber:player.trackingCode,
-            team:player.teamName
+            name: device.friendlyName,
+            id: device.name,
+            trackingCodeNumber: player.trackingCode,
+            team: player.teamName
         });
 
         playerDescriptions.push(playerDescription);
     }
 
     let matchDescription = ({
-        name:match.name,
-        description:match.description,
-        players:playerDescriptions
+        name: match.name,
+        description: match.description,
+        players: playerDescriptions
     })
 
     console.log(matchDescription);
@@ -362,12 +361,14 @@ router.get('/commandAllRobots/:matchName/:command', authenticateToken, authentic
             continue;
         }
 
-        // the ** prefix causes the robot control software to route the string straight to the robot
-        await mgr.sendRawTextToDevice(device.name, `***${command}`);
+        // the * prefix causes the robot control software process this as a HullOS command
+
+        await mgr.sendRawTextToDevice(device.name, `*${command}`);
     }
 
     res.render("rugbyManageMatch.ejs", { match: match });
 });
+
 
 router.post('/saveProgram/:matchName/:name', getOpenDeviceByDeviceName, getRugbyMatchByName, async (req, res) => {
     let device = res.device;
@@ -389,9 +390,9 @@ router.post('/saveProgram/:matchName/:name', getOpenDeviceByDeviceName, getRugby
     const mins = date.getMinutes();
     const secs = date.getSeconds();
 
-    let code = `begin\r\n${codeText}\r\nend\r\n`;
-    // the ** prefix causes the robot control software to route the string straight to the robot
-    await mgr.sendRawTextToDevice(device.name, `**${code}`);
+    let code = wrapPythonIshCode(codeText);
+
+    await mgr.sendRawTextToDevice(device.name, code);
 
     let message = `Program saved at ${hours}:${mins}:${secs}`;
 
@@ -422,9 +423,10 @@ router.get('/sendProgramAndRun/:matchName', authenticateToken, authenticateAdmin
             continue;
         }
 
-        let code = `begin\r\n${device.pythonIsh}\r\nend\r\n`;
-        // the ** prefix causes the robot control software to route the string straight to the robot
-        await mgr.sendRawTextToDevice(device.name, `**${code}`);
+        let code = wrapPythonIshCode(device.pythonIsh);
+        
+        await mgr.sendRawTextToDevice(device.name, code);
+
     }
     res.render("rugbyManageMatch.ejs", { match: match, code: match.resetCode });
 });
@@ -456,14 +458,15 @@ router.post('/saveProgramToAllRobots/:matchName', authenticateToken, authenticat
             console.log(`${player.deviceGuid} device not found`);
             continue;
         }
-        
+
         let updateResult = await device.updateOne({
             pythonIsh: codeText
         });
 
-        let code = `begin\r\n${codeText}\r\nend\r\n`;
-        // the ** prefix causes the robot control software to route the string straight to the robot
-        await mgr.sendRawTextToDevice(device.name, `**${code}`);
+        let code = wrapPythonIshCode(device.pythonIsh);
+        
+        await mgr.sendRawTextToDevice(device.name, code);
+
     }
     res.render("rugbyManageMatch.ejs", { match: match, code: codeText });
 });

@@ -402,6 +402,10 @@ class Manager {
 
     async sendRawTextToDevice(deviceName, command) {
         let topic = process.env.MQTT_TOPIC_PREFIX + '/command/' + deviceName;
+
+        // the ** prefix causes the robot control software to route the string straight to the robot
+        command =  `**${command}`;
+
         tinyLog(`Sending:${command} to:${topic}`);
         this.mqttClient.publish(topic, command);
         // store the command for debugging
