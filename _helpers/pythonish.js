@@ -1,5 +1,5 @@
 function wrapPythonIshCode(codeText) {
-    let code = `\r\npythonish\r\nbegin\r\n${codeText}\r\nend\r\nsave "active.txt"\r\nload "active.txt"\r\nexit\r\n`;
+    let code = `\r\n*RH\r\n*RC\r\*RM\r\nbegin\r\n${codeText}\r\nend\r\n*RX\r\n*RS\r\n`;
     return code;
 }
 
