@@ -7,6 +7,10 @@
     "devstart": "nodemon server.js",
     "start": "node server.js"
   },
+  "engines": {
+    "node": ">=20 <21",
+    "npm": ">=9"
+  },
   "author": "Rob Miles",
   "license": "ISC",
   "dependencies": {
