@@ -24,31 +24,20 @@ router.get('/initialSettings.json/:name/:friendlyName', authenticateToken, async
 
     console.log("Device: " + deviceName + " registering");
 
+    let guid = "";
+
     let device = await Device.findOne({ name: req.params.name });
 
-    if (device == null) {
-        // Create a new device record
-        device = new Device({
-            name: deviceName,
-            friendlyName: friendlyName,
-            owner: res.user._id,
-            processor: "unknown",
-            version: "unknown",
-            processes: [],
-            sensors: []
-        });
-        await device.save();
-        console.log("Device Created");
-    }
-    else {
-        await device.updateOne({
-            owner: res.user._id,
-            friendlyName: friendlyName
-        });
-        console.log("Device Updated");
+    let openUrl="";
+    let deviceUrl="";
+
+    if (device) {
+        openUrl = process.env.HOST_ADDRESS + "openDevice/" + device.guid;
+        deviceUrl = process.env.HOST_ADDRESS + "openDevice/command/" + device.guid;
     }
 
-    let settings = [
+    let settings = {
+        namedSettings: [
         { deviceName: "mqtthost", value: process.env.MQTT_HOST_URL },
         { deviceName: "mqttport", value: process.env.MQTT_PORT },
         { deviceName: "mqttsecure", value: process.env.MQTT_SECURE },
@@ -56,8 +45,12 @@ router.get('/initialSettings.json/:name/:friendlyName', authenticateToken, async
         { deviceName: "mqttpwd", value: process.env.MQTT_PASSWORD },
         { deviceName: "mqttpre", value: process.env.MQTT_TOPIC_PREFIX },
         { deviceName: "mqttpub", value: process.env.MQTT_DATA_TOPIC },
-        { deviceName: "mqttreport", value: process.env.MQTT_REPORT_TOPIC }
-    ];
+        { deviceName: "mqttreport", value: process.env.MQTT_REPORT_TOPIC } 
+        ],
+        openUrl: openUrl,
+        deviceUrl: deviceUrl 
+    };
+
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/json');
     json = JSON.stringify(settings);

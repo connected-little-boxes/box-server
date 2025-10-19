@@ -30,12 +30,13 @@ router.get('/:device_guid', async function (req, res) {
         return;
     };
 
-    let tags = device.tags;
+    let version = device.version;
+    const firstVersionDigit = parseInt(version.split('.')[0], 10);
 
-    if(!tags){
+    if(firstVersionDigit<4){
         menuPage(
-            "Open Device - no tags",
-            `Only devices with the robots tag can be opened directly. ${device_guid}`,
+            "Open Device Invalid Software",
+            `Only devices with at least version 4 of HullOS can be opened for edit. ${device_guid}`,
             [
                 { description: "Continue", route: "/" }
             ],
@@ -43,18 +44,6 @@ router.get('/:device_guid', async function (req, res) {
         );
         return;
     }
-
-    if (!tags.includes("robot")) {
-        menuPage(
-            "Open Device - not a robot",
-            `Only devices with the robots tag can be opened directly. ${device_guid}`,
-            [
-                { description: "Continue", route: "/" }
-            ],
-            res
-        );
-        return;
-    };
 
     res.render('pythonIshEditor.ejs', { device: device });
 });

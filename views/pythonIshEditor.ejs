@@ -18,20 +18,24 @@
 </div>
 <div class="container mb-4">
     <h1 class="mb-4">
-        <%= device.friendlyName %>
+        <% if(device.friendlyName=="undefined"){ %>
+         <%= device.name %>
+        <% } else { %>
+         <%= device.friendlyName %>
+        <% } %>
     </h1>
     <div class="container mb-2 mt-2">
         <form method="POST" action="/openDevice/saveProgram/<%= device.name %>">
             <label for="codeTextarea">Enter your text:</label>
             <textarea id="codeTextarea" name="codeTextarea" style="font-family:monospace;" class="w-100" rows="20"
                 cols="120"><%= device.pythonIsh %></textarea>
-            <input type="submit" value="Send the program into the robot and run it"
+            <input type="submit" value="Send the program into the device and run it"
                 class="btn btn-primary mt-2 mb-2 btn-block">
         </form>
         <a href="/openDevice/doCommand/<%=device.name%>/RS" class="btn btn-primary mb-2 btn-block">Run program currently in
-            robot</a>
+            device</a>
         <a href="/openDevice/doCommand/<%=device.name%>/RH" class="btn btn-primary mt-2 mb-2 btn-block">Halt program in
-            robot</a>
+            device</a>
         <button class="btn btn-primary mt-2 mb-2 btn-block" onclick="doSampleProgram();">Step through sample
             programs</button>
         <button class="btn btn-primary mt-2 mb-2 btn-block" onclick="doClearProgram();">Clear Editor</button>
@@ -78,7 +82,7 @@ forever
     continue
   green
 `,
-        `# robot coward 
+        `# device coward 
 forever
   green
   d = @distance

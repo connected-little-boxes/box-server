@@ -1,6 +1,6 @@
 {
   "name": "devicemanager",
-  "version": "1.0.0",
+  "version": "2.4.0",
   "description": "A device manager for Connected Little Boxes",
   "main": "index.js",
   "scripts": {

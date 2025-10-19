@@ -130,6 +130,7 @@ router.post('/updateDetails/:name/:friendlyName', authenticateToken, getDeviceBy
 
   let orignalFriendlyName = req.params.friendlyName;
   let editedFriendlyName = req.body.friendlyName;
+  let editedNotes = req.body.notes;
   let owner = res.user;
 
   let proposedFriendlyName;
@@ -149,6 +150,7 @@ router.post('/updateDetails/:name/:friendlyName', authenticateToken, getDeviceBy
       friendlyName: proposedFriendlyName,
       bootCommands: req.body.bootCommands,
       description: req.body.description,
+      notes : editedNotes,
       tags: req.body.tags
     }
   );

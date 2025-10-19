@@ -656,8 +656,6 @@ class Manager {
         promiseList[0] = this.startDBPromise(
             process.env.DATABASE_URL,
             {
-                useNewUrlParser: true,
-                useUnifiedTopology: true
             });
 
         promiseList[1] = this.startMqttPromise(

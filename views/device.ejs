@@ -36,9 +36,9 @@
                                                 <br>
                                                 MAC address: <%= device.macAddress %>
                                                     <br>
-                                                    Open URL: <%= openUrl %>
+                                                    Open URL for Pythonish: <a href="<%= openUrl %>"> <%= openUrl %> </a>
                                                         <br>
-                                                        Device URL: <%= deviceUrl %>
+                                                        Device URL for JSON requests: <%= deviceUrl %>
                     </p>
                 </div>
                 <div class="container">
@@ -61,12 +61,15 @@
                         <label for="tags">Tags</label>
                         <input type="text" name="tags" id="tags" class="form-control" value="<%= device.tags %>">
                     </div>
-
-
                     <div class="form-group">
                         <label for="bootCommands">Boot Commands</label>
                         <textarea rows=5 type="text" name="bootCommands" id="bootCommands"
                             class="form-control"><%= device.bootCommands %></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Device Notes</label>
+                        <textarea rows=5 type="text" name="notes" id="notes"
+                            class="form-control"><%= device.notes %></textarea>
                     </div>
 
                     <button type="submit" class="btn btn-primary mt-4">Update Details</button>

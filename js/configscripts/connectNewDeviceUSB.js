@@ -8,6 +8,8 @@ let settingsURL;
 var stage;
 var consoleIO;
 
+var guid = "";
+
 const stages = {
   ConnectUSB: {
     description: ["*Plug into the usb socket",
@@ -29,7 +31,7 @@ const stages = {
       `Press Submit when you have finished`
     ],
     inputFields: [
-      { displayName: "Device Name", deviceName: "friendlyName", type: "text", allowEmpty: false, loadType: "fromDevice" },
+      { displayName: "Device Name", deviceName: "mqttdevicename", type: "text", allowEmpty: false, loadType: "fromDeviceReadOnly" },
       { displayName: "WiFi SSID 1", deviceName: "wifissid1", type: "text", allowEmpty: false, loadType: "fromDevice" },
       { displayName: "WiFi Password 1", deviceName: "wifipwd1", type: "password", allowEmpty: true, loadType: "fromDevice" },
       { displayName: "WiFi SSID 2", deviceName: "wifissid2", type: "text", allowEmpty: true, loadType: "fromDevice" },
@@ -42,7 +44,7 @@ const stages = {
       { displayName: "Number of Y pixels", deviceName: "noofypixels", type: "number", allowEmpty: false, loadType: "fromDevice" }
     ],
     buttons: [
-      { buttonText: "Submit", buttonDest:   doConfigBox }
+      { buttonText: "Submit", buttonDest: doConfigBox }
     ]
   },
   ConnectFailed: {
@@ -52,16 +54,21 @@ const stages = {
       "Press Retry Connection to try again."],
     inputFields: [],
     buttons: [
-      { buttonText: "Retry", buttonDest: doAttemptConnection }
+      { buttonText: "Retry", buttonDest: doReloadPage }
     ]
   },
   ConfigSuccess: {
-    description: ["*Configuration complete",
-      'The device has been configured as a Connected Little Box.',
-      'You will find it listed in your devices.'],
+    description: ["*Configuration complete"],
     inputFields: [],
     buttons: [
-      { buttonText: "Exit ", buttonDest: () => { window.location.replace("/");}  }
+      { buttonText: "Exit ", buttonDest: () => { window.location.replace("/"); } }
+    ]
+  },
+  ConfigSuccessGUID: {
+    description: [""],  // will be filled in before display
+    inputFields: [],
+    buttons: [
+      { buttonText: "Exit ", buttonDest: () => { window.location.replace("/"); } }
     ]
   }
 }
@@ -94,8 +101,14 @@ async function doTestPixels() {
 }
 
 async function doAttemptConnection() {
+
   connectConIOandSelectStage(stages.BoxConfig);
 }
+
+async function doReloadPage() {
+  location.reload();
+}
+
 
 async function doConfigBox() {
 
@@ -117,6 +130,8 @@ async function doConfigBox() {
       let loadType = field.loadType;
       switch (loadType) {
         case "localValue":
+          break;
+        case "fromDeviceReadOnly":
           break;
         case "fromDevice":
           if (field.deviceName == "friendlyName") {
@@ -144,14 +159,20 @@ async function doConfigBox() {
 
   addLineToLog("Getting setting information from the server");
 
-  let settings = await getFromServer(fullURL);
+  let deviceSettings = await getFromServer(fullURL);
 
-  if (!settings) {
+  console.log("Got the settings");
+
+  console.log(deviceSettings);
+
+  if (!deviceSettings) {
     window.location.replace(`${hostAddress}hardware/setupDevice`);
   }
 
-  for (let i = 0; i < settings.length; i++) {
-    let setting = settings[i];
+  let namedSettings = deviceSettings.namedSettings;
+
+  for (let i = 0; i < namedSettings.length; i++) {
+    let setting = namedSettings[i];
     let command = setting.deviceName + "=" + setting.value;
     commandList.push(command);
   }
@@ -168,7 +189,18 @@ async function doConfigBox() {
   await consoleIO.performCommand("restart");
   addLineToLog("Device reset");
 
-  selectStage(stages.ConfigSuccess);
+  if (deviceSettings.openUrl) {
+    stages.ConfigSuccessGUID.description = ["*Configuration completed",
+      'This is the PythonIsh editor for the device',
+      'QR:' + deviceSettings.openUrl,
+      'This is the JSON command destination for the device',
+      '*' + deviceSettings.deviceUrl
+    ];
+    selectStage(stages.ConfigSuccessGUID);
+  }
+  else {
+    selectStage(stages.ConfigSuccess);
+  }
 }
 
 function doGoHome() {

@@ -81,6 +81,11 @@ const deviceSchema = new mongoose.Schema(
             default:"",
             required: false
         },
+        notes: {
+            type: String,
+            default:"",
+            required: false
+        },
         tags: {
             type: String,
             default:undefined,

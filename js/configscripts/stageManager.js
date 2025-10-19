@@ -106,6 +106,7 @@ async function displayStage(stage) {
                 case "localValue":
                     break;
                 case "fromDevice":
+                case "fromDeviceReadOnly":
                     if (field.type == "password") {
                         deviceValue = "";
                     }

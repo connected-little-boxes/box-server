@@ -300,6 +300,8 @@ async function doConfigWiFi() {
         case "localValue":
           userEnteredFriendlyName = value;
           break;
+        case "fromDeviceReadOnly":
+          break;
         case "fromDevice":
           if ((field.type != "password") ||
             (field.type == "password" && value != "")) {
